@@ -22,13 +22,21 @@ namespace game_2
             "void main() { gl_FragColor = vec4(0.8, 0.2, 1.0, 1.0); }   \n";
 
         float[] vertices = {
-            -0.5f, -0.5f, 0.0f, //Bottom-left vertex
-             0.5f, -0.5f, 0.0f, //Bottom-right vertex
-             0.0f,  0.5f, 0.0f  //Top vertex
+            -0.5f, 0.5f, 0.0f,
+            -1.0f, -0.5f, 0.0f,
+            0.0f, -0.5f, 0.0f,
+            0.5f, 0.5f, 0.0f,
+            1.0f, -0.5f, 0.0f,
+        };
+
+        int[] indices = {  // note that we start from 0!
+            0, 1, 2,   // first triangle
+            2, 3, 4    // second triangle
         };
 
         int VBO;
         int VAO;
+        int IBO;
         Shader shader;
 
         public GameEngine(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings) : base(gameWindowSettings, nativeWindowSettings)
@@ -52,13 +60,18 @@ namespace game_2
 
             GL.ClearColor(0.0f, 0.0f, 0.5f, 0.1f);
 
-            VBO = GL.GenBuffer();            
-            
+            VBO = GL.GenBuffer();             
             VAO = GL.GenVertexArray();
+            IBO = GL.GenBuffer();
+
             GL.BindVertexArray(VAO);
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
             GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw);
             GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
+            
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, IBO);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
+
             GL.EnableVertexAttribArray(0);
 
             shader = new Shader(vertexShader, fragmentShader);            
@@ -99,8 +112,8 @@ namespace game_2
             GL.Clear(ClearBufferMask.ColorBufferBit);
             shader.Use();
             GL.BindVertexArray(VAO);
-            GL.DrawArrays(PrimitiveType.Triangles, 0, 3);
-            
+            GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
+
             SwapBuffers();
         }
 
