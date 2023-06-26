@@ -4,25 +4,27 @@ using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using System;
 using game_2.Brain;
+using OpenTK.Mathematics;
 
 namespace game_2
 {
     public class GameEngine : GameWindow
     {
         string vertexShader =
-                "#version 330 \n" +
-            "layout (location = 0) in vec3 aPosition;       \n" +
-            "out vec4 vertexColor; \n" +
-            "void main()                                    \n" +
-            "{                                              \n" +
-            "    gl_Position = vec4(aPosition, 1.0);        \n" +
+            "#version 330                                           \n" +
+            "layout (location = 0) in vec3 aPosition;               \n" +
+            "out vec4 vertexColor;                                  \n" +
+            "uniform mat4 mvp;                                      \n" +
+            "void main()                                            \n" +
+            "{                                                      \n" +
+            "   gl_Position = vec4(aPosition, 1.0) * mvp;           \n" +
             "   vertexColor = vec4(clamp(aPosition, 0.0, 1.0), 1.0);\n" +
             "}";
 
         string fragmentShader =
-            "#version 330                                               \n" +
-            "in vec4 vertexColor; \n"+
-            "void main() { gl_FragColor = vertexColor; }   \n";
+            "#version 330                                           \n" +
+            "in vec4 vertexColor;                                   \n" +
+            "void main() { gl_FragColor = vertexColor; }            \n";
 
         float[] vertices = {
             -0.5f, 0.5f, 0.0f,
@@ -113,6 +115,13 @@ namespace game_2
         {
             base.OnRenderFrame(args);
             GL.Clear(ClearBufferMask.ColorBufferBit);
+
+            Matrix4 rotation = Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(90.0f));
+            Matrix4 scale = Matrix4.CreateScale(0.5f, 0.5f, 0.5f);
+            Matrix4 trans = rotation * scale;
+
+            shader.setMatrix(trans);
+
             shader.Use();
             GL.BindVertexArray(VAO);
             GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);

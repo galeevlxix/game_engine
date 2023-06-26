@@ -4,12 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using OpenTK.Graphics.OpenGL;
+using OpenTK.Mathematics;
 
 namespace game_2.Brain
 {
     public class Shader : IDisposable
     {
         int Handle;
+        int MVPID;
       
         public Shader(string vs, string fs)
         {
@@ -40,6 +42,8 @@ namespace game_2.Brain
                 Console.WriteLine(infolog);
             }
 
+            MVPID = GL.GetUniformLocation(Handle, "mvp");
+
             //очистка вершинных и фрагментных шейдеров
             GL.DetachShader(Handle, VertexShader);
             GL.DetachShader(Handle, FragmentShader);
@@ -66,6 +70,11 @@ namespace game_2.Brain
                 string infoLog = GL.GetShaderInfoLog(FragmentShader);
                 Console.WriteLine(infoLog);
             }
+        }
+
+        public void setMatrix(Matrix4 m)
+        {
+            GL.UniformMatrix4(MVPID, true, ref m);
         }
 
         public void Use()
