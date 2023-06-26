@@ -10,16 +10,19 @@ namespace game_2
     public class GameEngine : GameWindow
     {
         string vertexShader =
-                "#version 330 core\n" +
+                "#version 330 \n" +
             "layout (location = 0) in vec3 aPosition;       \n" +
+            "out vec4 vertexColor; \n" +
             "void main()                                    \n" +
             "{                                              \n" +
             "    gl_Position = vec4(aPosition, 1.0);        \n" +
+            "   vertexColor = vec4(clamp(aPosition, 0.0, 1.0), 1.0);\n" +
             "}";
 
         string fragmentShader =
             "#version 330                                               \n" +
-            "void main() { gl_FragColor = vec4(0.8, 0.2, 1.0, 1.0); }   \n";
+            "in vec4 vertexColor; \n"+
+            "void main() { gl_FragColor = vertexColor; }   \n";
 
         float[] vertices = {
             -0.5f, 0.5f, 0.0f,
