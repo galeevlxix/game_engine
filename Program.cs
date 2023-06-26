@@ -14,7 +14,7 @@ namespace game_2
             NativeWindowSettings windowSettings = NativeWindowSettings.Default;
 
             windowSettings.WindowState = WindowState.Normal;
-            windowSettings.Title = "Practice";
+            windowSettings.Title = "Game";
 
             GameEngine engine = new GameEngine(settings, windowSettings);
             engine.Init();
