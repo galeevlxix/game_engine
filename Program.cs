@@ -13,7 +13,7 @@ namespace game_2
             GameWindowSettings settings = GameWindowSettings.Default;
             NativeWindowSettings windowSettings = NativeWindowSettings.Default;
 
-            windowSettings.WindowState = WindowState.Fullscreen;
+            windowSettings.WindowState = WindowState.Maximized;
             windowSettings.Title = "Game";
 
             GameEngine engine = new GameEngine(settings, windowSettings);

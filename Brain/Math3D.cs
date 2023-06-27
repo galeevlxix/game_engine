@@ -1,4 +1,6 @@
-﻿namespace game_2.Brain
+﻿using OpenTK.Mathematics;
+
+namespace game_2.Brain
 {
     public class vector2
     {
@@ -176,7 +178,7 @@
         public Pipeline()
         {
             RotateVector = new vector3 { x = 0, y = 0, z = 0 };
-            ScaleVector = new vector3 { x = 0, y = 0, z = 0 };
+            ScaleVector = new vector3 { x = 1, y = 1, z = 1 };
             PositionVector = new vector3 { x = 0, y = 0, z = 0 };
             mPersProj = new mPersProj();
         }
@@ -218,16 +220,26 @@
             camera.Up = Up;
         }
 
-        public matrix4 getTransformation()
+        private Matrix4 getTransformation()
         {
-            return InitScaleTransform(ScaleVector.x, ScaleVector.y, ScaleVector.z) *
+            return  InitScaleTransform(ScaleVector.x, ScaleVector.y, ScaleVector.z) *
                     InitRotateTransform(RotateVector.x, RotateVector.y, RotateVector.z) *
                     InitTranslationTransform(PositionVector.x, PositionVector.y, PositionVector.z);
         }
 
-        public matrix4 getMVP()
+        public Matrix4 getMVP()
         {
-            matrix4 CameraTranslationTrans, CameraRotateTrans, PersProjTrans;
+            var sc = InitScaleTransform(ScaleVector.x, ScaleVector.y, ScaleVector.z);
+            var rot = InitRotateTransform(RotateVector.x, RotateVector.y, RotateVector.z);
+            var trans = InitTranslationTransform(PositionVector.x, PositionVector.y, PositionVector.z);
+            var pers = InitPersProjTransform(mPersProj.FOV, mPersProj.width, mPersProj.height, mPersProj.zNear, mPersProj.zFar);
+          
+            return sc * rot * trans * pers;                    
+        }
+
+        public Matrix4 getMVP_with_camera()
+        {
+            Matrix4 CameraTranslationTrans, CameraRotateTrans, PersProjTrans;
 
             CameraTranslationTrans = InitTranslationTransform(-camera.Pos.x, -camera.Pos.y, -camera.Pos.z);
             CameraRotateTrans = InitCameraTransform(camera.Target, camera.Up);
@@ -236,83 +248,83 @@
             return PersProjTrans * CameraRotateTrans * CameraTranslationTrans * getTransformation();
         }
 
-        public static matrix4 RotateX(float a)
+        public static Matrix4 RotateX(float a)
         {
-            matrix4 rx = new matrix4();
+            Matrix4 rx = new Matrix4();
             float x = math3d.ToRadian(a);
 
-            rx.m[0, 0] = 1.0f; rx.m[0, 1] = 0.0f; rx.m[0, 2] = 0.0f; rx.m[0, 3] = 0.0f;
-            rx.m[1, 0] = 0.0f; rx.m[1, 1] = math3d.cos(x); rx.m[1, 2] = -math3d.sin(x); rx.m[1, 3] = 0.0f;
-            rx.m[2, 0] = 0.0f; rx.m[2, 1] = math3d.sin(x); rx.m[2, 2] = math3d.cos(x); rx.m[2, 3] = 0.0f;
-            rx.m[3, 0] = 0.0f; rx.m[3, 1] = 0.0f; rx.m[3, 2] = 0.0f; rx.m[3, 3] = 1.0f;
+            rx[0, 0] = 1.0f; rx[0, 1] = 0.0f; rx[0, 2] = 0.0f; rx[0, 3] = 0.0f;
+            rx[1, 0] = 0.0f; rx[1, 1] = math3d.cos(x); rx[1, 2] = -math3d.sin(x); rx[1, 3] = 0.0f;
+            rx[2, 0] = 0.0f; rx[2, 1] = math3d.sin(x); rx[2, 2] = math3d.cos(x); rx[2, 3] = 0.0f;
+            rx[3, 0] = 0.0f; rx[3, 1] = 0.0f; rx[3, 2] = 0.0f; rx[3, 3] = 1.0f;
 
             return rx;
         }
 
-        public static matrix4 RotateY(float a)
+        public static Matrix4 RotateY(float a)
         {
-            matrix4 ry = new matrix4();
+            Matrix4 ry = new Matrix4();
             float y = math3d.ToRadian(a);
 
-            ry.m[0, 0] = math3d.cos(y); ry.m[0, 1] = 0.0f; ry.m[0, 2] = -math3d.sin(y); ry.m[0, 3] = 0.0f;
-            ry.m[1, 0] = 0.0f; ry.m[1, 1] = 1.0f; ry.m[1, 2] = 0.0f; ry.m[1, 3] = 0.0f;
-            ry.m[2, 0] = math3d.sin(y); ry.m[2, 1] = 0.0f; ry.m[2, 2] = math3d.cos(y); ry.m[2, 3] = 0.0f;
-            ry.m[3, 0] = 0.0f; ry.m[3, 1] = 0.0f; ry.m[3, 2] = 0.0f; ry.m[3, 3] = 1.0f;
+            ry[0, 0] = math3d.cos(y); ry[0, 1] = 0.0f; ry[0, 2] = -math3d.sin(y); ry[0, 3] = 0.0f;
+            ry[1, 0] = 0.0f; ry[1, 1] = 1.0f; ry[1, 2] = 0.0f; ry[1, 3] = 0.0f;
+            ry[2, 0] = math3d.sin(y); ry[2, 1] = 0.0f; ry[2, 2] = math3d.cos(y); ry[2, 3] = 0.0f;
+            ry[3, 0] = 0.0f; ry[3, 1] = 0.0f; ry[3, 2] = 0.0f; ry[3, 3] = 1.0f;
 
             return ry;
         }
 
-        public static matrix4 RotateZ(float a)
+        public static Matrix4 RotateZ(float a)
         {
-            matrix4 rz = new matrix4();
+            Matrix4 rz = new Matrix4();
             float z = math3d.ToRadian(a);
 
-            rz.m[0, 0] = math3d.cos(z); rz.m[0, 1] = -math3d.sin(z); rz.m[0, 2] = 0.0f; rz.m[0, 3] = 0.0f;
-            rz.m[1, 0] = math3d.sin(z); rz.m[1, 1] = math3d.cos(z); rz.m[1, 2] = 0.0f; rz.m[1, 3] = 0.0f;
-            rz.m[2, 0] = 0.0f; rz.m[2, 1] = 0.0f; rz.m[2, 2] = 1.0f; rz.m[2, 3] = 0.0f;
-            rz.m[3, 0] = 0.0f; rz.m[3, 1] = 0.0f; rz.m[3, 2] = 0.0f; rz.m[3, 3] = 1.0f;
+            rz[0, 0] = math3d.cos(z); rz[0, 1] = -math3d.sin(z); rz[0, 2] = 0.0f; rz[0, 3] = 0.0f;
+            rz[1, 0] = math3d.sin(z); rz[1, 1] = math3d.cos(z); rz[1, 2] = 0.0f; rz[1, 3] = 0.0f;
+            rz[2, 0] = 0.0f; rz[2, 1] = 0.0f; rz[2, 2] = 1.0f; rz[2, 3] = 0.0f;
+            rz[3, 0] = 0.0f; rz[3, 1] = 0.0f; rz[3, 2] = 0.0f; rz[3, 3] = 1.0f;
 
             return rz;
         }
 
-        private static matrix4 InitRotateTransform(float RotateX, float RotateY, float RotateZ)
+        public static Matrix4 InitRotateTransform(float RotateX, float RotateY, float RotateZ)
         {
-            matrix4 rx = new matrix4(), ry = new matrix4(), rz = new matrix4();
+            Matrix4 rx = new Matrix4(), ry = new Matrix4(), rz = new Matrix4();
             float x = math3d.ToRadian(RotateX);
             float y = math3d.ToRadian(RotateY);
             float z = math3d.ToRadian(RotateZ);
 
-            rx.m[0, 0] = 1.0f;              rx.m[0, 1] = 0.0f;              rx.m[0, 2] = 0.0f;              rx.m[0, 3] = 0.0f;
-            rx.m[1, 0] = 0.0f;              rx.m[1, 1] = math3d.cos(x);     rx.m[1, 2] = -math3d.sin(x);    rx.m[1, 3] = 0.0f;
-            rx.m[2, 0] = 0.0f;              rx.m[2, 1] = math3d.sin(x);     rx.m[2, 2] = math3d.cos(x);     rx.m[2, 3] = 0.0f;
-            rx.m[3, 0] = 0.0f;              rx.m[3, 1] = 0.0f;              rx.m[3, 2] = 0.0f;              rx.m[3, 3] = 1.0f;
+            rx[0, 0] = 1.0f;              rx[0, 1] = 0.0f;              rx[0, 2] = 0.0f;              rx[0, 3] = 0.0f;
+            rx[1, 0] = 0.0f;              rx[1, 1] = math3d.cos(x);     rx[1, 2] = -math3d.sin(x);    rx[1, 3] = 0.0f;
+            rx[2, 0] = 0.0f;              rx[2, 1] = math3d.sin(x);     rx[2, 2] = math3d.cos(x);     rx[2, 3] = 0.0f;
+            rx[3, 0] = 0.0f;              rx[3, 1] = 0.0f;              rx[3, 2] = 0.0f;              rx[3, 3] = 1.0f;
 
-            ry.m[0, 0] = math3d.cos(y);     ry.m[0, 1] = 0.0f;              ry.m[0, 2] = -math3d.sin(y);    ry.m[0, 3] = 0.0f;
-            ry.m[1, 0] = 0.0f;              ry.m[1, 1] = 1.0f;              ry.m[1, 2] = 0.0f;              ry.m[1, 3] = 0.0f;
-            ry.m[2, 0] = math3d.sin(y);     ry.m[2, 1] = 0.0f;              ry.m[2, 2] = math3d.cos(y);     ry.m[2, 3] = 0.0f;
-            ry.m[3, 0] = 0.0f;              ry.m[3, 1] = 0.0f;              ry.m[3, 2] = 0.0f;              ry.m[3, 3] = 1.0f;
+            ry[0, 0] = math3d.cos(y);     ry[0, 1] = 0.0f;              ry[0, 2] = -math3d.sin(y);    ry[0, 3] = 0.0f;
+            ry[1, 0] = 0.0f;              ry[1, 1] = 1.0f;              ry[1, 2] = 0.0f;              ry[1, 3] = 0.0f;
+            ry[2, 0] = math3d.sin(y);     ry[2, 1] = 0.0f;              ry[2, 2] = math3d.cos(y);     ry[2, 3] = 0.0f;
+            ry[3, 0] = 0.0f;              ry[3, 1] = 0.0f;              ry[3, 2] = 0.0f;              ry[3, 3] = 1.0f;
 
-            rz.m[0, 0] = math3d.cos(z);     rz.m[0, 1] = -math3d.sin(z);    rz.m[0, 2] = 0.0f;              rz.m[0, 3] = 0.0f;
-            rz.m[1, 0] = math3d.sin(z);     rz.m[1, 1] = math3d.cos(z);     rz.m[1, 2] = 0.0f;              rz.m[1, 3] = 0.0f;
-            rz.m[2, 0] = 0.0f;              rz.m[2, 1] = 0.0f;              rz.m[2, 2] = 1.0f;              rz.m[2, 3] = 0.0f;
-            rz.m[3, 0] = 0.0f;              rz.m[3, 1] = 0.0f;              rz.m[3, 2] = 0.0f;              rz.m[3, 3] = 1.0f;
+            rz[0, 0] = math3d.cos(z);     rz[0, 1] = -math3d.sin(z);    rz[0, 2] = 0.0f;              rz[0, 3] = 0.0f;
+            rz[1, 0] = math3d.sin(z);     rz[1, 1] = math3d.cos(z);     rz[1, 2] = 0.0f;              rz[1, 3] = 0.0f;
+            rz[2, 0] = 0.0f;              rz[2, 1] = 0.0f;              rz[2, 2] = 1.0f;              rz[2, 3] = 0.0f;
+            rz[3, 0] = 0.0f;              rz[3, 1] = 0.0f;              rz[3, 2] = 0.0f;              rz[3, 3] = 1.0f;
 
             return rz * ry * rx;
         }
 
-        private static matrix4 InitTranslationTransform(float x, float y, float z)
+        public static Matrix4 InitTranslationTransform(float x, float y, float z)
         {
-            matrix4 m = new matrix4();
-            m[0, 0] = 1.0f; m[0, 1] = 0.0f; m[0, 2] = 0.0f; m[0, 3] = x;
-            m[1, 0] = 0.0f; m[1, 1] = 1.0f; m[1, 2] = 0.0f; m[1, 3] = y;
-            m[2, 0] = 0.0f; m[2, 1] = 0.0f; m[2, 2] = 1.0f; m[2, 3] = z;
-            m[3, 0] = 0.0f; m[3, 1] = 0.0f; m[3, 2] = 0.0f; m[3, 3] = 1.0f;
+            Matrix4 m = new Matrix4();
+            m[0, 0] = 1.0f; m[0, 1] = 0.0f; m[0, 2] = 0.0f; m[0, 3] = 0.0f;
+            m[1, 0] = 0.0f; m[1, 1] = 1.0f; m[1, 2] = 0.0f; m[1, 3] = 0.0f;
+            m[2, 0] = 0.0f; m[2, 1] = 0.0f; m[2, 2] = 1.0f; m[2, 3] = 0.0f;
+            m[3, 0] = x; m[3, 1] = y; m[3, 2] = z; m[3, 3] = 1.0f;
             return m;
         }
 
-        private static matrix4 InitScaleTransform(float x, float y, float z)
+        public static Matrix4 InitScaleTransform(float x, float y, float z)
         {
-            matrix4 m = new matrix4();
+            Matrix4 m = new Matrix4();
             m[0, 0] = x;    m[0, 1] = 0.0f; m[0, 2] = 0.0f; m[0, 3] = 0.0f;
             m[1, 0] = 0.0f; m[1, 1] = y;    m[1, 2] = 0.0f; m[1, 3] = 0.0f;
             m[2, 0] = 0.0f; m[2, 1] = 0.0f; m[2, 2] = z;    m[2, 3] = 0.0f;
@@ -320,23 +332,23 @@
             return m;
         }
 
-        public static matrix4 InitPersProjTransform(float FOV, float Width, float Height, float zNear, float zFar)
+        public static Matrix4 InitPersProjTransform(float FOV, float Width, float Height, float zNear, float zFar)
         {
-            matrix4 m = new matrix4();
+            Matrix4 m = new Matrix4();
             float ar = Width / Height;
             float zRange = zNear - zFar;
-            float tanHalfFOV = math3d.tan(math3d.ToRadian(FOV / 2.0f));
+            float tanHalfFOV = math3d.tan(math3d.ToRadian(FOV) * 0.5f);
 
-            m[0, 0] = 1.0f / (tanHalfFOV * ar);     m[0, 1] = 0.0f;                 m[0, 2] = 0.0f;                     m[0, 3] = 0;
-            m[1, 0] = 0.0f;                         m[1, 1] = 1.0f / tanHalfFOV;    m[1, 2] = 0.0f;                     m[1, 3] = 0;
-            m[2, 0] = 0.0f;                         m[2, 1] = 0.0f;                 m[2, 2] = (-zNear - zFar) / zRange; m[2, 3] = 2.0f * zFar * zNear / zRange;
-            m[3, 0] = 0.0f;                         m[3, 1] = 0.0f;                 m[3, 2] = 1.0f;                     m[3, 3] = 0;
+            m[0, 0] = 1.0f / (tanHalfFOV * ar);     m[0, 1] = 0.0f;                 m[0, 2] = 0.0f;                         m[0, 3] = 0;
+            m[1, 0] = 0.0f;                         m[1, 1] = 1.0f / tanHalfFOV;    m[1, 2] = 0.0f;                         m[1, 3] = 0;
+            m[2, 0] = 0.0f;                         m[2, 1] = 0.0f;                 m[2, 2] = -(-zNear - zFar) / zRange;     m[2, 3] = -1.0f;
+            m[3, 0] = 0.0f;                         m[3, 1] = 0.0f;                 m[3, 2] = 2.0f * zFar * zNear / zRange; m[3, 3] = 0;
             return m;
         }
 
-        private static matrix4 InitCameraTransform(vector3 Target, vector3 Up)
+        private static Matrix4 InitCameraTransform(vector3 Target, vector3 Up)
         {
-            matrix4 m = new matrix4();
+            Matrix4 m = new Matrix4();
             vector3 N = Target;
             N.Normalize();
             vector3 U = Up;
@@ -414,7 +426,7 @@
         {
             return (float)Math.Pow((float)x, (float)y);
         }
-        public static vector3 MultiplyDirection(matrix4 m, vector3 v)
+        public static vector3 MultiplyDirection(Matrix4 m, vector3 v)
         {
             return new vector3(
                 m[0, 0] * v.x + m[0, 1] * v.y + m[0, 2] * v.z,
