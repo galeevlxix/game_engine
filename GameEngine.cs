@@ -146,12 +146,6 @@ namespace game_2
             base.OnRenderFrame(args);
             GL.Clear(ClearBufferMask.ColorBufferBit);
 
-            Matrix4 rotation = Matrix4.CreateRotationY(MathHelper.DegreesToRadians(math3d.sin((float)timer / 500)*50));
-            Matrix4 scale = Matrix4.CreateScale(0.5f, 0.5f, 0.5f);
-            Matrix4 pos = Matrix4.CreateTranslation(1, math3d.abs(math3d.sin((float)timer/500)/2) , -2);
-            Matrix4 proj = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(45.0f), 1920 / 1080, 0.1f, 100.0f);
-            Matrix4 trans = rotation * scale * pos * proj;
-
             p.Scale(0.5f, 0.5f, 0.5f);
             p.Position(0, math3d.abs(math3d.sin((float)timer / 500) / 2), -3);
             p.Rotate(math3d.sin((float)timer / 500) * 50, (float)timer / 50, 0);
