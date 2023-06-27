@@ -2,9 +2,7 @@
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-using System;
 using game_2.Brain;
-using OpenTK.Mathematics;
 
 namespace game_2
 {
@@ -26,7 +24,7 @@ namespace game_2
             "in vec4 vertexColor;                                   \n" +
             "void main() { gl_FragColor = vertexColor; }            \n";
 
-        float[] vertices = {
+        float[] vertices = {    //куб
             0.5f, -0.5f, -0.5f,
               0.5f, -0.5f,  0.5f,
              -0.5f, -0.5f,  0.5f,
@@ -85,7 +83,20 @@ namespace game_2
 
             GL.ClearColor(0.0f, 0.0f, 0.5f, 0.1f);
 
-            VBO = GL.GenBuffer();             
+            BufferSettings();           
+
+            shader = new Shader(vertexShader, fragmentShader);
+
+            ///////////////параметры игры
+            p = new Pipeline();
+            timer = 0;
+
+            p.PersProj(50.0f, 1920, 1080, 0.1f, 100.0f);
+        }
+
+        private void BufferSettings()
+        {
+            VBO = GL.GenBuffer();
             VAO = GL.GenVertexArray();
             IBO = GL.GenBuffer();
 
@@ -93,27 +104,19 @@ namespace game_2
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
             GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw);
             GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
-            
+
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, IBO);
             GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
 
             GL.EnableVertexAttribArray(0);
 
-            shader = new Shader(vertexShader, fragmentShader);
-
-            ///////////////Отрисовка
-            p = new Pipeline();
-            timer = 0;
-
-            p.PersProj(45.0f, 1920, 1080, 0.1f, 100.0f);
-
+            GL.Enable(EnableCap.CullFace);
+            GL.CullFace(CullFaceMode.Back);
         }
 
         protected override void OnUpdateFrame(FrameEventArgs args)
         {
-            base.OnUpdateFrame(args);
-
-            
+            base.OnUpdateFrame(args);            
 
             KeyboardState input = KeyboardState;
             if (input.IsKeyDown(Keys.Escape))
@@ -136,8 +139,6 @@ namespace game_2
             {
 
             }
-
-
         }
 
         protected override void OnRenderFrame(FrameEventArgs args)
