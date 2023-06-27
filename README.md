@@ -227,19 +227,233 @@ public class Shader : IDisposable
 Добавим в вершинный шейдер выходной параметр vertexColor, который будет входным параметром в фрагментном шейдере, где gl_FragColor будет получать его значение.
 ```c#
         string vertexShader =
-                "#version 330                                 \n" +
-            "layout (location = 0) in vec3 aPosition;         \n" +
-            "out vec4 vertexColor;                            \n" +
-            "void main()                                    \n" +
-            "{                                              \n" +
-            "    gl_Position = vec4(aPosition, 1.0);        \n" +
+                "#version 330                                       \n" +
+            "layout (location = 0) in vec3 aPosition;               \n" +
+            "out vec4 vertexColor;                                  \n" +
+            "void main()                                            \n" +
+            "{                                                      \n" +
+            "    gl_Position = vec4(aPosition, 1.0);                \n" +
             "   vertexColor = vec4(clamp(aPosition, 0.0, 1.0), 1.0);\n" +
             "}";
 
         string fragmentShader =
-            "#version 330                                               \n" +
-            "in vec4 vertexColor;                             \n"+
-            "void main() { gl_FragColor = vertexColor; }   \n";
+            "#version 330                                             \n" +
+            "in vec4 vertexColor;                                     \n"+
+            "void main() { gl_FragColor = vertexColor; }              \n";
 ```
 ### Результат:
 ![st4](https://github.com/galeevlxix/game_engine/blob/master/screens/interp.png)
+# Вращение, перемещение, масштаб
+## Создание класса Pipeline
+Pipeline будет вспомогательным классом для создания и работы с матрицами масштабирвания, вращения, сдвига (относительно осей координат), а также проекции перспективы.
+### Ввод значений свойств объектов
+У каждого объекта будет по 3 вектора: вращения, перемещения, масштаба. И одна структура mPersProj для настройки перспективы.
+```c#
+        public vector3 RotateVector;
+        public vector3 ScaleVector;
+        public vector3 PositionVector;
+        public mPersProj mPersProj;
+        public Pipeline()
+        {
+            RotateVector = new vector3 { x = 0, y = 0, z = 0 };
+            ScaleVector = new vector3 { x = 1, y = 1, z = 1 };
+            PositionVector = new vector3 { x = 0, y = 0, z = 0 };
+            mPersProj = new mPersProj();
+        }
+```
+```c#
+    public struct mPersProj
+    {
+        public float FOV;
+        public float width;
+        public float height;
+        public float zNear;
+        public float zFar;
+    }
+```
+Для ввода значений этих векторов напишем специальные public функции.
+```c#
+        public void Rotate(float angleX, float angleY, float angleZ)
+        {
+            RotateVector.x = angleX;
+            RotateVector.y = angleY;
+            RotateVector.z = angleZ;
+        }
+
+        public void Scale(float ScaleX, float ScaleY, float ScaleZ)
+        {
+            ScaleVector.x = ScaleX;
+            ScaleVector.y = ScaleY;
+            ScaleVector.z = ScaleZ;
+        }
+
+        public void Position(float PosX, float PosY, float PosZ)
+        {
+            PositionVector.x = PosX;
+            PositionVector.y = PosY;
+            PositionVector.z = PosZ;
+        }
+
+        public void PersProj(float FOV, float width, float height, float zNear, float zFar)
+        {
+            mPersProj.FOV = FOV;
+            mPersProj.width = width;
+            mPersProj.height = height;
+            mPersProj.zNear = zNear;
+            mPersProj.zFar = zFar;
+        }
+```
+### Получение матриц
+Матрица вращения:
+```c#
+        private static Matrix4 InitRotateTransform(float RotateX, float RotateY, float RotateZ)
+        {
+            Matrix4 rx = new Matrix4(), ry = new Matrix4(), rz = new Matrix4();
+            float x = math3d.ToRadian(RotateX);
+            float y = math3d.ToRadian(RotateY);
+            float z = math3d.ToRadian(RotateZ);
+
+            rx[0, 0] = 1.0f;              rx[0, 1] = 0.0f;              rx[0, 2] = 0.0f;              rx[0, 3] = 0.0f;
+            rx[1, 0] = 0.0f;              rx[1, 1] = math3d.cos(x);     rx[1, 2] = -math3d.sin(x);    rx[1, 3] = 0.0f;
+            rx[2, 0] = 0.0f;              rx[2, 1] = math3d.sin(x);     rx[2, 2] = math3d.cos(x);     rx[2, 3] = 0.0f;
+            rx[3, 0] = 0.0f;              rx[3, 1] = 0.0f;              rx[3, 2] = 0.0f;              rx[3, 3] = 1.0f;
+
+            ry[0, 0] = math3d.cos(y);     ry[0, 1] = 0.0f;              ry[0, 2] = -math3d.sin(y);    ry[0, 3] = 0.0f;
+            ry[1, 0] = 0.0f;              ry[1, 1] = 1.0f;              ry[1, 2] = 0.0f;              ry[1, 3] = 0.0f;
+            ry[2, 0] = math3d.sin(y);     ry[2, 1] = 0.0f;              ry[2, 2] = math3d.cos(y);     ry[2, 3] = 0.0f;
+            ry[3, 0] = 0.0f;              ry[3, 1] = 0.0f;              ry[3, 2] = 0.0f;              ry[3, 3] = 1.0f;
+
+            rz[0, 0] = math3d.cos(z);     rz[0, 1] = -math3d.sin(z);    rz[0, 2] = 0.0f;              rz[0, 3] = 0.0f;
+            rz[1, 0] = math3d.sin(z);     rz[1, 1] = math3d.cos(z);     rz[1, 2] = 0.0f;              rz[1, 3] = 0.0f;
+            rz[2, 0] = 0.0f;              rz[2, 1] = 0.0f;              rz[2, 2] = 1.0f;              rz[2, 3] = 0.0f;
+            rz[3, 0] = 0.0f;              rz[3, 1] = 0.0f;              rz[3, 2] = 0.0f;              rz[3, 3] = 1.0f;
+
+            return rz * ry * rx;
+        }
+```
+Матрица перемещения:
+```c#
+        private static Matrix4 InitTranslationTransform(float x, float y, float z)
+        {
+            Matrix4 m = new Matrix4();
+            m[0, 0] = 1.0f; m[0, 1] = 0.0f; m[0, 2] = 0.0f; m[0, 3] = 0.0f;
+            m[1, 0] = 0.0f; m[1, 1] = 1.0f; m[1, 2] = 0.0f; m[1, 3] = 0.0f;
+            m[2, 0] = 0.0f; m[2, 1] = 0.0f; m[2, 2] = 1.0f; m[2, 3] = 0.0f;
+            m[3, 0] = x; m[3, 1] = y; m[3, 2] = z; m[3, 3] = 1.0f;
+            return m;
+        }
+```
+Матрица масштаба:
+```c#
+        private static Matrix4 InitScaleTransform(float x, float y, float z)
+        {
+            Matrix4 m = new Matrix4();
+            m[0, 0] = x;    m[0, 1] = 0.0f; m[0, 2] = 0.0f; m[0, 3] = 0.0f;
+            m[1, 0] = 0.0f; m[1, 1] = y;    m[1, 2] = 0.0f; m[1, 3] = 0.0f;
+            m[2, 0] = 0.0f; m[2, 1] = 0.0f; m[2, 2] = z;    m[2, 3] = 0.0f;
+            m[3, 0] = 0.0f; m[3, 1] = 0.0f; m[3, 2] = 0.0f; m[3, 3] = 1.0f;
+            return m;
+        }
+```
+Но все эти матрицы мы можем получить только внутри класса, когда хотим получить матрицу `mvp` (проекция вида модели). Она нам еще очень понадобится.
+```c#
+        public Matrix4 getMVP()
+        {
+            return  InitScaleTransform(ScaleVector.x, ScaleVector.y, ScaleVector.z) *
+                    InitRotateTransform(RotateVector.x, RotateVector.y, RotateVector.z) *
+                    InitTranslationTransform(PositionVector.x, PositionVector.y, PositionVector.z) *
+                    InitPersProjTransform(mPersProj.FOV, mPersProj.width, mPersProj.height, mPersProj.zNear, mPersProj.zFar);                    
+        }
+```
+## Изменения в шейдере
+При инициализации шейдера объявляем его входным параметром матрицу `mvp` в шейдере.
+```c#
+        MVPID = GL.GetUniformLocation(Handle, "mvp");
+```
+Перед отрисовкой объекта загружаем его `mvp` в объект шейдера и свзяываем с дескриптором `MVPID`.
+```c#
+        public void setMatrix(Matrix4 m)
+        {
+            GL.UniformMatrix4(MVPID, true, ref m);
+        }
+```
+## Изменения в классе `GameEngine`
+### Вершинный шейдер
+Эту `mvp` мы засунем в вершинный шейдер, чтобы умножить ее на все вершины объекта, тем самым преобразовав вид объекта.
+```c#
+        string vertexShader =
+            "#version 330                                           \n" +
+            "layout (location = 0) in vec3 aPosition;               \n" +
+            "out vec4 vertexColor;                                  \n" +
+            "uniform mat4 mvp;                                      \n" +
+            "void main()                                            \n" +
+            "{                                                      \n" +
+            "   gl_Position = vec4(aPosition, 1.0) * mvp;           \n" +
+            "   vertexColor = vec4(clamp(aPosition, 0.0, 1.0), 1.0);\n" +
+            "}";
+```
+### Теперь работаем с кубом
+Для демонстрации визуализации именно 3D объектов создадим вершины и индексы куба.
+```c#
+        float[] vertices = {    //куб
+              0.5f, -0.5f, -0.5f,
+              0.5f, -0.5f,  0.5f,
+             -0.5f, -0.5f,  0.5f,
+             -0.5f, -0.5f, -0.5f,
+              0.5f,  0.5f, -0.5f,
+              0.5f,  0.5f,  0.5f,
+             -0.5f,  0.5f,  0.5f,
+             -0.5f,  0.5f, -0.5f
+        };
+
+        int[] indices = {  
+                0,1,2, // передняя сторона
+                2,3,0,
+
+                6,5,4, // задняя сторона
+                4,7,6,
+
+                4,0,3, // левый бок
+                3,7,4,
+
+                1,5,6, // правый бок
+                6,2,1,
+
+                4,5,1, // вверх
+                1,0,4,
+
+                3,2,6, // низ
+                6,7,3,
+        };
+```
+### При загрузке окна
+Проинициализируем наш `Pipeline` и установим проекцию перспективы. Установим таймер игры на 0.
+```c#
+            p = new Pipeline();
+            p.PersProj(50.0f, 1920, 1080, 0.1f, 100.0f);
+            timer = 0;
+```
+### В функции рендеринга
+Мы теперь можем в реальном времени изменять его свойства: вращать, изменять размер, перемещать. Перед отрисовкой объекта загружаем полученную матрицу `mvp` в шейдер. 
+```c#
+        protected override void OnRenderFrame(FrameEventArgs args)
+        {
+            base.OnRenderFrame(args);
+            GL.Clear(ClearBufferMask.ColorBufferBit);
+            timer++;
+
+            p.Scale(0.5f, 0.5f, 0.5f);
+            p.Position(0, math3d.abs(math3d.sin((float)timer / 500) / 2), -3);
+            p.Rotate(math3d.sin((float)timer / 500) * 50, (float)timer / 50, 0);
+
+            shader.setMatrix(p.getMVP());
+            shader.Use();
+
+            GL.BindVertexArray(VAO);
+            GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
+
+            SwapBuffers();
+        }
+```
+## Результат:
+![cube](https://github.com/galeevlxix/game_engine/blob/master/screens/anim.gif)
