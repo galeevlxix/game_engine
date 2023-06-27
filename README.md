@@ -227,9 +227,9 @@ public class Shader : IDisposable
 Добавим в вершинный шейдер выходной параметр vertexColor, который будет входным параметром в фрагментном шейдере, где gl_FragColor будет получать его значение.
 ```c#
         string vertexShader =
-                "#version 330                         \n" +
-            "layout (location = 0) in vec3 aPosition;       \n" +
-            "out vec4 vertexColor; \n" +
+                "#version 330                                 \n" +
+            "layout (location = 0) in vec3 aPosition;         \n" +
+            "out vec4 vertexColor;                            \n" +
             "void main()                                    \n" +
             "{                                              \n" +
             "    gl_Position = vec4(aPosition, 1.0);        \n" +
@@ -238,6 +238,6 @@ public class Shader : IDisposable
 
         string fragmentShader =
             "#version 330                                               \n" +
-            "in vec4 vertexColor; \n"+
+            "in vec4 vertexColor;                             \n"+
             "void main() { gl_FragColor = vertexColor; }   \n";
 ```
