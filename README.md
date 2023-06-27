@@ -45,8 +45,8 @@ namespace game_2
     }
 }
 ```
-## Результат:
-![st1]()
+### Результат:
+![st1](https://github.com/galeevlxix/game_engine/blob/master/screens/st1.png)
 ## Треугольник 
 ### Шейдеры
 Напишем сами шейдеры: вершинный шейдер и фрагментный шейдер.
@@ -193,8 +193,8 @@ public class Shader : IDisposable
             SwapBuffers();
         }
 ```
-## Результат:
-
+### Результат:
+![st2](https://github.com/galeevlxix/game_engine/blob/master/screens/tria.png)
 # Индексная отрисовка
 Вершины и индексы наших треугольников 
 ```
@@ -222,7 +222,7 @@ public class Shader : IDisposable
         GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
 ```
 ## Результат:
-
+![st3](https://github.com/galeevlxix/game_engine/blob/master/screens/2tria.png)
 # Интерполяционный цвет
 Добавим в вершинный шейдер выходной параметр vertexColor, который будет входным параметром в фрагментном шейдере, где gl_FragColor будет получать его значение.
 ```c#
@@ -241,3 +241,5 @@ public class Shader : IDisposable
             "in vec4 vertexColor;                             \n"+
             "void main() { gl_FragColor = vertexColor; }   \n";
 ```
+### Результат:
+![st4](https://github.com/galeevlxix/game_engine/blob/master/screens/interp.png)
