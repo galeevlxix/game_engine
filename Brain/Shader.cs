@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using OpenTK.Graphics.OpenGL;
+﻿using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 
 namespace game_2.Brain
@@ -15,9 +10,11 @@ namespace game_2.Brain
       
         public Shader(string vs, string fs)
         {
+            //дескрипторы шейдеров 
             int VertexShader;
             int FragmentShader;
 
+            //привязка к дескрипторам
             VertexShader = GL.CreateShader(ShaderType.VertexShader);
             GL.ShaderSource(VertexShader, vs);
 

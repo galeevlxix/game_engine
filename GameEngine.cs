@@ -8,63 +8,12 @@ namespace game_2
 {
     public class GameEngine : GameWindow
     {
-        string vertexShader =
-            "#version 330                                           \n" +
-            "layout (location = 0) in vec3 aPosition;               \n" +
-            "out vec4 vertexColor;                                  \n" +
-            "uniform mat4 mvp;                                      \n" +
-            "void main()                                            \n" +
-            "{                                                      \n" +
-            "   gl_Position = vec4(aPosition, 1.0) * mvp;           \n" +
-            "   vertexColor = vec4(clamp(aPosition, 0.0, 1.0), 1.0);\n" +
-            "}";
-
-        string fragmentShader =
-            "#version 330                                           \n" +
-            "in vec4 vertexColor;                                   \n" +
-            "void main() { gl_FragColor = vertexColor; }            \n";
-
-        float[] vertices = {    //куб
-            0.5f, -0.5f, -0.5f,
-              0.5f, -0.5f,  0.5f,
-             -0.5f, -0.5f,  0.5f,
-             -0.5f, -0.5f, -0.5f,
-              0.5f,  0.5f, -0.5f,
-              0.5f,  0.5f,  0.5f,
-             -0.5f,  0.5f,  0.5f,
-             -0.5f,  0.5f, -0.5f
-        };
-
-        int[] indices = {  // note that we start from 0!
-            0,1,2, // передняя сторона
-                2,3,0,
-
-                6,5,4, // задняя сторона
-                4,7,6,
-
-                4,0,3, // левый бок
-                3,7,4,
-
-                1,5,6, // правый бок
-                6,2,1,
-
-                4,5,1, // вверх
-                1,0,4,
-
-                3,2,6, // низ
-                6,7,3,
-        };
-
-        int VBO;
-        int VAO;
-        int IBO;
-        Shader shader;
-        Pipeline p;
         double timer;
+
+        GameObj gameObj;
 
         public GameEngine(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings) : base(gameWindowSettings, nativeWindowSettings)
         {
-
         }
 
         public void Init()
@@ -81,37 +30,25 @@ namespace game_2
         {
             base.OnLoad();
 
-            GL.ClearColor(0.0f, 0.0f, 0.5f, 0.1f);
+            GL.ClearColor(0.102f, 0.102f, 0.153f, 1);
 
-            BufferSettings();           
-
-            shader = new Shader(vertexShader, fragmentShader);
+            BufferSettings();
 
             ///////////////параметры игры
-            p = new Pipeline();
+            gameObj = new GameObj();
+
+            vector3 c_pos = new vector3(0, 0, -3);
+            vector3 c_target = new vector3(0, 0, 1);
+            vector3 c_up = new vector3(0, 1, 0);
+
             timer = 0;
 
-            p.PersProj(50.0f, 1920, 1080, 0.1f, 100.0f);
         }
 
         private void BufferSettings()
         {
-            VBO = GL.GenBuffer();
-            VAO = GL.GenVertexArray();
-            IBO = GL.GenBuffer();
 
-            GL.BindVertexArray(VAO);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
-            GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw);
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
-
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, IBO);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
-
-            GL.EnableVertexAttribArray(0);
-
-            GL.Enable(EnableCap.CullFace);
-            GL.CullFace(CullFaceMode.Back);
+            base.CursorGrabbed = true;
         }
 
         protected override void OnUpdateFrame(FrameEventArgs args)
@@ -125,37 +62,41 @@ namespace game_2
             } 
             else if (input.IsKeyDown(Keys.W))
             {
-
             }
             else if (input.IsKeyDown(Keys.S))
             {
-
             }
             else if (input.IsKeyDown(Keys.A))
             {
-
             }
             else if (input.IsKeyDown(Keys.D))
             {
-
             }
+            else if (input.IsKeyDown(Keys.Space))
+            {
+            }
+            else if (input.IsKeyDown(Keys.LeftShift))
+            {
+            }
+
         }
 
         protected override void OnRenderFrame(FrameEventArgs args)
         {
-            timer++;
             base.OnRenderFrame(args);
+
             GL.Clear(ClearBufferMask.ColorBufferBit);
+            timer++;
 
-            p.Scale(0.5f, 0.5f, 0.5f);
-            p.Position(0, math3d.abs(math3d.sin((float)timer / 500) / 2), -3);
-            p.Rotate(math3d.sin((float)timer / 500) * 50, (float)timer / 50, 0);
+            /*p.Scale(0.5f, 0.5f, 0.5f);
+            p.Position(0, math3d.abs(math3d.sin((float)timer / 500) / 2) - 0.25f, -2);
+            p.Rotate(math3d.sin((float)timer / 500) * 50, (float)timer / 50, 0);*/
 
-            shader.setMatrix(p.getMVP());
+            gameObj.Scale(0.5f, 0.5f, 0.5f);
+            gameObj.Position(0, math3d.abs(math3d.sin((float)timer / 500) / 2) - 0.25f, -2);
+            gameObj.Rotate(math3d.sin((float)timer / 500) * 50, (float)timer / 50, 0);
 
-            shader.Use();
-            GL.BindVertexArray(VAO);
-            GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
+            gameObj.Draw();
 
             SwapBuffers();
         }

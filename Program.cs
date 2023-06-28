@@ -1,8 +1,5 @@
-﻿
-using OpenTK.Graphics.OpenGL;
-using OpenTK.Windowing.Common;
+﻿using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
-using System;
 
 namespace game_2
 {

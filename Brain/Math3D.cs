@@ -4,8 +4,8 @@ namespace game_2.Brain
 {
     public class vector2
     {
-        public int x;
-        public int y;
+        public float x;
+        public float y;
 
         public vector2(int x, int y)
         {
@@ -102,7 +102,7 @@ namespace game_2.Brain
             return new vector3(f.x / l, f.y / l, f.z / l);
         }
 
-        public static vector3 Transform(vector3 v, matrix4 m)
+        public static vector3 Transform(vector3 v, Matrix4 m)
         {
             float x = v.x * m[0, 0] + v.y * m[1, 0] + v.z * m[2, 0] + m[3, 0];
             float y = v.y * m[0, 1] + v.y * m[1, 1] + v.z * m[2, 1] + m[3, 1];
@@ -113,57 +113,6 @@ namespace game_2.Brain
         public static vector3 Zero()
         {
             return new vector3 { x = 0, y = 0, z = 0 };
-        }
-    }
-
-    public class matrix4
-    {
-        public float[,] m;
-
-        public matrix4()
-        {
-            m = new float[4, 4];
-            for (int i = 0; i < 4; i++)
-                for (int j = 0; j < 4; j++)
-                    m[i, j] = 0.0f;
-        }
-
-        public float this[int i, int j]
-        {
-            get
-            {
-                return m[i, j];
-            }
-            set
-            {
-                m[i, j] = value;
-            }
-        }
-
-        public void InitIdentity()
-        {
-            m[0, 0] = 1.0f; m[0, 1] = 0.0f; m[0, 2] = 0.0f; m[0, 3] = 0.0f;
-            m[1, 0] = 0.0f; m[1, 1] = 1.0f; m[1, 2] = 0.0f; m[1, 3] = 0.0f;
-            m[2, 0] = 0.0f; m[2, 1] = 0.0f; m[2, 2] = 1.0f; m[2, 3] = 0.0f;
-            m[3, 0] = 0.0f; m[3, 1] = 0.0f; m[3, 2] = 0.0f; m[3, 3] = 1.0f;
-        }
-
-        public static matrix4 operator *(matrix4 Left, matrix4 Right)
-        {
-            matrix4 Ret = new matrix4();
-
-            for (int i = 0; i < 4; i++)
-            {
-                for (int j = 0; j < 4; j++)
-                {
-                    Ret.m[i, j] =
-                        Left.m[i, 0] * Right.m[0, j] +
-                        Left.m[i, 1] * Right.m[1, j] +
-                        Left.m[i, 2] * Right.m[2, j] +
-                        Left.m[i, 3] * Right.m[3, j];
-                }
-            }
-            return Ret;
         }
     }
 
@@ -220,35 +169,25 @@ namespace game_2.Brain
             camera.Up = Up;
         }
 
-        private Matrix4 getTransformation()
+        public Matrix4 getMVP()
         {
             return  InitScaleTransform(ScaleVector.x, ScaleVector.y, ScaleVector.z) *
                     InitRotateTransform(RotateVector.x, RotateVector.y, RotateVector.z) *
-                    InitTranslationTransform(PositionVector.x, PositionVector.y, PositionVector.z);
-        }
-
-        public Matrix4 getMVP()
-        {
-            var sc = InitScaleTransform(ScaleVector.x, ScaleVector.y, ScaleVector.z);
-            var rot = InitRotateTransform(RotateVector.x, RotateVector.y, RotateVector.z);
-            var trans = InitTranslationTransform(PositionVector.x, PositionVector.y, PositionVector.z);
-            var pers = InitPersProjTransform(mPersProj.FOV, mPersProj.width, mPersProj.height, mPersProj.zNear, mPersProj.zFar);
-          
-            return sc * rot * trans * pers;                    
+                    InitTranslationTransform(PositionVector.x, PositionVector.y, PositionVector.z) *
+                    InitPersProjTransform(mPersProj.FOV, mPersProj.width, mPersProj.height, mPersProj.zNear, mPersProj.zFar);                    
         }
 
         public Matrix4 getMVP_with_camera()
         {
-            Matrix4 CameraTranslationTrans, CameraRotateTrans, PersProjTrans;
+            Matrix4 CameraTranslationTrans, CameraRotateTrans;
 
             CameraTranslationTrans = InitTranslationTransform(-camera.Pos.x, -camera.Pos.y, -camera.Pos.z);
             CameraRotateTrans = InitCameraTransform(camera.Target, camera.Up);
-            PersProjTrans = InitPersProjTransform(mPersProj.FOV, mPersProj.width, mPersProj.height, mPersProj.zNear, mPersProj.zFar);
 
-            return PersProjTrans * CameraRotateTrans * CameraTranslationTrans * getTransformation();
+            return CameraRotateTrans * CameraTranslationTrans * getMVP();
         }
 
-        public static Matrix4 RotateX(float a)
+        private static Matrix4 RotateX(float a)
         {
             Matrix4 rx = new Matrix4();
             float x = math3d.ToRadian(a);
@@ -261,7 +200,7 @@ namespace game_2.Brain
             return rx;
         }
 
-        public static Matrix4 RotateY(float a)
+        private static Matrix4 RotateY(float a)
         {
             Matrix4 ry = new Matrix4();
             float y = math3d.ToRadian(a);
@@ -274,7 +213,7 @@ namespace game_2.Brain
             return ry;
         }
 
-        public static Matrix4 RotateZ(float a)
+        private static Matrix4 RotateZ(float a)
         {
             Matrix4 rz = new Matrix4();
             float z = math3d.ToRadian(a);
@@ -287,7 +226,7 @@ namespace game_2.Brain
             return rz;
         }
 
-        public static Matrix4 InitRotateTransform(float RotateX, float RotateY, float RotateZ)
+        private static Matrix4 InitRotateTransform(float RotateX, float RotateY, float RotateZ)
         {
             Matrix4 rx = new Matrix4(), ry = new Matrix4(), rz = new Matrix4();
             float x = math3d.ToRadian(RotateX);
@@ -312,7 +251,7 @@ namespace game_2.Brain
             return rz * ry * rx;
         }
 
-        public static Matrix4 InitTranslationTransform(float x, float y, float z)
+        private static Matrix4 InitTranslationTransform(float x, float y, float z)
         {
             Matrix4 m = new Matrix4();
             m[0, 0] = 1.0f; m[0, 1] = 0.0f; m[0, 2] = 0.0f; m[0, 3] = 0.0f;
@@ -322,7 +261,7 @@ namespace game_2.Brain
             return m;
         }
 
-        public static Matrix4 InitScaleTransform(float x, float y, float z)
+        private static Matrix4 InitScaleTransform(float x, float y, float z)
         {
             Matrix4 m = new Matrix4();
             m[0, 0] = x;    m[0, 1] = 0.0f; m[0, 2] = 0.0f; m[0, 3] = 0.0f;
@@ -332,7 +271,7 @@ namespace game_2.Brain
             return m;
         }
 
-        public static Matrix4 InitPersProjTransform(float FOV, float Width, float Height, float zNear, float zFar)
+        private static Matrix4 InitPersProjTransform(float FOV, float Width, float Height, float zNear, float zFar)
         {
             Matrix4 m = new Matrix4();
             float ar = Width / Height;
@@ -349,6 +288,7 @@ namespace game_2.Brain
         private static Matrix4 InitCameraTransform(vector3 Target, vector3 Up)
         {
             Matrix4 m = new Matrix4();
+
             vector3 N = Target;
             N.Normalize();
             vector3 U = Up;
@@ -356,10 +296,11 @@ namespace game_2.Brain
             U = U.Cross(N);
             vector3 V = N.Cross(U);
 
-            m[0, 0] = U.x; m[0, 1] = U.y; m[0, 2] = U.z; m[0, 3] = 0.0f;
-            m[1, 0] = V.x; m[1, 1] = V.y; m[1, 2] = V.z; m[1, 3] = 0.0f;
-            m[2, 0] = N.x; m[2, 1] = N.y; m[2, 2] = N.z; m[2, 3] = 0.0f;
+            m[0, 0] = U.x;  m[0, 1] = U.y;  m[0, 2] = U.z;  m[0, 3] = 0.0f;
+            m[1, 0] = V.x;  m[1, 1] = V.y;  m[1, 2] = V.z;  m[1, 3] = 0.0f;
+            m[2, 0] = N.x;  m[2, 1] = N.y;  m[2, 2] = N.z;  m[2, 3] = 0.0f;
             m[3, 0] = 0.0f; m[3, 1] = 0.0f; m[3, 2] = 0.0f; m[3, 3] = 1.0f;
+
             return m;
         }
     }
@@ -426,12 +367,12 @@ namespace game_2.Brain
         {
             return (float)Math.Pow((float)x, (float)y);
         }
-        public static vector3 MultiplyDirection(Matrix4 m, vector3 v)
+        public static Vector3 MultiplyDirection(Matrix4 m, Vector3 v)
         {
-            return new vector3(
-                m[0, 0] * v.x + m[0, 1] * v.y + m[0, 2] * v.z,
-                m[1, 0] * v.x + m[1, 1] * v.y + m[1, 2] * v.z,
-                m[2, 0] * v.x + m[2, 1] * v.y + m[2, 2] * v.z);
+            return new Vector3(
+                m[0, 0] * v.X + m[0, 1] * v.Y + m[0, 2] * v.Z,
+                m[1, 0] * v.X + m[1, 1] * v.Y + m[1, 2] * v.Z,
+                m[2, 0] * v.X + m[2, 1] * v.Y + m[2, 2] * v.Z);
         }
     }
 
