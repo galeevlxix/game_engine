@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using OpenTK.Graphics.OpenGL;
 using System.Text.RegularExpressions;
 using System.Globalization;
+using System.Diagnostics.SymbolStore;
+using System.IO;
 
 namespace game_2.Brain
 {
@@ -40,16 +42,17 @@ namespace game_2.Brain
             } 
             else if(regFBX.IsMatch(file_name))
             {
-
+                LoadFromFbx(new StreamReader(file_name));
                 Console.WriteLine("+fbx");
             }
             else if (regDAE.IsMatch(file_name))
             {
+                LoadFromDae(new StreamReader(file_name));
                 Console.WriteLine("+dae");
             }
             else if (regPLY.IsMatch(file_name))
             {
-
+                LoadFromPly(new StreamReader(file_name));
                 Console.WriteLine("+ply");
             }
             else
@@ -148,10 +151,10 @@ namespace game_2.Brain
                                 if (v != "f")
                                 {
                                     var w = v.Split('/');
-                                    temp.Add(int.Parse(w[0]));
+                                    if (w[0] != "")
+                                        temp.Add(int.Parse(w[0]));
                                 }
                             }
-
 
                             fig.Add(temp[0]);
                             fig.Add(temp[2]);
@@ -172,8 +175,180 @@ namespace game_2.Brain
         {
             List<float> vertices = new List<float>();
             List<int> fig = new List<int>();
+            bool ver = false, frag = false;
+            Regex r1 = new Regex(@"^Vertices:\w*");
+            Regex r2 = new Regex(@"^a:\w*");
+            Regex r3 = new Regex(@"^PolygonVertexIndex:\w*");
 
+            string line;
 
+            while ((line = tr.ReadLine()) != null)
+            {
+                line = line.Replace(" ", "");
+                line = line.Replace("\t", "");
+
+                if (r1.IsMatch(line))
+                {
+                    ver = true;
+                }
+                else if (r3.IsMatch(line))
+                {
+                    frag = true;
+                }
+                else if (ver)
+                {
+                    if(line == "}")
+                    {
+                        ver = false;
+                        continue;
+                    }
+                    if (r2.IsMatch(line)) line = line.Replace("a:", "");
+                    line = line.Trim(',');
+                    var w = line.Split(',');
+                    foreach (string s in w)
+                        if (s != "" && s != null)
+                            vertices.Add(float.Parse(s, CultureInfo.InvariantCulture));
+                }
+                else if (frag)
+                {
+                    if (line == "}")
+                    {
+                        frag = false;
+                        continue;
+                    }
+                    if (r2.IsMatch(line)) line = line.Replace("a:", "");
+                    line = line.Trim(',');
+                    var w = line.Split(',');
+                    var temp = new List<int>();
+                    foreach (string s in w)
+                    {
+                        if (s != "" && s != null)
+                            temp.Add(int.Parse(s));
+                        if (temp.Count == 4)
+                        {
+                            fig.Add(temp[0]);
+                            fig.Add(temp[2]);
+                            fig.Add(temp[3]);
+
+                            fig.Add(temp[0]);
+                            fig.Add(temp[1]);
+                            fig.Add(temp[2]);
+                            temp.Clear();
+                        }
+                    }
+                }
+            }
+
+            Vertices = vertices.ToArray();
+            Indices = fig.ToArray();
+        }
+
+        private void LoadFromDae(TextReader tr)  //не работает
+        {
+            List<float> vertices = new List<float>();
+            List<int> fig = new List<int>();
+            bool ver = false, frag = false, msh = false;
+
+            Regex r = new Regex(@"<\w*>");
+            Regex r1 = new Regex(@"^<p>\w*");
+            char[] fdd = new char[] { '>', '<' };
+
+            string line;
+
+            while((line = tr.ReadLine()) != null)
+            {
+                line = line.Trim(' ');
+                line = line.Replace("\t", "");
+                if (line == "</mesh>")
+                {
+                    return;
+                }
+                else if (line == "<source id=\"TopN-mesh-positions\">")
+                {
+                    ver = true;
+                }
+                else if (r1.IsMatch(line))
+                {
+                    var t = line.Split(fdd);
+                    var w = t[2].Split(' ');
+                    foreach (string v in w)
+                    {
+                        if (v != "" && v != null)
+                            fig.Add(int.Parse(v));
+                    }
+                }
+                else if (ver)
+                {
+                    ver = false;
+                    var t = line.Split(fdd);
+                    var w = t[2].Split(' ');
+                    foreach(string v in w)
+                    {
+                        if (v != "" && v != null)
+                            vertices.Add(float.Parse(v, CultureInfo.InvariantCulture));
+                    }
+                }
+            }
+            Vertices = vertices.ToArray();
+            Indices = fig.ToArray();
+        }
+
+        private void LoadFromPly(TextReader tr)
+        {
+            List<float> vertices = new List<float>();
+            List<int> fig = new List<int>();
+            string line;
+            bool a = false;
+
+            while ((line = tr.ReadLine()) != null)
+            {
+                line = line.Trim(' ');
+
+                if (line == "end_header")
+                {
+                    a = true;
+                }
+                else if (a)
+                {
+                    var w = line.Split(' ');
+
+                    if (w.Length == 8)
+                    {
+                        vertices.Add(float.Parse(w[0], CultureInfo.InvariantCulture));
+                        vertices.Add(float.Parse(w[1], CultureInfo.InvariantCulture));
+                        vertices.Add(float.Parse(w[2], CultureInfo.InvariantCulture));
+                    }
+                    else if(w.Length == 4)
+                    {
+                        if (w[0] == "3")
+                        {
+                            fig.Add(int.Parse(w[1]));
+                            fig.Add(int.Parse(w[2]));
+                            fig.Add(int.Parse(w[3]));
+                        }
+                        if (w[0] == "4")
+                        {
+                            var temp = new List<int>();
+
+                            temp.Add(int.Parse(w[1]));
+                            temp.Add(int.Parse(w[2]));
+                            temp.Add(int.Parse(w[3]));
+                            temp.Add(int.Parse(w[4]));
+
+                            fig.Add(temp[0]);
+                            fig.Add(temp[2]);
+                            fig.Add(temp[3]);
+
+                            fig.Add(temp[0]);
+                            fig.Add(temp[1]);
+                            fig.Add(temp[2]);
+                        }
+                    }
+                }
+
+            }
+            Vertices = vertices.ToArray();
+            Indices = fig.ToArray();
         }
     }
 }

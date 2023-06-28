@@ -11,8 +11,6 @@ namespace game_2
         float timer;
 
         GameObj gameObj;
-        GameObj gameObj2;
-        GameObj gameObj3;
 
         public GameEngine(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings) : base(gameWindowSettings, nativeWindowSettings)
         {
@@ -36,9 +34,7 @@ namespace game_2
             GL.ClearColor(0.102f, 0.102f, 0.153f, 1);
 
             ///////////////параметры игры
-            gameObj = new GameObj("C:\\Users\\Lenovo\\source\\repos\\game_2\\models\\obj_files\\car_sk_exp.obj");
-            gameObj2 = new GameObj("C:\\Users\\Lenovo\\source\\repos\\game_2\\models\\obj_files\\final_v01.obj");
-            gameObj3 = new GameObj("C:\\Users\\Lenovo\\source\\repos\\game_2\\models\\obj_files\\Steve.obj");
+            gameObj = new GameObj("C:\\Users\\Lenovo\\source\\repos\\game_2\\models\\SM_HandAxe.ply");
 
             timer = 0;
         }
@@ -81,21 +77,11 @@ namespace game_2
             GL.Clear(ClearBufferMask.DepthBufferBit);
             timer++;
 
-            gameObj3.Scale(0.03f, 0.03f, 0.03f);     //girl
-            gameObj3.Position(-8, -2f, -20f);
-            gameObj3.Rotate(0, timer / 50, 0);
-
-            gameObj2.Scale(0.02f, 0.02f, 0.02f);    //man
-            gameObj2.Position(0, 0, - 20f);
-            gameObj2.Rotate(0, -10 , 0);
-
-            gameObj.Scale(0.5f, 0.5f, 0.5f);    //steve
-            gameObj.Position(0, -2.5f + math3d.abs(math3d.sin(timer/500)), -10);
+            gameObj.Scale(0.3f, 0.3f, 0.3f);    
+            gameObj.Position(0, 0, -15);
             gameObj.Rotate(0, timer / 20, 0);
 
             gameObj.Draw();
-            gameObj2.Draw();
-            gameObj3.Draw();
             SwapBuffers();
         }
 
