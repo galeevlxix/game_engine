@@ -30,10 +30,12 @@ namespace game_2.Brain
             "   gl_Position = vec4(aPosition, 1.0) * mvp;           \n" +
             "   vertexColor = vec4(clamp(aPosition, 0.0, 1.0), 1.0);\n" +
             "}";
+
             fragmentShader =
             "#version 330                                           \n" +
             "in vec4 vertexColor;                                   \n" +
             "void main() { gl_FragColor = vertexColor; }            \n";
+
             cubeVertices = new float[]{    //куб
                 0.5f, -0.5f, -0.5f,
               0.5f, -0.5f,  0.5f,

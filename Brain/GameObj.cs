@@ -25,6 +25,18 @@ namespace game_2.Brain
             pipeline.mPersProj = stor.GetPersProj;
         }
 
+        public GameObj(string file_name)
+        {
+            Storage stor = new Storage();
+            mesh = new Mesh(file_name);
+            shader = new Shader(stor.vertexShader, stor.fragmentShader);
+            pipeline = new Pipeline();
+            Position(0, 0, -2);
+            Rotate(0, 0, 0);
+            Scale(0, 0, 0);
+            pipeline.mPersProj = stor.GetPersProj;
+        }
+
         public void Draw()
         {
             shader.setMatrix(pipeline.getMVP());
