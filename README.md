@@ -9,6 +9,8 @@
 
 [Вращение, перемещение, масштаб](#s5)
 
+[Добавим класс GameObj](#s6)
+
 <a name="s1"></a>
 # Первые шаги и треугольник 
 Для реализации графического приложения я использую библиотеку `OpenTK`. Она предоставляет нам большой набор функций, которые мы можем использовать для управления графикой, и упрощает работу с OpenGL. OpenTK можно использовать для игр, научных приложений или других проектов, требующих трехмерной графики, аудио или вычислительной функциональности.  
@@ -485,3 +487,206 @@ Pipeline будет вспомогательным классом для соз�
 ```
 ## Результат:
 ![cube](https://github.com/galeevlxix/game_engine/blob/master/screens/anim.gif)
+<a name="s6"></a>
+# Добавим класс GameObj
+Чтобы изолировать или отделить всю логику объекта (VBO, VAO, IBO, mvp...) от основного класса движка добавим класс для каждого конкретного объекта. Все объекты будут отныне отдельно друг от друга вращаться, перемещаться, отрисовываться и тд. Заодно избавим класс движка от многотонного кода. Ничего нового мы не добавили, а просто переместили код в отдельные классы.
+### Добавим класс Storage
+Где в будущем мы просто будем хранить всякие шейдеры, вершины и индексы.
+```c#
+    public class Storage
+    {
+        public string vertexShader { get; }
+        public string fragmentShader { get; }
+
+        public float[] cubeVertices { get; }
+        public int[] cubeIndices { get; }
+
+        private mPersProj mPersProj;
+
+        public mPersProj GetPersProj { get => mPersProj; }
+
+        public Storage()
+        {
+            vertexShader =
+            "#version 330                                           \n" +
+            "layout (location = 0) in vec3 aPosition;               \n" +
+            "out vec4 vertexColor;                                  \n" +
+            "uniform mat4 mvp;                                      \n" +
+            "void main()                                            \n" +
+            "{                                                      \n" +
+            "   gl_Position = vec4(aPosition, 1.0) * mvp;           \n" +
+            "   vertexColor = vec4(clamp(aPosition, 0.0, 1.0), 1.0);\n" +
+            "}";
+
+            fragmentShader =
+            "#version 330                                           \n" +
+            "in vec4 vertexColor;                                   \n" +
+            "void main() { gl_FragColor = vertexColor; }            \n";
+
+            cubeVertices = new float[]{    //куб
+                0.5f, -0.5f, -0.5f,
+              0.5f, -0.5f,  0.5f,
+             -0.5f, -0.5f,  0.5f,
+             -0.5f, -0.5f, -0.5f,
+              0.5f,  0.5f, -0.5f,
+              0.5f,  0.5f,  0.5f,
+             -0.5f,  0.5f,  0.5f,
+             -0.5f,  0.5f, -0.5f
+            };
+            cubeIndices = new int[]{
+                0,1,2, // передняя сторона
+                2,3,0,
+
+                6,5,4, // задняя сторона
+                4,7,6,
+
+                4,0,3, // левый бок
+                3,7,4,
+
+                1,5,6, // правый бок
+                6,2,1,
+
+                4,5,1, // вверх
+                1,0,4,
+
+                3,2,6, // низ
+                6,7,3
+            };
+
+            mPersProj = new mPersProj();
+            mPersProj.FOV = 50;
+            mPersProj.width = 1920;
+            mPersProj.height = 1080;
+            mPersProj.zNear = 0.1f;
+            mPersProj.zFar = 100;
+        }
+    }
+```
+### Добавим класс Mesh
+Тут будут создаваться и связываться VBO, VAO, IBO каждого нашего объекта.
+```c#
+    public class Mesh : IDisposable
+    {
+        private int VBO { get; set; }
+        private int VAO { get; set; }
+        private int IBO { get; set; }
+
+        private float[] Vertices { get; set; }
+        private int[] Indices { get; set; }
+
+        public Mesh()
+        {
+            Vertices = new Storage().cubeVertices;
+            Indices = new Storage().cubeIndices;
+
+            Load();
+        }
+
+        public Mesh(string file_name)
+        {
+
+        }
+
+        private void Load()
+        {
+            VBO = GL.GenBuffer();
+            VAO = GL.GenVertexArray();
+            IBO = GL.GenBuffer();
+
+            GL.BindVertexArray(VAO);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
+            GL.BufferData(BufferTarget.ArrayBuffer, Vertices.Length * sizeof(float), Vertices, BufferUsageHint.StaticDraw);
+            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
+
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, IBO);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, Indices.Length * sizeof(uint), Indices, BufferUsageHint.StaticDraw);
+            
+            GL.EnableVertexAttribArray(0);
+
+            GL.Enable(EnableCap.CullFace);
+            GL.CullFace(CullFaceMode.Back);
+        }
+
+        public void Draw()
+        {
+            GL.BindVertexArray(VAO);
+            GL.DrawElements(PrimitiveType.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
+        }
+
+        public void Dispose()
+        {
+            GL.DeleteBuffer(VBO);
+            GL.DeleteVertexArray(VAO);
+        }
+    }
+```
+### Добавим класс GameObj
+У всех объектов будет свой Mesh, Shader и mvp на экране. Пока что GameObj выглядит так, но в будущем мы его дополним таким образом, чтобы можно было создавать модели любых форматов.
+```c#
+    public class GameObj
+    {
+        private Mesh mesh;
+        private Shader shader;
+        private Pipeline pipeline;
+
+        public GameObj()
+        {
+            Storage stor = new Storage();
+            mesh = new Mesh();
+            shader = new Shader(stor.vertexShader, stor.fragmentShader);
+            pipeline = new Pipeline();
+            Position(0, 0, -2);
+            Rotate(0, 0, 0);
+            Scale(0, 0, 0);
+            pipeline.mPersProj = stor.GetPersProj;
+        }
+
+        public void Draw()
+        {
+            shader.setMatrix(pipeline.getMVP());
+            shader.Use();
+            mesh.Draw();
+        }
+
+        public void Rotate(float x, float y, float z)
+        {
+            pipeline.Rotate(x, y, z);
+        }
+
+        public void Position(float x, float y, float z)
+        {
+            pipeline.Position(x, y, z);
+        }
+
+        public void Scale(float x, float y, float z)
+        {
+            pipeline.Scale(x, y, z);
+        }
+    }
+```
+### Как теперь выглядит отрисовка
+В функциии рендеринга мы просто задаем свойства объекта и отрисовываем его.
+```c#
+        protected override void OnRenderFrame(FrameEventArgs args)
+        {
+            base.OnRenderFrame(args);
+
+            GL.Clear(ClearBufferMask.ColorBufferBit);
+            timer++;
+
+            gameObj.Scale(0.5f, 0.5f, 0.5f);
+            gameObj.Position(0, math3d.abs(math3d.sin((float)timer / 500) / 2) - 0.25f, -2);
+            gameObj.Rotate(math3d.sin((float)timer / 500) * 50, (float)timer / 50, 0);
+
+            gameObj2.Scale(0.5f, 0.5f, 0.5f);
+            gameObj2.Position(2, 0, -4);
+            gameObj2.Rotate(0 , (float)timer / 25, 0);
+
+            gameObj.Draw();
+            gameObj2.Draw();
+
+            SwapBuffers();
+        }
+```
+## Результат:
+![2obj](https://github.com/galeevlxix/game_engine/blob/master/screens/bandicam%202023-06-28%2016-01-06-972.gif)
