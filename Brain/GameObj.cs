@@ -1,4 +1,5 @@
 ﻿using OpenTK.Mathematics;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,37 +12,47 @@ namespace game_2.Brain
     {
         private Mesh mesh;
         private Shader shader;
-        private Pipeline pipeline;
+        protected Pipeline pipeline;
 
         public GameObj()
         {
-            Storage stor = new Storage();
             mesh = new Mesh();
-            shader = new Shader(stor.vertexShader, stor.fragmentShader);
+            shader = new Shader(Storage.vertexShader, Storage.fragmentShader);
             pipeline = new Pipeline();
             Position(0, 0, -2);
             Rotate(0, 0, 0);
             Scale(0, 0, 0);
-            pipeline.mPersProj = stor.GetPersProj;
+            //pipeline.mPersProj = stor.GetPersProj;
         }
 
         public GameObj(string file_name)
         {
-            Storage stor = new Storage();
             mesh = new Mesh(file_name);
-            shader = new Shader(stor.vertexShader, stor.fragmentShader);
+            shader = new Shader(Storage.vertexShader, Storage.fragmentShader);
             pipeline = new Pipeline();
             Position(0, 0, -2);
             Rotate(0, 0, 0);
             Scale(0, 0, 0);
-            pipeline.mPersProj = stor.GetPersProj;
+            //pipeline.mPersProj = stor.GetPersProj;
         }
 
-        public void Draw()
+        public void Draw(Camera cam)
         {
-            shader.setMatrix(pipeline.getMVP());
+            shader.setMatrix(pipeline.getMVP_without_proj() * cam.getMatrix);
             shader.Use();
             mesh.Draw();
+        }
+
+        public virtual void Update(MouseState mouse, KeyboardState keyboard)
+        {
+            
+        }
+
+        public virtual void Reset()
+        {
+            Position(0, 0, 0);
+            Rotate(0, 0, 0);
+            Scale(1, 1, 1);
         }
 
         public void Rotate(float x, float y, float z)
@@ -57,6 +68,17 @@ namespace game_2.Brain
         public void Scale(float x, float y, float z)
         {
             pipeline.Scale(x, y, z);
+        }
+        
+        public Matrix4 LocalToWorld()
+        {
+            return pipeline.getMVP_without_proj();
+        }
+
+        public Matrix4 WorldToLocal()
+        {
+            Matrix4 v = Pipeline.WorldToLocal(pipeline);
+            return v;
         }
     }
 }

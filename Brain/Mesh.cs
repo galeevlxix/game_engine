@@ -27,8 +27,8 @@ namespace game_2.Brain
 
         public Mesh()
         {
-            Vertices = new Storage().cubeVertices;
-            Indices = new Storage().cubeIndices;
+            Vertices = Storage.cubeVertices;
+            Indices = Storage.cubeIndices;
 
             Load();
         }
@@ -57,8 +57,8 @@ namespace game_2.Brain
             }
             else
             {
-                Vertices = new Storage().cubeVertices;
-                Indices = new Storage().cubeIndices;
+                Vertices = Storage.cubeVertices;
+                Indices = Storage.cubeIndices;
                 Console.WriteLine("Unknown file format");
             }
             Load();

@@ -1,4 +1,5 @@
 ﻿using OpenTK.Mathematics;
+using System.Runtime.Intrinsics.X86;
 
 namespace game_2.Brain
 {
@@ -187,41 +188,45 @@ namespace game_2.Brain
             return CameraRotateTrans * CameraTranslationTrans * getMVP();
         }
 
-        private static Matrix4 RotateX(float a)
+        public Matrix4 getMVP_without_proj()
+        {
+            return InitScaleTransform(ScaleVector.x, ScaleVector.y, ScaleVector.z) *
+                   InitRotateTransform(RotateVector.x, RotateVector.y, RotateVector.z) *
+                   InitTranslationTransform(PositionVector.x, PositionVector.y, PositionVector.z);
+        }
+
+        public static Matrix4 RotateX(float a)
         {
             Matrix4 rx = new Matrix4();
-            float x = math3d.ToRadian(a);
 
-            rx[0, 0] = 1.0f; rx[0, 1] = 0.0f; rx[0, 2] = 0.0f; rx[0, 3] = 0.0f;
-            rx[1, 0] = 0.0f; rx[1, 1] = math3d.cos(x); rx[1, 2] = -math3d.sin(x); rx[1, 3] = 0.0f;
-            rx[2, 0] = 0.0f; rx[2, 1] = math3d.sin(x); rx[2, 2] = math3d.cos(x); rx[2, 3] = 0.0f;
-            rx[3, 0] = 0.0f; rx[3, 1] = 0.0f; rx[3, 2] = 0.0f; rx[3, 3] = 1.0f;
+            rx[0, 0] = 1.0f;    rx[0, 1] = 0.0f;            rx[0, 2] = 0.0f;            rx[0, 3] = 0.0f;
+            rx[1, 0] = 0.0f;    rx[1, 1] = math3d.cos(a);   rx[1, 2] = -math3d.sin(a);  rx[1, 3] = 0.0f;
+            rx[2, 0] = 0.0f;    rx[2, 1] = math3d.sin(a);   rx[2, 2] = math3d.cos(a);   rx[2, 3] = 0.0f;
+            rx[3, 0] = 0.0f;    rx[3, 1] = 0.0f;            rx[3, 2] = 0.0f;            rx[3, 3] = 1.0f;
 
             return rx;
         }
 
-        private static Matrix4 RotateY(float a)
+        public static Matrix4 RotateY(float a)
         {
             Matrix4 ry = new Matrix4();
-            float y = math3d.ToRadian(a);
 
-            ry[0, 0] = math3d.cos(y); ry[0, 1] = 0.0f; ry[0, 2] = -math3d.sin(y); ry[0, 3] = 0.0f;
-            ry[1, 0] = 0.0f; ry[1, 1] = 1.0f; ry[1, 2] = 0.0f; ry[1, 3] = 0.0f;
-            ry[2, 0] = math3d.sin(y); ry[2, 1] = 0.0f; ry[2, 2] = math3d.cos(y); ry[2, 3] = 0.0f;
-            ry[3, 0] = 0.0f; ry[3, 1] = 0.0f; ry[3, 2] = 0.0f; ry[3, 3] = 1.0f;
+            ry[0, 0] = math3d.cos(a);   ry[0, 1] = 0.0f;    ry[0, 2] = math3d.sin(a);   ry[0, 3] = 0.0f;
+            ry[1, 0] = 0.0f;            ry[1, 1] = 1.0f;    ry[1, 2] = 0.0f;            ry[1, 3] = 0.0f;
+            ry[2, 0] = -math3d.sin(a);  ry[2, 1] = 0.0f;    ry[2, 2] = math3d.cos(a);   ry[2, 3] = 0.0f;
+            ry[3, 0] = 0.0f;            ry[3, 1] = 0.0f;    ry[3, 2] = 0.0f;            ry[3, 3] = 1.0f;
 
             return ry;
         }
 
-        private static Matrix4 RotateZ(float a)
+        public static Matrix4 RotateZ(float a)
         {
             Matrix4 rz = new Matrix4();
-            float z = math3d.ToRadian(a);
 
-            rz[0, 0] = math3d.cos(z); rz[0, 1] = -math3d.sin(z); rz[0, 2] = 0.0f; rz[0, 3] = 0.0f;
-            rz[1, 0] = math3d.sin(z); rz[1, 1] = math3d.cos(z); rz[1, 2] = 0.0f; rz[1, 3] = 0.0f;
-            rz[2, 0] = 0.0f; rz[2, 1] = 0.0f; rz[2, 2] = 1.0f; rz[2, 3] = 0.0f;
-            rz[3, 0] = 0.0f; rz[3, 1] = 0.0f; rz[3, 2] = 0.0f; rz[3, 3] = 1.0f;
+            rz[0, 0] = math3d.cos(a);   rz[0, 1] = -math3d.sin(a);  rz[0, 2] = 0.0f;    rz[0, 3] = 0.0f;
+            rz[1, 0] = math3d.sin(a);   rz[1, 1] = math3d.cos(a);   rz[1, 2] = 0.0f;    rz[1, 3] = 0.0f;
+            rz[2, 0] = 0.0f;            rz[2, 1] = 0.0f;            rz[2, 2] = 1.0f;    rz[2, 3] = 0.0f;
+            rz[3, 0] = 0.0f;            rz[3, 1] = 0.0f;            rz[3, 2] = 0.0f;    rz[3, 3] = 1.0f;
 
             return rz;
         }
@@ -257,7 +262,7 @@ namespace game_2.Brain
             m[0, 0] = 1.0f; m[0, 1] = 0.0f; m[0, 2] = 0.0f; m[0, 3] = 0.0f;
             m[1, 0] = 0.0f; m[1, 1] = 1.0f; m[1, 2] = 0.0f; m[1, 3] = 0.0f;
             m[2, 0] = 0.0f; m[2, 1] = 0.0f; m[2, 2] = 1.0f; m[2, 3] = 0.0f;
-            m[3, 0] = x; m[3, 1] = y; m[3, 2] = z; m[3, 3] = 1.0f;
+            m[3, 0] = x;    m[3, 1] = y;    m[3, 2] = z;    m[3, 3] = 1.0f;
             return m;
         }
 
@@ -285,6 +290,23 @@ namespace game_2.Brain
             return m;
         }
 
+        public static Matrix4 getPersProjMatrix(mPersProj proj)
+        {
+            Matrix4 ret = Matrix4.Zero;
+
+            float fovRads = 1.0f / MathF.Tan(proj.FOV * MathF.PI / 360.0f);
+            float aspect = ((float)proj.height) / ((float)proj.width);
+            float distance = proj.zNear - proj.zFar;
+
+            ret[0, 0] = fovRads * aspect;
+            ret[1, 1] = fovRads;
+            ret[2, 2] = (proj.zNear + proj.zFar) / distance;
+            ret[2, 3] = (2 * proj.zNear * proj.zFar) / distance;
+            ret[3, 2] = -1.0f;
+
+            return ret;
+        }
+
         private static Matrix4 InitCameraTransform(vector3 Target, vector3 Up)
         {
             Matrix4 m = new Matrix4();
@@ -303,6 +325,19 @@ namespace game_2.Brain
 
             return m;
         }
+
+        public static Matrix4 WorldToLocal(Pipeline p)
+        {
+            Matrix4 tr = new Matrix4();
+            tr[0, 0] = 1.0f; tr[0, 1] = 0.0f; tr[0, 2] = 0.0f; tr[0, 3] = -p.PositionVector.x;
+            tr[1, 0] = 0.0f; tr[1, 1] = 1.0f; tr[1, 2] = 0.0f; tr[1, 3] = -p.PositionVector.y;
+            tr[2, 0] = 0.0f; tr[2, 1] = 0.0f; tr[2, 2] = 1.0f; tr[2, 3] = -p.PositionVector.z;
+            tr[3, 0] = 0;   tr[3, 1] = 0; tr[3, 2] = 0; tr[3, 3] = 1.0f;
+
+            var rot = RotateX(-p.RotateVector.x) * RotateY(-p.RotateVector.y) * RotateZ(-p.RotateVector.z);
+            return 
+                InitScaleTransform( p.ScaleVector.x, p.ScaleVector.y,  p.ScaleVector.z) * rot * tr;
+        }
     }
 
     public struct mCamera
@@ -312,16 +347,34 @@ namespace game_2.Brain
         public vector3 Up;
     }
 
-    public struct mPersProj
+    public class mPersProj
     {
         public float FOV;
         public float width;
         public float height;
         public float zNear;
         public float zFar;
+
+        public mPersProj(float FOV, float width, float heigth, float zNear, float zFar)
+        {
+            this.FOV = FOV;
+            this.width = width;
+            this.height = heigth;
+            this.zNear = zNear; 
+            this.zFar = zFar;
+        }
+
+        public mPersProj()
+        {
+            FOV = 60;
+            width = 1920;
+            height = 1080;
+            zNear = 0.001f;
+            zFar = 100;
+        }
     }
 
-    public class math3d
+    public static class math3d
     {
         public static float ToRadian(float x)
         {
@@ -367,12 +420,12 @@ namespace game_2.Brain
         {
             return (float)Math.Pow((float)x, (float)y);
         }
-        public static Vector3 MultiplyDirection(Matrix4 m, Vector3 v)
+        public static vector3 MultiplyDirection(this Matrix4 m, vector3 v)
         {
-            return new Vector3(
-                m[0, 0] * v.X + m[0, 1] * v.Y + m[0, 2] * v.Z,
-                m[1, 0] * v.X + m[1, 1] * v.Y + m[1, 2] * v.Z,
-                m[2, 0] * v.X + m[2, 1] * v.Y + m[2, 2] * v.Z);
+            return new vector3(
+                m[0, 0] * v.x + m[0, 1] * v.y + m[0, 2] * v.z,
+                m[1, 0] * v.x + m[1, 1] * v.y + m[1, 2] * v.z,
+                m[2, 0] * v.x + m[2, 1] * v.y + m[2, 2] * v.z);
         }
     }
 

@@ -6,21 +6,9 @@ using System.Threading.Tasks;
 
 namespace game_2.Brain
 {
-    public class Storage
+    public static class Storage
     {
-        public string vertexShader { get; }
-        public string fragmentShader { get; }
-
-        public float[] cubeVertices { get; }
-        public int[] cubeIndices { get; }
-
-        private mPersProj mPersProj;
-
-        public mPersProj GetPersProj { get => mPersProj; }
-
-        public Storage()
-        {
-            vertexShader =
+        public static string vertexShader =
             "#version 330                                           \n" +
             "layout (location = 0) in vec3 aPosition;               \n" +
             "out vec4 vertexColor;                                  \n" +
@@ -31,22 +19,23 @@ namespace game_2.Brain
             "   vertexColor = vec4(clamp(aPosition, 0.0, 1.0), 1.0);\n" +
             "}";
 
-            fragmentShader =
+        public static string fragmentShader =
             "#version 330                                           \n" +
             "in vec4 vertexColor;                                   \n" +
             "void main() { gl_FragColor = vertexColor; }            \n";
 
-            cubeVertices = new float[]{    //куб
-                0.5f, -0.5f, -0.5f,
-              0.5f, -0.5f,  0.5f,
-             -0.5f, -0.5f,  0.5f,
-             -0.5f, -0.5f, -0.5f,
-              0.5f,  0.5f, -0.5f,
-              0.5f,  0.5f,  0.5f,
-             -0.5f,  0.5f,  0.5f,
-             -0.5f,  0.5f, -0.5f
-            };
-            cubeIndices = new int[]{
+        public static float[] cubeVertices = new float[]{    //куб
+                  0.5f, -0.5f, -0.5f,
+                  0.5f, -0.5f,  0.5f,
+                 -0.5f, -0.5f,  0.5f,
+                 -0.5f, -0.5f, -0.5f,
+                  0.5f,  0.5f, -0.5f,
+                  0.5f,  0.5f,  0.5f,
+                 -0.5f,  0.5f,  0.5f,
+                 -0.5f,  0.5f, -0.5f
+                };
+        public static int[] cubeIndices = new int[]
+        {
                 0,1,2, // передняя сторона
                 2,3,0,
 
@@ -64,14 +53,6 @@ namespace game_2.Brain
 
                 3,2,6, // низ
                 6,7,3
-            };
-
-            mPersProj = new mPersProj();
-            mPersProj.FOV = 50;
-            mPersProj.width = 1920;
-            mPersProj.height = 1080;
-            mPersProj.zNear = 0.1f;
-            mPersProj.zFar = 100;
-        }
+        };
     }
 }
