@@ -11,6 +11,8 @@
 
 [Добавим класс GameObj](#s6)
 
+[Разные форматы файлов](#s7)
+
 <a name="s1"></a>
 # Первые шаги и треугольник 
 Для реализации графического приложения я использую библиотеку `OpenTK`. Она предоставляет нам большой набор функций, которые мы можем использовать для управления графикой, и упрощает работу с OpenGL. OpenTK можно использовать для игр, научных приложений или других проектов, требующих трехмерной графики, аудио или вычислительной функциональности.  
@@ -690,3 +692,294 @@ Pipeline будет вспомогательным классом для соз�
 ```
 ## Результат:
 ![2obj](https://github.com/galeevlxix/game_engine/blob/master/screens/bandicam%202023-06-28%2016-01-06-972.gif)
+<a name="s7"></a>
+# Разные форматы 3D-моделей
+Расширим наш класс `Mesh`. Теперь мы можем загружать 3D-модели разных форматов, а не только кубики. Все потому что эти файлы внутри уже содержат вершины и индексы, которые необходиы нам для отрисовки объекта.
+Добавим еще один конструктор `Mesh`, который будет проверять, какого формата объект, и загружать его в буфер.
+```c#
+        public Mesh(string file_name)
+        {
+            if (regOBJ.IsMatch(file_name))
+            {
+                LoadFromObj(new StreamReader(file_name));
+                Console.WriteLine("+obj");
+            } 
+            else if(regFBX.IsMatch(file_name))
+            {
+                LoadFromFbx(new StreamReader(file_name));
+                Console.WriteLine("+fbx");
+            }
+            else if (regDAE.IsMatch(file_name))  //не работает
+            {
+                LoadFromDae(new StreamReader(file_name));
+                Console.WriteLine("+dae");
+            }
+            else if (regPLY.IsMatch(file_name))
+            {
+                LoadFromPly(new StreamReader(file_name));
+                Console.WriteLine("+ply");
+            }
+            else
+            {
+                Vertices = new Storage().cubeVertices;
+                Indices = new Storage().cubeIndices;
+                Console.WriteLine("Unknown file format");
+            }
+            Load();
+        }
+```
+Каждый из этих классов читает файл построчно и высасывает из них вершины и индексы объекта.
+```c#
+        private void LoadFromObj(TextReader tr)
+        {
+            List<float> vertices = new List<float>();
+            List<int> fig = new List<int>();
+
+            vertices.Add(0.0f);
+            vertices.Add(0.0f);
+            vertices.Add(0.0f);
+
+            string line;
+
+            while ((line = tr.ReadLine()) != null)
+            {
+                line = line.Replace("  ", " ");
+                var parts = line.Split(' ');
+
+                if (parts.Length == 0) continue;
+                switch (parts[0])
+                {
+                    case "v":
+                        vertices.Add(float.Parse(parts[1], CultureInfo.InvariantCulture));
+                        vertices.Add(float.Parse(parts[2], CultureInfo.InvariantCulture));
+                        vertices.Add(float.Parse(parts[3], CultureInfo.InvariantCulture));
+                        break;
+                    case "f":
+                        if (parts.Length == 4) 
+                        {
+                            foreach (string v in parts)
+                            {
+                                if (v != "f")
+                                {
+                                    var w = v.Split('/');
+                                    fig.Add(int.Parse(w[0]));
+                                }
+                            }
+                        }
+                        if (parts.Length == 5)
+                        {
+                            var temp = new List<int>();
+
+                            foreach (string v in parts)
+                            {
+                                if (v != "f")
+                                {
+                                    var w = v.Split('/');
+                                    if (w[0] != "")
+                                        temp.Add(int.Parse(w[0]));
+                                }
+                            }
+
+                            fig.Add(temp[0]);
+                            fig.Add(temp[2]);
+                            fig.Add(temp[3]);
+
+                            fig.Add(temp[0]);
+                            fig.Add(temp[1]);
+                            fig.Add(temp[2]);
+                        }
+                        break;
+                }
+            }
+            Vertices = vertices.ToArray();
+            Indices = fig.ToArray();
+        }
+
+        private void LoadFromFbx(TextReader tr)
+        {
+            List<float> vertices = new List<float>();
+            List<int> fig = new List<int>();
+            bool ver = false, frag = false;
+            Regex r1 = new Regex(@"^Vertices:\w*");
+            Regex r2 = new Regex(@"^a:\w*");
+            Regex r3 = new Regex(@"^PolygonVertexIndex:\w*");
+
+            string line;
+
+            while ((line = tr.ReadLine()) != null)
+            {
+                line = line.Replace(" ", "");
+                line = line.Replace("\t", "");
+
+                if (r1.IsMatch(line))
+                {
+                    ver = true;
+                }
+                else if (r3.IsMatch(line))
+                {
+                    frag = true;
+                }
+                else if (ver)
+                {
+                    if(line == "}")
+                    {
+                        ver = false;
+                        continue;
+                    }
+                    if (r2.IsMatch(line)) line = line.Replace("a:", "");
+                    line = line.Trim(',');
+                    var w = line.Split(',');
+                    foreach (string s in w)
+                        if (s != "" && s != null)
+                            vertices.Add(float.Parse(s, CultureInfo.InvariantCulture));
+                }
+                else if (frag)
+                {
+                    if (line == "}")
+                    {
+                        frag = false;
+                        continue;
+                    }
+                    if (r2.IsMatch(line)) line = line.Replace("a:", "");
+                    line = line.Trim(',');
+                    var w = line.Split(',');
+                    var temp = new List<int>();
+                    foreach (string s in w)
+                    {
+                        if (s != "" && s != null)
+                            temp.Add(int.Parse(s));
+                        if (temp.Count == 4)
+                        {
+                            fig.Add(temp[0]);
+                            fig.Add(temp[2]);
+                            fig.Add(temp[3]);
+
+                            fig.Add(temp[0]);
+                            fig.Add(temp[1]);
+                            fig.Add(temp[2]);
+                            temp.Clear();
+                        }
+                    }
+                }
+            }
+
+            Vertices = vertices.ToArray();
+            Indices = fig.ToArray();
+        }
+
+        private void LoadFromDae(TextReader tr)  //не работает
+        {
+            List<float> vertices = new List<float>();
+            List<int> fig = new List<int>();
+            bool ver = false, frag = false, msh = false;
+
+            Regex r = new Regex(@"<\w*>");
+            Regex r1 = new Regex(@"^<p>\w*");
+            char[] fdd = new char[] { '>', '<' };
+
+            string line;
+
+            while((line = tr.ReadLine()) != null)
+            {
+                line = line.Trim(' ');
+                line = line.Replace("\t", "");
+                if (line == "</mesh>")
+                {
+                    return;
+                }
+                else if (line == "<source id=\"TopN-mesh-positions\">")
+                {
+                    ver = true;
+                }
+                else if (r1.IsMatch(line))
+                {
+                    var t = line.Split(fdd);
+                    var w = t[2].Split(' ');
+                    foreach (string v in w)
+                    {
+                        if (v != "" && v != null)
+                            fig.Add(int.Parse(v));
+                    }
+                }
+                else if (ver)
+                {
+                    ver = false;
+                    var t = line.Split(fdd);
+                    var w = t[2].Split(' ');
+                    foreach(string v in w)
+                    {
+                        if (v != "" && v != null)
+                            vertices.Add(float.Parse(v, CultureInfo.InvariantCulture));
+                    }
+                }
+            }
+            Vertices = vertices.ToArray();
+            Indices = fig.ToArray();
+        }
+
+        private void LoadFromPly(TextReader tr)
+        {
+            List<float> vertices = new List<float>();
+            List<int> fig = new List<int>();
+            string line;
+            bool a = false;
+
+            while ((line = tr.ReadLine()) != null)
+            {
+                line = line.Trim(' ');
+
+                if (line == "end_header")
+                {
+                    a = true;
+                }
+                else if (a)
+                {
+                    var w = line.Split(' ');
+
+                    if (w.Length == 8)
+                    {
+                        vertices.Add(float.Parse(w[0], CultureInfo.InvariantCulture));
+                        vertices.Add(float.Parse(w[1], CultureInfo.InvariantCulture));
+                        vertices.Add(float.Parse(w[2], CultureInfo.InvariantCulture));
+                    }
+                    else if(w.Length == 4)
+                    {
+                        if (w[0] == "3")
+                        {
+                            fig.Add(int.Parse(w[1]));
+                            fig.Add(int.Parse(w[2]));
+                            fig.Add(int.Parse(w[3]));
+                        }
+                        if (w[0] == "4")
+                        {
+                            var temp = new List<int>();
+
+                            temp.Add(int.Parse(w[1]));
+                            temp.Add(int.Parse(w[2]));
+                            temp.Add(int.Parse(w[3]));
+                            temp.Add(int.Parse(w[4]));
+
+                            fig.Add(temp[0]);
+                            fig.Add(temp[2]);
+                            fig.Add(temp[3]);
+
+                            fig.Add(temp[0]);
+                            fig.Add(temp[1]);
+                            fig.Add(temp[2]);
+                        }
+                    }
+                }
+
+            }
+            Vertices = vertices.ToArray();
+            Indices = fig.ToArray();
+        }
+```
+## Результаты:
+### .obj
+Тут сразу 3 объекта на экране (мужик, машина и пол это все один объект)
+![objform](https://github.com/galeevlxix/game_engine/blob/master/screens/scene1.gif)
+### .fbx
+![fbxform](https://github.com/galeevlxix/game_engine/blob/master/screens/fbxfi.png)
+### .ply
+![plyfor](https://github.com/galeevlxix/game_engine/blob/master/screens/ply.png)
