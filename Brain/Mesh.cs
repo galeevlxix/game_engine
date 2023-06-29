@@ -81,35 +81,28 @@ namespace game_2.Brain
 
             GL.BindVertexArray(0);
 
-            GL.CullFace(CullFaceMode.Back);
+            GL.CullFace(CullFaceMode.Front);
             GL.Enable(EnableCap.DepthTest);
-        }
-
-        private void Clear()
-        {
-            if(VAO != 0)
-            {
-            }
         }
 
         public void Draw()
         {
             GL.BindVertexArray(VAO);
             GL.DrawElements(PrimitiveType.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
-            GL.BindVertexArray(0);
+            GL.BindVertexArray(1);
         }
 
         public void Dispose()
         {
             GL.DeleteBuffer(VBO);
             GL.DeleteVertexArray(VAO);
-
         }
 
         private void LoadFromObj(TextReader tr)
         {
             List<float> vertices = new List<float>();
             List<int> fig = new List<int>();
+            List<string> f = new List<string>();
 
             vertices.Add(0.0f);
             vertices.Add(0.0f);
@@ -131,9 +124,14 @@ namespace game_2.Brain
                         vertices.Add(float.Parse(parts[3], CultureInfo.InvariantCulture));
                         break;
                     case "f":
-                        if (parts.Length == 4) 
+                        f.Clear();
+                        for (int i = 0; i < parts.Length; i++)
                         {
-                            foreach (string v in parts)
+                            if (parts[i] != "") f.Add(parts[i]);
+                        }
+                        if (f.Count == 4) 
+                        {
+                            foreach (string v in f)
                             {
                                 if (v != "f")
                                 {
@@ -142,7 +140,7 @@ namespace game_2.Brain
                                 }
                             }
                         }
-                        if (parts.Length == 5)
+                        if (f.Count == 5)
                         {
                             var temp = new List<int>();
 

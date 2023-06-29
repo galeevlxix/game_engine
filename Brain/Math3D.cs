@@ -1,5 +1,4 @@
 ﻿using OpenTK.Mathematics;
-using System.Runtime.Intrinsics.X86;
 
 namespace game_2.Brain
 {
@@ -8,7 +7,7 @@ namespace game_2.Brain
         public float x;
         public float y;
 
-        public vector2(int x, int y)
+        public vector2(float x, float y)
         {
             this.x = x;
             this.y = y;
@@ -39,43 +38,6 @@ namespace game_2.Brain
             x = _x;
             y = _y;
             z = _z;
-        }
-
-        public vector3 Cross(vector3 v)
-        {
-            float _x = y * v.z - z * v.y;
-            float _y = z * v.x - x * v.z;
-            float _z = x * v.y - y * v.x;
-            return new vector3(_x, _y, _z);
-        }
-
-        public vector3 Normalize()
-        {
-            float Length = (float)Math.Sqrt(x * x + y * y + z * z);
-
-            x /= Length;
-            y /= Length;
-            z /= Length;
-
-            return this;
-        }
-
-        public void Rotate(float Angle, vector3 Axe)
-        {
-            float SinHalfAngle = (float)Math.Sin(math3d.ToRadian(Angle / 2));
-            float CosHalfAngle = math3d.cos(math3d.ToRadian(Angle / 2));
-
-            float Rx = Axe.x * SinHalfAngle;
-            float Ry = Axe.y * SinHalfAngle;
-            float Rz = Axe.z * SinHalfAngle;
-            float Rw = CosHalfAngle;
-            quaternion RotationQ = new quaternion(Rx, Ry, Rz, Rw);
-            quaternion ConjugateQ = RotationQ.Conjugate();
-            quaternion W = RotationQ * (this) * ConjugateQ;
-
-            x = W.x;
-            y = W.y;
-            z = W.z;
         }
 
         public static vector3 operator +(vector3 l, vector3 r)
@@ -123,7 +85,6 @@ namespace game_2.Brain
         public vector3 ScaleVector;
         public vector3 PositionVector;
         public mPersProj mPersProj;
-        public mCamera camera;
 
         public Pipeline()
         {
@@ -163,72 +124,12 @@ namespace game_2.Brain
             mPersProj.zFar = zFar;
         }
 
-        public void setCamera(vector3 Pos, vector3 Target, vector3 Up)
-        {
-            camera.Pos = Pos;
-            camera.Target = Target;
-            camera.Up = Up;
-        }
-
         public Matrix4 getMVP()
         {
             return  InitScaleTransform(ScaleVector.x, ScaleVector.y, ScaleVector.z) *
                     InitRotateTransform(RotateVector.x, RotateVector.y, RotateVector.z) *
                     InitTranslationTransform(PositionVector.x, PositionVector.y, PositionVector.z) *
-                    InitPersProjTransform(mPersProj.FOV, mPersProj.width, mPersProj.height, mPersProj.zNear, mPersProj.zFar);                    
-        }
-
-        public Matrix4 getMVP_with_camera()
-        {
-            Matrix4 CameraTranslationTrans, CameraRotateTrans;
-
-            CameraTranslationTrans = InitTranslationTransform(-camera.Pos.x, -camera.Pos.y, -camera.Pos.z);
-            CameraRotateTrans = InitCameraTransform(camera.Target, camera.Up);
-
-            return CameraRotateTrans * CameraTranslationTrans * getMVP();
-        }
-
-        public Matrix4 getMVP_without_proj()
-        {
-            return InitScaleTransform(ScaleVector.x, ScaleVector.y, ScaleVector.z) *
-                   InitRotateTransform(RotateVector.x, RotateVector.y, RotateVector.z) *
-                   InitTranslationTransform(PositionVector.x, PositionVector.y, PositionVector.z);
-        }
-
-        public static Matrix4 RotateX(float a)
-        {
-            Matrix4 rx = new Matrix4();
-
-            rx[0, 0] = 1.0f;    rx[0, 1] = 0.0f;            rx[0, 2] = 0.0f;            rx[0, 3] = 0.0f;
-            rx[1, 0] = 0.0f;    rx[1, 1] = math3d.cos(a);   rx[1, 2] = -math3d.sin(a);  rx[1, 3] = 0.0f;
-            rx[2, 0] = 0.0f;    rx[2, 1] = math3d.sin(a);   rx[2, 2] = math3d.cos(a);   rx[2, 3] = 0.0f;
-            rx[3, 0] = 0.0f;    rx[3, 1] = 0.0f;            rx[3, 2] = 0.0f;            rx[3, 3] = 1.0f;
-
-            return rx;
-        }
-
-        public static Matrix4 RotateY(float a)
-        {
-            Matrix4 ry = new Matrix4();
-
-            ry[0, 0] = math3d.cos(a);   ry[0, 1] = 0.0f;    ry[0, 2] = math3d.sin(a);   ry[0, 3] = 0.0f;
-            ry[1, 0] = 0.0f;            ry[1, 1] = 1.0f;    ry[1, 2] = 0.0f;            ry[1, 3] = 0.0f;
-            ry[2, 0] = -math3d.sin(a);  ry[2, 1] = 0.0f;    ry[2, 2] = math3d.cos(a);   ry[2, 3] = 0.0f;
-            ry[3, 0] = 0.0f;            ry[3, 1] = 0.0f;    ry[3, 2] = 0.0f;            ry[3, 3] = 1.0f;
-
-            return ry;
-        }
-
-        public static Matrix4 RotateZ(float a)
-        {
-            Matrix4 rz = new Matrix4();
-
-            rz[0, 0] = math3d.cos(a);   rz[0, 1] = -math3d.sin(a);  rz[0, 2] = 0.0f;    rz[0, 3] = 0.0f;
-            rz[1, 0] = math3d.sin(a);   rz[1, 1] = math3d.cos(a);   rz[1, 2] = 0.0f;    rz[1, 3] = 0.0f;
-            rz[2, 0] = 0.0f;            rz[2, 1] = 0.0f;            rz[2, 2] = 1.0f;    rz[2, 3] = 0.0f;
-            rz[3, 0] = 0.0f;            rz[3, 1] = 0.0f;            rz[3, 2] = 0.0f;    rz[3, 3] = 1.0f;
-
-            return rz;
+                    InitPersProjTransform(mPersProj.FOV, mPersProj.width, mPersProj.height, mPersProj.zNear, mPersProj.zFar);
         }
 
         private static Matrix4 InitRotateTransform(float RotateX, float RotateY, float RotateZ)
@@ -285,66 +186,10 @@ namespace game_2.Brain
 
             m[0, 0] = 1.0f / (tanHalfFOV * ar);     m[0, 1] = 0.0f;                 m[0, 2] = 0.0f;                         m[0, 3] = 0;
             m[1, 0] = 0.0f;                         m[1, 1] = 1.0f / tanHalfFOV;    m[1, 2] = 0.0f;                         m[1, 3] = 0;
-            m[2, 0] = 0.0f;                         m[2, 1] = 0.0f;                 m[2, 2] = -(-zNear - zFar) / zRange;     m[2, 3] = -1.0f;
+            m[2, 0] = 0.0f;                         m[2, 1] = 0.0f;                 m[2, 2] = (zNear + zFar) / zRange;      m[2, 3] = -1.0f;
             m[3, 0] = 0.0f;                         m[3, 1] = 0.0f;                 m[3, 2] = 2.0f * zFar * zNear / zRange; m[3, 3] = 0;
             return m;
         }
-
-        public static Matrix4 getPersProjMatrix(mPersProj proj)
-        {
-            Matrix4 ret = Matrix4.Zero;
-
-            float fovRads = 1.0f / MathF.Tan(proj.FOV * MathF.PI / 360.0f);
-            float aspect = ((float)proj.height) / ((float)proj.width);
-            float distance = proj.zNear - proj.zFar;
-
-            ret[0, 0] = fovRads * aspect;
-            ret[1, 1] = fovRads;
-            ret[2, 2] = (proj.zNear + proj.zFar) / distance;
-            ret[2, 3] = (2 * proj.zNear * proj.zFar) / distance;
-            ret[3, 2] = -1.0f;
-
-            return ret;
-        }
-
-        private static Matrix4 InitCameraTransform(vector3 Target, vector3 Up)
-        {
-            Matrix4 m = new Matrix4();
-
-            vector3 N = Target;
-            N.Normalize();
-            vector3 U = Up;
-            U.Normalize();
-            U = U.Cross(N);
-            vector3 V = N.Cross(U);
-
-            m[0, 0] = U.x;  m[0, 1] = U.y;  m[0, 2] = U.z;  m[0, 3] = 0.0f;
-            m[1, 0] = V.x;  m[1, 1] = V.y;  m[1, 2] = V.z;  m[1, 3] = 0.0f;
-            m[2, 0] = N.x;  m[2, 1] = N.y;  m[2, 2] = N.z;  m[2, 3] = 0.0f;
-            m[3, 0] = 0.0f; m[3, 1] = 0.0f; m[3, 2] = 0.0f; m[3, 3] = 1.0f;
-
-            return m;
-        }
-
-        public static Matrix4 WorldToLocal(Pipeline p)
-        {
-            Matrix4 tr = new Matrix4();
-            tr[0, 0] = 1.0f; tr[0, 1] = 0.0f; tr[0, 2] = 0.0f; tr[0, 3] = -p.PositionVector.x;
-            tr[1, 0] = 0.0f; tr[1, 1] = 1.0f; tr[1, 2] = 0.0f; tr[1, 3] = -p.PositionVector.y;
-            tr[2, 0] = 0.0f; tr[2, 1] = 0.0f; tr[2, 2] = 1.0f; tr[2, 3] = -p.PositionVector.z;
-            tr[3, 0] = 0;   tr[3, 1] = 0; tr[3, 2] = 0; tr[3, 3] = 1.0f;
-
-            var rot = RotateX(-p.RotateVector.x) * RotateY(-p.RotateVector.y) * RotateZ(-p.RotateVector.z);
-            return 
-                InitScaleTransform( p.ScaleVector.x, p.ScaleVector.y,  p.ScaleVector.z) * rot * tr;
-        }
-    }
-
-    public struct mCamera
-    {
-        public vector3 Pos;
-        public vector3 Target;
-        public vector3 Up;
     }
 
     public class mPersProj
@@ -366,7 +211,7 @@ namespace game_2.Brain
 
         public mPersProj()
         {
-            FOV = 60;
+            FOV = 50;
             width = 1920;
             height = 1080;
             zNear = 0.001f;
@@ -420,60 +265,5 @@ namespace game_2.Brain
         {
             return (float)Math.Pow((float)x, (float)y);
         }
-        public static vector3 MultiplyDirection(this Matrix4 m, vector3 v)
-        {
-            return new vector3(
-                m[0, 0] * v.x + m[0, 1] * v.y + m[0, 2] * v.z,
-                m[1, 0] * v.x + m[1, 1] * v.y + m[1, 2] * v.z,
-                m[2, 0] * v.x + m[2, 1] * v.y + m[2, 2] * v.z);
-        }
     }
-
-    public class quaternion //вращение на определенный угол вокруг произвольной оси
-    {
-        public float x, y, z, w;
-
-        public quaternion(float _x, float _y, float _z, float _w)
-        {
-            x = _x;
-            y = _y;
-            z = _z;
-            w = _w;
-        }
-
-        public void Normalize()
-        {
-            float Length = math3d.sqrt(x * x + y * y + z * z + w * w);
-
-            x /= Length;
-            y /= Length;
-            z /= Length;
-            w /= Length;
-        }
-
-        public quaternion Conjugate()
-        {
-            return new quaternion(-x, -y, -z, w);
-        }
-
-        public static quaternion operator *(quaternion l, quaternion r)
-        {
-            float w = (l.w * r.w) - (l.x * r.x) - (l.y * r.y) - (l.z * r.z);
-            float x = (l.x * r.w) + (l.w * r.x) + (l.y * r.z) - (l.z * r.y);
-            float y = (l.y * r.w) + (l.w * r.y) + (l.z * r.x) - (l.x * r.z);
-            float z = (l.z * r.w) + (l.w * r.z) + (l.x * r.y) - (l.y * r.x);
-
-            return new quaternion(x, y, z, w);
-        }
-
-        public static quaternion operator *(quaternion q, vector3 v)
-        {
-            float w = -(q.x * v.x) - (q.y * v.y) - (q.z * v.z);
-            float x = (q.w * v.x) + (q.y * v.z) - (q.z * v.y);
-            float y = (q.w * v.y) + (q.z * v.x) - (q.x * v.z);
-            float z = (q.w * v.z) + (q.x * v.y) - (q.y * v.x);
-
-            return new quaternion(x, y, z, w);
-        }
-    }    
 }

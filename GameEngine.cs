@@ -3,6 +3,7 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using game_2.Brain;
+using OpenTK.Mathematics;
 
 namespace game_2
 {
@@ -11,13 +12,10 @@ namespace game_2
         float timer;
 
         GameObj gameObj;
-        Camera camera;
-        Player player;
+        GameObj gameObj1;
+        GameObj gameObj2;
 
-        public GameEngine(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings) : base(gameWindowSettings, nativeWindowSettings)
-        {
-
-        }
+        public GameEngine(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings) : base(gameWindowSettings, nativeWindowSettings) { }
 
         public void Init()
         {
@@ -32,12 +30,12 @@ namespace game_2
         protected override void OnLoad()
         {
             base.OnLoad();
-            base.CursorGrabbed = true;
             GL.ClearColor(0.102f, 0.102f, 0.153f, 1);
+            base.CursorGrabbed = false;
             ///////////////параметры игры
-            gameObj = new GameObj("C:\\Users\\Lenovo\\source\\repos\\game_2\\models\\SM_HandAxe.ply");
-            camera = new Camera();
-            player = new Player();
+            gameObj = new GameObj("C:\\Users\\Lenovo\\source\\repos\\game_2\\models\\obj_files\\Elf01_posed.obj");
+            gameObj1 = new GameObj("C:\\Users\\Lenovo\\source\\repos\\game_2\\models\\SM_HandAxe.ply");
+            gameObj2 = new GameObj("C:\\Users\\Lenovo\\source\\repos\\game_2\\models\\fbx_files\\SM_FlatheadScrewdriver.fbx");
             timer = 0;
         }
 
@@ -50,8 +48,6 @@ namespace game_2
             {
                 Close();
             } 
-
-            GameTime.Delta = (float)(args.Time);
         }
 
         protected override void OnRenderFrame(FrameEventArgs args)
@@ -62,16 +58,21 @@ namespace game_2
             GL.Clear(ClearBufferMask.DepthBufferBit);
             timer++;
 
-            gameObj.Scale(0.3f, 0.3f, 0.3f);    
-            gameObj.Position(0, 0, -20);
-            gameObj.Rotate(0, timer / 20, 0);
+            gameObj.Scale(0.1f, 0.1f, 0.1f);                //отвертка fbx
+            gameObj.Position(-2, math3d.sin(timer/500), -5);
+            gameObj.Rotate(0, 0, 0);
 
-            
-            player.Update(MouseState, KeyboardState);
-            camera.setWVM(player.WorldToCamera());
-            gameObj.Update(MouseState, KeyboardState);
+            gameObj1.Scale(0.1f, 0.1f, 0.1f);               //девушка obj
+            gameObj1.Position(2, -2f, -7);
+            gameObj1.Rotate(0, timer / 50, 0);
 
-            gameObj.Draw(camera);
+            gameObj2.Scale(0.1f, 0.1f, 0.1f);               //топор ply
+            gameObj2.Position(math3d.sin(timer / 500 + 100) * 4, 0, -10);
+            gameObj2.Rotate(0, -180, 0);
+
+            gameObj.Draw();
+            gameObj1.Draw();
+            gameObj2.Draw();
             SwapBuffers();
         }
 

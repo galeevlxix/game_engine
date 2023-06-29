@@ -1,12 +1,4 @@
-﻿using OpenTK.Mathematics;
-using OpenTK.Windowing.GraphicsLibraryFramework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace game_2.Brain
+﻿namespace game_2.Brain
 {
     public class GameObj
     {
@@ -22,7 +14,7 @@ namespace game_2.Brain
             Position(0, 0, -2);
             Rotate(0, 0, 0);
             Scale(0, 0, 0);
-            //pipeline.mPersProj = stor.GetPersProj;
+            pipeline.mPersProj = new mPersProj();
         }
 
         public GameObj(string file_name)
@@ -33,22 +25,17 @@ namespace game_2.Brain
             Position(0, 0, -2);
             Rotate(0, 0, 0);
             Scale(0, 0, 0);
-            //pipeline.mPersProj = stor.GetPersProj;
+            pipeline.mPersProj = new mPersProj();
         }
 
-        public void Draw(Camera cam)
+        public void Draw()
         {
-            shader.setMatrix(pipeline.getMVP_without_proj() * cam.getMatrix);
+            shader.setMatrix(pipeline.getMVP());
             shader.Use();
             mesh.Draw();
         }
 
-        public virtual void Update(MouseState mouse, KeyboardState keyboard)
-        {
-            
-        }
-
-        public virtual void Reset()
+        public void Reset()
         {
             Position(0, 0, 0);
             Rotate(0, 0, 0);
@@ -68,17 +55,6 @@ namespace game_2.Brain
         public void Scale(float x, float y, float z)
         {
             pipeline.Scale(x, y, z);
-        }
-        
-        public Matrix4 LocalToWorld()
-        {
-            return pipeline.getMVP_without_proj();
-        }
-
-        public Matrix4 WorldToLocal()
-        {
-            Matrix4 v = Pipeline.WorldToLocal(pipeline);
-            return v;
         }
     }
 }
