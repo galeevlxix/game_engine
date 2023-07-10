@@ -70,7 +70,7 @@ namespace game_2.Brain
 
         public void setMatrix(Matrix4 m)
         {
-            GL.UniformMatrix4(MVPID, false, ref m);
+            GL.UniformMatrix4(MVPID, true, ref m);
         }
 
         public void Use()

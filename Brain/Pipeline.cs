@@ -84,7 +84,7 @@ namespace game_2.Brain
             PersProjTrans.InitPersProjTransform(mPersProj.FOV, mPersProj.width, mPersProj.height, mPersProj.zNear, mPersProj.zFar);
             PersProjTrans.Trans();
 
-            Transformation = PersProjTrans * translationTrans * rotateTrans * scaleTrans;
+            Transformation = scaleTrans * rotateTrans * translationTrans * PersProjTrans;
             return Transformation;
         }
 
