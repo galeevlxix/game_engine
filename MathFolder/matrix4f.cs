@@ -110,6 +110,7 @@ namespace game_2.MathFolder
             m[1, 0] = 0.0f; m[1, 1] = 1.0f; m[1, 2] = 0.0f; m[1, 3] = y;
             m[2, 0] = 0.0f; m[2, 1] = 0.0f; m[2, 2] = 1.0f; m[2, 3] = z;
             m[3, 0] = 0.0f;    m[3, 1] = 0.0f;    m[3, 2] = 0.0f;    m[3, 3] = 1.0f;
+            this.Trans();
         }
 
         public void InitScaleTransform(float x, float y, float z)
@@ -145,6 +146,7 @@ namespace game_2.MathFolder
             m[1, 0] = 0.0f; m[1, 1] = 1.0f / tanHalfFOV; m[1, 2] = 0.0f; m[1, 3] = 0;
             m[2, 0] = 0.0f; m[2, 1] = 0.0f; m[2, 2] = (zNear + zFar) / zRange; m[2, 3] = 2.0f * zFar * zNear / zRange;
             m[3, 0] = 0.0f; m[3, 1] = 0.0f; m[3, 2] = -1.0f; m[3, 3] = 0;
+            this.Trans();
         }
         
         public void Trans()
