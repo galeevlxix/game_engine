@@ -82,7 +82,6 @@ namespace game_2.Brain
             rotateTrans.Rotate(RotateVector.x, RotateVector.y, RotateVector.z);
             translationTrans.InitTranslationTransform(PositionVector.x, PositionVector.y, PositionVector.z);
             PersProjTrans.InitPersProjTransform(mPersProj.FOV, mPersProj.width, mPersProj.height, mPersProj.zNear, mPersProj.zFar);
-            PersProjTrans.Trans();
 
             Transformation = scaleTrans * rotateTrans * translationTrans * PersProjTrans;
             return Transformation;

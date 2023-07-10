@@ -4,6 +4,6 @@ out vec4 vertexColor;
 uniform mat4 mvp;                                      
 void main()                                            
 {                                                      
-   gl_Position = mvp * vec4(aPosition, 1.0);           
+   gl_Position = vec4(aPosition, 1.0) * mvp;           
    vertexColor = vec4(clamp(aPosition, 0.0, 1.0), 1.0);
 }
