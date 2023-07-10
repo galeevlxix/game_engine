@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="game_2.GameEngine">
+    <Position X="9" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQBAAAAAAAAAAIAQAAAEAACAAAAAGAAAAACAAAQAAA=</HashCode>
+      <FileName>GameEngine.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="game_2.Program">
+    <Position X="10.75" Y="7" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAA=</HashCode>
+      <FileName>Program.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="game_2.Brain.GameObj">
+    <Position X="10.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAABgAgAAIAAAAAEAABAAAAAAAAAEAAAAA=</HashCode>
+      <FileName>Brain\GameObj.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="game_2.Brain.vector3">
+    <Position X="14.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAYAUAAAQAAQAAAAAAAABgAQAAAAA=</HashCode>
+      <FileName>Brain\Math3D.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="game_2.Brain.Pipeline">
+    <Position X="9" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAAAAIAAgAAAAgAAJAUAgAMAAAAAAAAIACAAAAAAA=</HashCode>
+      <FileName>Brain\Math3D.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="game_2.Brain.mPersProj">
+    <Position X="12.5" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAIAAAAAQYQAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Brain\Math3D.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="game_2.Brain.math3d">
+    <Position X="10.75" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAACAAAACAAAYAggEABYAAAAAACAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Brain\Math3D.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="game_2.Brain.Mesh">
+    <Position X="14.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgggAgGAAAgAAAAAAAAACAAQAAABgMAAAAQAEAgA=</HashCode>
+      <FileName>Brain\Mesh.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="game_2.Brain.Shader">
+    <Position X="12.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAACAAACAAEAAAAIAAAAAAAAAEAAIACAAAAgAAAAA=</HashCode>
+      <FileName>Brain\Shader.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="game_2.Brain.Storage">
+    <Position X="12.5" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAABAAAAAAAAAAAAAAAAAAAAAQIIAAAAAAAAAAA=</HashCode>
+      <FileName>Brain\Storage.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

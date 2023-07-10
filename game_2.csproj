@@ -14,4 +14,8 @@
     <PackageReference Include="OpenTK.Windowing.Desktop" Version="4.1.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Shaders\" />
+  </ItemGroup>
+
 </Project>

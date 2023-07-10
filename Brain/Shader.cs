@@ -1,4 +1,5 @@
-﻿using OpenTK.Graphics.OpenGL;
+﻿using game_2.MathFolder;
+using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 
 namespace game_2.Brain
@@ -39,8 +40,6 @@ namespace game_2.Brain
                 Console.WriteLine(infolog);
             }
 
-            MVPID = GL.GetUniformLocation(Handle, "mvp");
-
             //очистка вершинных и фрагментных шейдеров
             GL.DetachShader(Handle, VertexShader);
             GL.DetachShader(Handle, FragmentShader);
@@ -71,7 +70,7 @@ namespace game_2.Brain
 
         public void setMatrix(Matrix4 m)
         {
-            GL.UniformMatrix4(MVPID, true, ref m);
+            GL.UniformMatrix4(MVPID, false, ref m);
         }
 
         public void Use()
