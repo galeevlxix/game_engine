@@ -56,6 +56,8 @@ namespace game_2.FileManagers
             List<int> fig = new List<int>();
             List<string> f = new List<string>();
 
+            List<float> textCords = new List<float>();
+
             vertices.Add(0.0f);
             vertices.Add(0.0f);
             vertices.Add(0.0f);
@@ -114,6 +116,10 @@ namespace game_2.FileManagers
                             fig.Add(temp[1]);
                             fig.Add(temp[2]);
                         }
+                        break;
+                    case "vt":
+                        textCords.Add(float.Parse(parts[1], CultureInfo.InvariantCulture));
+                        textCords.Add(float.Parse(parts[2], CultureInfo.InvariantCulture));
                         break;
                 }
             }

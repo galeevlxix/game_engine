@@ -103,31 +103,6 @@ namespace game_2
             SwapBuffers();
         }
 
-        public void MoveCamera()
-        {
-
-        }
-/*
-        public void RotateCamera()
-        {
-            if (KeyboardState.IsKeyDown(Keys.Up))
-            {
-                angularX += velocity;
-            }
-            else if (KeyboardState.IsKeyDown(Keys.Down))
-            {
-                angularX -= velocity;
-            }
-            else if(KeyboardState.IsKeyDown(Keys.Up))
-            {
-                angularY += velocity;
-            }
-            else if(KeyboardState.IsKeyDown(Keys.Up))
-            {
-                angularY -= velocity;
-            }
-        }*/
-
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
             base.OnMouseDown(e);

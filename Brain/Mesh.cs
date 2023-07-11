@@ -14,6 +14,7 @@ namespace game_2.Brain
 
         private float[] Vertices { get; set; }
         private int[] Indices { get; set; }
+        //private float[] TextCords { get; set; }
 
         public Mesh()
         {
