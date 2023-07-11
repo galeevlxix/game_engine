@@ -9,12 +9,15 @@ namespace game_2.Brain
         public vector3f Target { get; private set; }
         public vector3f Up { get; private set; }
 
+        private vector3f Left = new vector3f();
+
         private float angle_h;  //горизонтальный поворот
         private float angle_v;  //вертикальный поворот
 
-        private float velocity = 0.01f;
-        private float sensitivity = 0.1f;
-        private float braking = 0.005f;
+        private float velocity = 0.00015f;
+        private float sensitivity = 0.002f;
+        private float brakingKeyBo = 0.01f;
+        private float brakingMouse = 0.04f;
 
         private float speedX;
         private float speedY;
@@ -23,23 +26,17 @@ namespace game_2.Brain
         private float angularX;
         private float angularY;
 
-        public Camera(int window_width, int window_height)
+        public Camera()
         {
             Pos = vector3f.Zero;
             Target = vector3f.Ford;
             Target.Normalize();
             Up = vector3f.Up;
 
-            speedX = 0.00f;
-            speedY = 0.00f;
-            speedZ = 0.00f;
-            angularX = 0;
-            angularY = 0;
-
             Init();
         }
 
-        public Camera(int window_width, int window_height, vector3f cameraPos, vector3f cameraTarget, vector3f cameraUp)
+        public Camera(vector3f cameraPos, vector3f cameraTarget, vector3f cameraUp)
         {
             Pos = cameraPos;
             Target = cameraTarget;
@@ -47,12 +44,6 @@ namespace game_2.Brain
 
             Up = cameraUp;
             Up.Normalize();
-
-            speedX = 0.00f;
-            speedY = 0.00f;
-            speedZ = 0.00f;
-            angularX = 0;
-            angularY = 0;
 
             Init();
         }
@@ -86,62 +77,78 @@ namespace game_2.Brain
             }
 
             angle_v = -math3d.ToDegree(math3d.asin(Target.y));
+
+            speedX = 0.00f;
+            speedY = 0.00f;
+            speedZ = 0.00f;
+            angularX = 0;
+            angularY = 0;
         }
 
         public void OnKeyboard(KeyboardState key)
         {
             if (key.IsKeyDown(Keys.W))
             {
-                Pos -= Target * velocity;
+                speedZ -= velocity;
             }
             else if (key.IsKeyDown(Keys.S))
             {
-                Pos += Target * velocity;
+                speedZ += velocity;
             }
             else if (key.IsKeyDown(Keys.A))
             {
-                vector3f left = vector3f.Cross(Target, Up);
-                left.Normalize();
-
-                Pos += left * velocity;
+                speedX += velocity;
             }
             else if (key.IsKeyDown(Keys.D))
             {
-                vector3f rigth = vector3f.Cross(Up, Target);
-                rigth.Normalize();
-
-                Pos += rigth * velocity;
+                speedX -= velocity;
             }
             else if (key.IsKeyDown(Keys.Space))
             {
-                Pos += vector3f.Up * velocity;
+                speedY += velocity;
             }
             else if (key.IsKeyDown(Keys.LeftShift))
             {
-                Pos -= vector3f.Up * velocity;
+                speedY -= velocity;
             }
-
         }
 
         public void OnMouse(float DeltaX, float DeltaY)       //сюда реальные координаты мыши, а не дельта
         {
-            if ((DeltaX == 0) && (DeltaY == 0)) return;
+            //if ((DeltaX == 0) && (DeltaY == 0)) return;
 
-            angle_h += DeltaX * sensitivity;
-            angle_v += DeltaY * sensitivity;
+            angularX += DeltaX * sensitivity;
+            angularY += DeltaY * sensitivity;
 
             Update();
         }
 
         public void OnRender()
         {
-            speedX *= 1 - braking;
-            speedY *= 1 - braking;
-            speedZ *= 1 - braking;
+            speedX *= 1 - brakingKeyBo;
+            speedY *= 1 - brakingKeyBo;
+            speedZ *= 1 - brakingKeyBo;
 
-            angularX *= 1 - braking;
-            angularY *= 1 - braking;
+            angularX *= 1 - brakingMouse;
+            angularY *= 1 - brakingMouse;
 
+          /*speedX = math3d.abs(speedX) < 0.000000001f ? speedX : 0;
+            speedY = math3d.abs(speedY) < 0.000000001f ? speedY : 0;
+            speedZ = math3d.abs(speedZ) < 0.000000001f ? speedZ : 0;
+
+            angularX = math3d.abs(angularX) < 0.000001f ? angularX : 0;
+            angularY = math3d.abs(angularY) < 0.000001f ? angularY : 0;*/   
+
+            Pos += Target * speedZ;
+
+            Left = vector3f.Cross(Target, Up);
+            Left.Normalize();
+            Pos += Left * speedX;
+
+            Pos += vector3f.Up * speedY;
+
+            angle_h += angularX;
+            angle_v += angularY;
         }
 
         private void Update()

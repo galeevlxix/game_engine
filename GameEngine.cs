@@ -56,7 +56,7 @@ namespace game_2
             gameObj1 = new GameObj(ModelPath1);
             gameObj2 = new GameObj(ModelPath2);
 
-            cam = new Camera(WindowsWidth, WindowsHeight);
+            cam = new Camera();
 
             Models.Add("girl", gameObj1);
             Models.Add("axe", gameObj2);
@@ -76,11 +76,14 @@ namespace game_2
 
             cam.OnKeyboard(KeyboardState);
             cam.OnMouse(-MouseState.Delta.X, -MouseState.Delta.Y);
+
+            
         }
 
         protected override void OnRenderFrame(FrameEventArgs args)
         {
             base.OnRenderFrame(args);
+            cam.OnRender();
 
             GL.Clear(ClearBufferMask.ColorBufferBit);
             GL.Clear(ClearBufferMask.DepthBufferBit);
