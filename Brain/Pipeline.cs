@@ -35,6 +35,13 @@ namespace game_2.Brain
             ScaleVector.z = ScaleZ;
         }
 
+        public void Scale(float Scale)
+        {
+            ScaleVector.x = Scale;
+            ScaleVector.y = Scale;
+            ScaleVector.z = Scale;
+        }
+
         public void Position(float PosX, float PosY, float PosZ)
         {
             PositionVector.x = PosX;
@@ -77,13 +84,19 @@ namespace game_2.Brain
             matrix4f rotateTrans = new matrix4f();
             matrix4f translationTrans = new matrix4f();
             matrix4f PersProjTrans = new matrix4f();
+            matrix4f CameraTranslation = new matrix4f();
+            matrix4f CameraRotate = new matrix4f();
 
             scaleTrans.InitScaleTransform(ScaleVector.x, ScaleVector.y, ScaleVector.z);
             rotateTrans.Rotate(RotateVector.x, RotateVector.y, RotateVector.z);
             translationTrans.InitTranslationTransform(PositionVector.x, PositionVector.y, PositionVector.z);
             PersProjTrans.InitPersProjTransform(mPersProj.FOV, mPersProj.width, mPersProj.height, mPersProj.zNear, mPersProj.zFar);
 
-            Transformation = scaleTrans * rotateTrans * translationTrans * PersProjTrans;
+            CameraTranslation.InitTranslationTransform(-CameraInfo.Pos.x, -CameraInfo.Pos.y, -CameraInfo.Pos.z);
+            CameraRotate.InitCameraTransform(CameraInfo.Target, CameraInfo.Up);
+                       
+
+            Transformation = scaleTrans * rotateTrans * translationTrans * CameraTranslation * CameraRotate * PersProjTrans;
             return Transformation;
         }
 

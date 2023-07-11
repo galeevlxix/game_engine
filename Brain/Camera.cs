@@ -5,9 +5,6 @@ namespace game_2.Brain
 {
     public class Camera
     {
-        private int window_width;
-        private int window_height;
-
         public vector3f Pos { get; private set; }
         public vector3f Target { get; private set; }
         public vector3f Up { get; private set; }
@@ -15,35 +12,47 @@ namespace game_2.Brain
         private float angle_h;  //горизонтальный поворот
         private float angle_v;  //вертикальный поворот
 
-        private vector2f MousePos;
-
-        private float velocity = 0.0001f;
+        private float velocity = 0.01f;
         private float sensitivity = 0.1f;
+        private float braking = 0.005f;
+
+        private float speedX;
+        private float speedY;
+        private float speedZ;
+
+        private float angularX;
+        private float angularY;
 
         public Camera(int window_width, int window_height)
         {
-            this.window_width = window_width;
-            this.window_height = window_height;
-
             Pos = vector3f.Zero;
             Target = vector3f.Ford;
             Target.Normalize();
             Up = vector3f.Up;
+
+            speedX = 0.00f;
+            speedY = 0.00f;
+            speedZ = 0.00f;
+            angularX = 0;
+            angularY = 0;
 
             Init();
         }
 
         public Camera(int window_width, int window_height, vector3f cameraPos, vector3f cameraTarget, vector3f cameraUp)
         {
-            this.window_width = window_width;
-            this.window_height = window_height;
-
             Pos = cameraPos;
             Target = cameraTarget;
             Target.Normalize();
 
             Up = cameraUp;
             Up.Normalize();
+
+            speedX = 0.00f;
+            speedY = 0.00f;
+            speedZ = 0.00f;
+            angularX = 0;
+            angularY = 0;
 
             Init();
         }
@@ -77,20 +86,17 @@ namespace game_2.Brain
             }
 
             angle_v = -math3d.ToDegree(math3d.asin(Target.y));
-
-            MousePos.x = window_width / 2;
-            MousePos.y = window_height / 2;
         }
 
         public void OnKeyboard(KeyboardState key)
         {
             if (key.IsKeyDown(Keys.W))
             {
-                Pos += Target * velocity;
+                Pos -= Target * velocity;
             }
             else if (key.IsKeyDown(Keys.S))
             {
-                Pos -= Target * velocity;
+                Pos += Target * velocity;
             }
             else if (key.IsKeyDown(Keys.A))
             {
@@ -108,10 +114,13 @@ namespace game_2.Brain
             }
             else if (key.IsKeyDown(Keys.Space))
             {
+                Pos += vector3f.Up * velocity;
             }
             else if (key.IsKeyDown(Keys.LeftShift))
             {
+                Pos -= vector3f.Up * velocity;
             }
+
         }
 
         public void OnMouse(float DeltaX, float DeltaY)       //сюда реальные координаты мыши, а не дельта
@@ -122,6 +131,17 @@ namespace game_2.Brain
             angle_v += DeltaY * sensitivity;
 
             Update();
+        }
+
+        public void OnRender()
+        {
+            speedX *= 1 - braking;
+            speedY *= 1 - braking;
+            speedZ *= 1 - braking;
+
+            angularX *= 1 - braking;
+            angularY *= 1 - braking;
+
         }
 
         private void Update()

@@ -10,24 +10,13 @@ namespace game_2
 {
     public class GameEngine : GameWindow
     {
-        float speedX;
-        float speedY;
-        float speedZ;
-
-        float angularX;
-        float angularY;
-
-        float velocity;
-        float braking;
-        float sensitivity;
+        bool isMouseDown;
 
         GameObj gameObj1;
         GameObj gameObj2;
-        GameObj gameObj3;
 
         string ModelPath1;
         string ModelPath2;
-        string ModelPath3;
 
         ObjectArray Models;
 
@@ -36,12 +25,13 @@ namespace game_2
 
         Color4 BackGroundColor;
 
+        Camera cam;
+
         public GameEngine(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings) : base(gameWindowSettings, nativeWindowSettings) 
         {
             BackGroundColor = new Color4(0.102f, 0.102f, 0.153f, 1);
             ModelPath1 = "..\\..\\..\\Models\\obj_files\\WithPika.obj";
             ModelPath2 = "..\\..\\..\\Models\\SM_HandAxe.ply";
-            ModelPath3 = "..\\..\\..\\Models\\fbx_files\\SM_FlatheadScrewdriver.fbx";
         }
 
         public void Init()
@@ -58,28 +48,20 @@ namespace game_2
         {
             base.OnLoad();
             GL.ClearColor(BackGroundColor);
-            base.CursorGrabbed = false;
+            base.CursorGrabbed = true;
             ///////////////параметры игры
 
             Models = new ObjectArray();
 
             gameObj1 = new GameObj(ModelPath1);
             gameObj2 = new GameObj(ModelPath2);
-            gameObj3 = new GameObj(ModelPath3);
+
+            cam = new Camera(WindowsWidth, WindowsHeight);
 
             Models.Add("girl", gameObj1);
-/*            Models.Add("axe", gameObj2);
-            Models.Add("screw", gameObj3);*/
+            Models.Add("axe", gameObj2);
 
             GameTime.Start();
-            speedX = 0.00f;
-            speedY = 0.00f;
-            speedZ = 0.00f;
-            angularX = 0;
-            angularY = 0;
-            velocity = 0.0001f;
-            braking = 0.005f;
-            sensitivity = 0.1f;
         }
 
         protected override void OnUpdateFrame(FrameEventArgs args)
@@ -92,15 +74,8 @@ namespace game_2
                 Close();
             }
 
-            MoveCamera();
-            RotateCamera();
-
-            speedX *= 1 - braking;
-            speedY *= 1 - braking;
-            speedZ *= 1 - braking;
-
-            angularX *= 1 - braking;
-            angularY *= 1 - braking;
+            cam.OnKeyboard(KeyboardState);
+            cam.OnMouse(-MouseState.Delta.X, -MouseState.Delta.Y);
         }
 
         protected override void OnRenderFrame(FrameEventArgs args)
@@ -111,18 +86,15 @@ namespace game_2
             GL.Clear(ClearBufferMask.DepthBufferBit);
             GameTime.Next();
 
-            Models["girl"].pipeline.Scale(1f, 1f, 1f);                
-            Models["girl"].pipeline.Position(0, 0, -10);
-            Models["girl"].pipeline.Rotate(0, GameTime.Time / 50 + 180, 0);
-/*
-            Models["axe"].pipeline.Scale(0.1f, 0.1f, 0.1f);               
-            Models["axe"].pipeline.Position(2, -2f, -7);
-            Models["axe"].pipeline.Rotate(0, GameTime.Time / 50, 0);
+            Models["girl"].pipeline.Scale(0.1f);                
+            Models["girl"].pipeline.Position(-2, 0, math3d.sin(GameTime.Time / 500) * 5 - 10);
+            Models["girl"].pipeline.Rotate(-GameTime.Time / 3, 180, 0);
 
-            Models["screw"].pipeline.Scale(0.1f, 0.1f, 0.1f);               
-            Models["screw"].pipeline.Position(math3d.sin(GameTime.Time / 500 + 100) * 4, 0, -10);
-            Models["screw"].pipeline.Rotate(0, -180, 0);*/
+            Models["axe"].pipeline.Scale(0.3f); 
+            Models["axe"].pipeline.Position(2, 0f, -7);
+            Models["axe"].pipeline.Rotate(0, GameTime.Time / 50 + 180, 0);
 
+            Models.SetCamera(cam);
 
             Models.Draw();
             SwapBuffers();
@@ -130,32 +102,9 @@ namespace game_2
 
         public void MoveCamera()
         {
-            if (KeyboardState.IsKeyDown(Keys.W))
-            {
-                speedZ += velocity;
-            } 
-            else if (KeyboardState.IsKeyDown(Keys.S))
-            {
-                speedZ -= velocity;
-            }
-            else if (KeyboardState.IsKeyDown(Keys.A))
-            {
-                speedX += velocity;
-            }
-            else if (KeyboardState.IsKeyDown(Keys.D))
-            {
-                speedX -= velocity;
-            }
-            else if (KeyboardState.IsKeyDown(Keys.Space))
-            {
-                speedY -= velocity;
-            }
-            else if (KeyboardState.IsKeyDown(Keys.LeftShift))
-            {
-                speedY += velocity;
-            }
-        }
 
+        }
+/*
         public void RotateCamera()
         {
             if (KeyboardState.IsKeyDown(Keys.Up))
@@ -174,12 +123,18 @@ namespace game_2
             {
                 angularY -= velocity;
             }
+        }*/
+
+        protected override void OnMouseDown(MouseButtonEventArgs e)
+        {
+            base.OnMouseDown(e);
+            if (!isMouseDown) isMouseDown = true;
         }
 
-        protected override void OnMouseMove(MouseMoveEventArgs e)
+        protected override void OnMouseUp(MouseButtonEventArgs e)
         {
-            base.OnMouseMove(e);
-            RotateCamera();
+            base.OnMouseUp(e);
+            if (isMouseDown) isMouseDown = false;
         }
 
         protected override void OnResize(ResizeEventArgs e)

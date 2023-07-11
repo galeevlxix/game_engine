@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using game_2.MathFolder;
 
 namespace game_2.Brain
 {
@@ -60,6 +56,14 @@ namespace game_2.Brain
             foreach (GameObj gameObj in dict.Values)
             {
                 gameObj.Draw();
+            }
+        }
+
+        public void SetCamera(Camera cam)
+        {
+            foreach (GameObj gameObj in dict.Values)
+            {
+                gameObj.pipeline.SetCamera(cam.Pos, cam.Target, cam.Up);
             }
         }
 
