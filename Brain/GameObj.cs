@@ -6,14 +6,12 @@ namespace game_2.Brain
 {
     public class GameObj
     {
-        private Mesh mesh;
-        private Shader shader;
+        protected Mesh mesh;
         public Pipeline pipeline;
 
         public GameObj()
         {
             mesh = new Mesh();
-            shader = new Shader(ShaderLoader.LoadVertexShader(), ShaderLoader.LoadFragmentShader());
             pipeline = new Pipeline();
 
             pipeline.mPersProj = new mPersProj();
@@ -22,17 +20,16 @@ namespace game_2.Brain
         public GameObj(string file_name)
         {
             mesh = new Mesh(file_name);
-            shader = new Shader(ShaderLoader.LoadVertexShader(), ShaderLoader.LoadFragmentShader());
             pipeline = new Pipeline();
 
             pipeline.mPersProj = new mPersProj();
         }
 
-        public void Draw()
+        public virtual void Draw()
         {
-            shader.setMatrix(matrix4f.ToFloatArray(pipeline.getTransformation()));
-            shader.Use();
             mesh.Draw();
+            mesh.shader.setMatrix(matrix4f.ToFloatArray(pipeline.getMVP()));
+            mesh.shader.Use();
         }
     }
 }

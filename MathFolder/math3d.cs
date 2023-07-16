@@ -8,6 +8,7 @@ namespace game_2.MathFolder
 {
     public static class math3d
     {
+        public static readonly float PI = 3.1415926535f;
         public static float ToRadian(float x)
         {
             return x * (float)Math.PI / 180.0f;
@@ -51,6 +52,10 @@ namespace game_2.MathFolder
         public static float pow(float x, float y)
         {
             return (float)Math.Pow((float)x, (float)y);
+        }
+        public static float mod(float x, float y)
+        {
+            return x % y;
         }
     }
 }

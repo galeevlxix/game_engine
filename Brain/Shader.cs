@@ -1,5 +1,4 @@
-﻿using game_2.MathFolder;
-using OpenTK.Graphics.OpenGL;
+﻿using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 
 namespace game_2.Brain

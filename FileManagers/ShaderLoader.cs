@@ -18,5 +18,9 @@ namespace game_2.FileManagers
         {
             return new StreamReader(fspath).ReadToEnd();
         }
+        public static string LoadShader(string path)
+        {
+            return new StreamReader(path).ReadToEnd();
+        }
     }
 }

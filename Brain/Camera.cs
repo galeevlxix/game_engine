@@ -1,4 +1,5 @@
 ﻿using game_2.MathFolder;
+using OpenTK.Windowing.Common;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace game_2.Brain
@@ -87,27 +88,36 @@ namespace game_2.Brain
 
         public void OnKeyboard(KeyboardState key)
         {
+            if (key.IsKeyDown(Keys.LeftControl))
+            {
+                velocity = 0.00001f;
+            }
+            else
+            {
+                velocity = 0.00015f;
+            }
+
             if (key.IsKeyDown(Keys.W))
             {
                 speedZ -= velocity;
             }
-            else if (key.IsKeyDown(Keys.S))
+            if (key.IsKeyDown(Keys.S))
             {
                 speedZ += velocity;
             }
-            else if (key.IsKeyDown(Keys.A))
+            if (key.IsKeyDown(Keys.A))
             {
                 speedX += velocity;
             }
-            else if (key.IsKeyDown(Keys.D))
+            if (key.IsKeyDown(Keys.D))
             {
                 speedX -= velocity;
             }
-            else if (key.IsKeyDown(Keys.Space))
+            if (key.IsKeyDown(Keys.Space))
             {
                 speedY += velocity;
             }
-            else if (key.IsKeyDown(Keys.LeftShift))
+            if (key.IsKeyDown(Keys.LeftShift))
             {
                 speedY -= velocity;
             }

@@ -5,6 +5,8 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 using game_2.Brain;
 using OpenTK.Mathematics;
 using game_2.MathFolder;
+using System.Diagnostics;
+using OpenTK.Windowing.Common.Input;
 
 namespace game_2
 {
@@ -52,18 +54,18 @@ namespace game_2
             ///////////////параметры игры
 
             Models = new ObjectArray();
-
             gameObj1 = new GameObj(ModelPath1);
             gameObj2 = new GameObj(ModelPath2);
-
             cam = new Camera();
 
-            Models.Add("girl", gameObj1);
-            Models.Add("axe", gameObj2);
+            //Models.Add("axe", gameObj2);
+            //Models.Add("girl", gameObj1);
+
+            Models.Add("cube", new GameObj());
 
             GameTime.Start();
         }
-
+        
         protected override void OnUpdateFrame(FrameEventArgs args)
         {
             base.OnUpdateFrame(args);            
@@ -73,11 +75,31 @@ namespace game_2
             {
                 Close();
             }
+            if (input.IsKeyDown(Keys.P))
+            {
+                GameTime.PlayOrPause();
+            }
 
-            cam.OnKeyboard(KeyboardState);
+            if (isMouseDown)
+            {
+                Models.ChangeFov(10);
+            }
+            else
+            {
+                Models.ChangeFov(50);
+            }
+
+            if (KeyboardState.IsKeyDown(Keys.LeftAlt))
+            {
+                GameTime.NextFaster();
+            }
+            else
+            {
+                GameTime.Next();
+            }
+
             cam.OnMouse(-MouseState.Delta.X, -MouseState.Delta.Y);
-
-            
+            cam.OnKeyboard(KeyboardState);
         }
 
         protected override void OnRenderFrame(FrameEventArgs args)
@@ -87,15 +109,18 @@ namespace game_2
 
             GL.Clear(ClearBufferMask.ColorBufferBit);
             GL.Clear(ClearBufferMask.DepthBufferBit);
-            GameTime.Next();
 
-            Models["girl"].pipeline.Scale(0.1f);                
-            Models["girl"].pipeline.Position(-2, 0, math3d.sin(GameTime.Time / 500) * 5 - 10);
-            Models["girl"].pipeline.Rotate(-GameTime.Time / 3, 180, 0);
+            /*            Models["girl"].pipeline.Scale(0.1f);
+                        Models["girl"].pipeline.Position(-2, 0, math3d.sin((GameTime.Time / 500) % (2 * math3d.PI)) * 5 - 10);
+                        Models["girl"].pipeline.Rotate(-GameTime.Time / 3, 180, 0);
 
-            Models["axe"].pipeline.Scale(0.3f); 
-            Models["axe"].pipeline.Position(2, 0f, -7);
-            Models["axe"].pipeline.Rotate(0, GameTime.Time / 50 + 180, 0);
+                        Models["axe"].pipeline.Scale(0.3f);
+                        Models["axe"].pipeline.Position(2, 0f, -7);
+                        Models["axe"].pipeline.Rotate(0, GameTime.Time / 50 + 180, 0);*/
+
+            Models["cube"].pipeline.Scale(1f);
+            Models["cube"].pipeline.Position(-2, 0, math3d.sin((GameTime.Time / 500) % (2 * math3d.PI)) * 5 - 10);
+            Models["cube"].pipeline.Rotate(-GameTime.Time / 3, 180, 0);
 
             Models.SetCamera(cam);
 
@@ -106,13 +131,13 @@ namespace game_2
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
             base.OnMouseDown(e);
-            if (!isMouseDown) isMouseDown = true;
+            if (!isMouseDown && e.Button == MouseButton.Button1) isMouseDown = true;
         }
 
         protected override void OnMouseUp(MouseButtonEventArgs e)
         {
             base.OnMouseUp(e);
-            if (isMouseDown) isMouseDown = false;
+            if (isMouseDown && e.Button == MouseButton.Button1) isMouseDown = false;
         }
 
         protected override void OnResize(ResizeEventArgs e)
@@ -121,6 +146,10 @@ namespace game_2
             GL.Viewport(0, 0, e.Width, e.Height);
             WindowsWidth = e.Width;
             WindowsHeight = e.Height;
+            if (Models != null && Models.Count > 0)
+            {
+                Models.ChangeWindowSize(WindowsWidth, WindowsHeight);
+            }
         }
 
         protected override void OnUnload()

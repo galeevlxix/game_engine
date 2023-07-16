@@ -2,17 +2,19 @@
 {
     public static class Cube
     {
-        public static float[] cubeVertices = new float[]{    //куб
-                  0.5f, -0.5f, -0.5f,
-                  0.5f, -0.5f,  0.5f,
-                 -0.5f, -0.5f,  0.5f,
-                 -0.5f, -0.5f, -0.5f,
-                  0.5f,  0.5f, -0.5f,
-                  0.5f,  0.5f,  0.5f,
-                 -0.5f,  0.5f,  0.5f,
-                 -0.5f,  0.5f, -0.5f
+        public static readonly float[] Vertices = new float[]
+        {    //куб
+                  0.5f, -0.5f, -0.5f, 0, 0,
+                  0.5f, -0.5f,  0.5f, 0, 1,
+                 -0.5f, -0.5f,  0.5f, 1, 1,
+                 -0.5f, -0.5f, -0.5f, 1, 0,
+                  0.5f,  0.5f, -0.5f, 0, 0,
+                  0.5f,  0.5f,  0.5f, 0, 1,
+                 -0.5f,  0.5f,  0.5f, 1, 1,
+                 -0.5f,  0.5f, -0.5f, 1, 0
                 };
-        public static int[] cubeIndices = new int[]
+
+        public static readonly int[] Indices = new int[]
         {
                 0,1,2, // передняя сторона
                 2,3,0,
@@ -32,5 +34,12 @@
                 3,2,6, // низ
                 6,7,3
         };
+
+        public static readonly float[] cubeTextCords = new float[]
+        {
+
+        };
+
+        public static readonly string TexturePath = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Textures\\tnt_texture.png";
     }
 }

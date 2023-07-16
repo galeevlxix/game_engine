@@ -78,7 +78,19 @@ namespace game_2.Brain
             mPersProj.height = Height;
         }
 
-        public matrix4f getTransformation()
+        public matrix4f GetCursorTranformation()
+        {
+            matrix4f scaleTrans = new matrix4f();
+            matrix4f translationTrans = new matrix4f();
+            matrix4f PersProjTrans = new matrix4f();
+
+            scaleTrans.InitScaleTransform(ScaleVector.x, ScaleVector.y, ScaleVector.z);
+            translationTrans.InitTranslationTransform(PositionVector.x, PositionVector.y, PositionVector.z);
+            PersProjTrans.InitPersProjTransform(mPersProj.FOV, mPersProj.width, mPersProj.height, mPersProj.zNear, mPersProj.zFar);
+            return scaleTrans * translationTrans * PersProjTrans;
+        }
+
+        public matrix4f getMVP()
         {
             matrix4f scaleTrans = new matrix4f();
             matrix4f rotateTrans = new matrix4f();
@@ -98,23 +110,6 @@ namespace game_2.Brain
 
             Transformation = scaleTrans * rotateTrans * translationTrans * CameraTranslation * CameraRotate * PersProjTrans;
             return Transformation;
-        }
-
-        public matrix4f getMVPTransformation()
-        {
-            getTransformation();
-
-            matrix4f CameraTranslation = new matrix4f();
-            matrix4f CameraRotate = new matrix4f();
-            matrix4f PersProjTrans = new matrix4f();
-
-            CameraTranslation.InitTranslationTransform(-CameraInfo.Pos.x, -CameraInfo.Pos.y, -CameraInfo.Pos.z);
-            CameraRotate.InitCameraTransform(CameraInfo.Target, CameraInfo.Up);
-            PersProjTrans.InitPersProjTransform(mPersProj.FOV, mPersProj.width, mPersProj.height, mPersProj.zNear, mPersProj.zFar);
-
-            MVP_Transformation = PersProjTrans * CameraRotate * CameraTranslation * Transformation;
-
-            return MVP_Transformation;
         }
     }
 

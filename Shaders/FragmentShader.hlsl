@@ -1,6 +1,12 @@
 #version 330
-in vec4 vertexColor;
+out vec4 outputColor;
+
+in vec2 texCoord;
+
+uniform sampler2D texture0;
+uniform sampler2D texture1;
+
 void main() 
 { 
-	gl_FragColor = vertexColor; 
+	outputColor = mix(texture(texture0, texCoord), texture(texture1, texCoord), 0.2);
 }             

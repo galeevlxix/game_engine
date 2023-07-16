@@ -5,7 +5,6 @@ namespace game_2.Brain
     public class ObjectArray
     {
         private Dictionary<string, GameObj> dict;
-        
 
         public ObjectArray()
         {
@@ -107,6 +106,14 @@ namespace game_2.Brain
             foreach (GameObj gameObj in dict.Values)
             {
                 gameObj.pipeline.ChangeWindowSize((float)width, (float)height);
+            }
+        }
+
+        public void ChangeFov(float fov)
+        {
+            foreach (GameObj gameObj in dict.Values)
+            {
+                gameObj.pipeline.mPersProj.FOV = fov;
             }
         }
     }

@@ -16,13 +16,14 @@ namespace game_2.FileManagers
         private static Regex regPLY = new Regex(@"\w*ply$");
         private static Regex regDAE = new Regex(@"\w*dae$");
 
-        public static void LoadMesh(string file_name, out float[] Vertices, out int[] Indices)
+        public static void LoadMesh(string file_name, out float[] Vertices, out int[] Indices, out float[] TextCords)
         {
             Vertices = new float[0];
             Indices = new int[0];
+            TextCords = new float[0];
             if (regOBJ.IsMatch(file_name))
             {
-                LoadFromObj(new StreamReader(file_name), ref Vertices, ref Indices);
+                LoadFromObj(new StreamReader(file_name), ref Vertices, ref Indices, ref TextCords);
                 Console.WriteLine("+obj");
                 return;
             }
@@ -45,12 +46,12 @@ namespace game_2.FileManagers
                 return;
             }
 
-            Vertices = Cube.cubeVertices;
-            Indices = Cube.cubeIndices;
+            Vertices = Triangles.Vertices;
+            Indices = Triangles.Indices;
             Console.WriteLine("Unknown file format");
         }
 
-        private static void LoadFromObj(TextReader tr, ref float[] Vertices, ref int[] Indices)
+        private static void LoadFromObj(TextReader tr, ref float[] Vertices, ref int[] Indices, ref float[] TextCords)
         {
             List<float> vertices = new List<float>();
             List<int> fig = new List<int>();
@@ -125,6 +126,7 @@ namespace game_2.FileManagers
             }
             Vertices = vertices.ToArray();
             Indices = fig.ToArray();
+            TextCords = textCords.ToArray();
         }
 
         private static void LoadFromFbx(TextReader tr, ref float[] Vertices, ref int[] Indices)
