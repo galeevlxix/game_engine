@@ -54,12 +54,8 @@ namespace game_2
             ///////////////параметры игры
 
             Models = new ObjectArray();
-            gameObj1 = new GameObj(ModelPath1);
-            gameObj2 = new GameObj(ModelPath2);
             cam = new Camera();
 
-            //Models.Add("axe", gameObj2);
-            //Models.Add("girl", gameObj1);
             Models.Add("cube", new GameObj());
             
             GameTime.Start();
@@ -108,17 +104,9 @@ namespace game_2
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            /*            Models["girl"].pipeline.Scale(0.1f);
-                        Models["girl"].pipeline.Position(-2, 0, math3d.sin((GameTime.Time / 500) % (2 * math3d.PI)) * 5 - 10);
-                        Models["girl"].pipeline.Rotate(-GameTime.Time / 3, 180, 0);
-
-                        Models["axe"].pipeline.Scale(0.3f);
-                        Models["axe"].pipeline.Position(2, 0f, -7);
-                        Models["axe"].pipeline.Rotate(0, GameTime.Time / 50 + 180, 0);*/
-
             Models["cube"].pipeline.Scale(1f);
-            Models["cube"].pipeline.Position(-2, 0, math3d.sin((GameTime.Time / 500) % (2 * math3d.PI)) * 5 - 10);
-            Models["cube"].pipeline.Rotate(-GameTime.Time / 3, 180, 0);
+            Models["cube"].pipeline.Position(0, 0, -5);
+            Models["cube"].pipeline.Rotate(0, GameTime.Time / 50f, 0);
 
             Models.SetCamera(cam);
 

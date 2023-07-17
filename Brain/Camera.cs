@@ -142,13 +142,6 @@ namespace game_2.Brain
             angularX *= 1 - brakingMouse;
             angularY *= 1 - brakingMouse;
 
-          /*speedX = math3d.abs(speedX) < 0.000000001f ? speedX : 0;
-            speedY = math3d.abs(speedY) < 0.000000001f ? speedY : 0;
-            speedZ = math3d.abs(speedZ) < 0.000000001f ? speedZ : 0;
-
-            angularX = math3d.abs(angularX) < 0.000001f ? angularX : 0;
-            angularY = math3d.abs(angularY) < 0.000001f ? angularY : 0;*/   
-
             Pos += Target * speedZ;
 
             Left = vector3f.Cross(Target, Up);
@@ -158,7 +151,9 @@ namespace game_2.Brain
             Pos += vector3f.Up * speedY;
 
             angle_h += angularX;
-            angle_v += angularY;
+
+            if (angle_v + angularY < 90 && angle_v + angularY > -90)
+                angle_v += angularY;
         }
 
         private void Update()

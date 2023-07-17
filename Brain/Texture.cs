@@ -27,11 +27,13 @@ namespace game_2.Brain
             using (Stream stream = File.OpenRead(file_name))
             {
                 ImageResult image = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
-                GL.TexImage2D(TextureTarget.Texture2D, 
-                    0, 
-                    PixelInternalFormat.Rgba, 
-                    image.Width, image.Height, 
-                    0, 
+                GL.TexImage2D(
+                    TextureTarget.Texture2D,    //target
+                    0,                          //level
+                    PixelInternalFormat.Rgba,   
+                    image.Width, 
+                    image.Height, 
+                    0,                          //border
                     PixelFormat.Rgba, 
                     PixelType.UnsignedByte, 
                     image.Data);
@@ -48,7 +50,7 @@ namespace game_2.Brain
             return new Texture(handle);
         }
 
-        public void Use(TextureUnit TextureUnit)
+        public void Use(TextureUnit TextureUnit = TextureUnit.Texture0)
         {
             GL.ActiveTexture(TextureUnit);
             GL.BindTexture(TextureTarget.Texture2D, Handle);

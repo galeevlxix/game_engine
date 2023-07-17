@@ -17,19 +17,23 @@ namespace game_2.Brain
         public Shader shader;
         public Texture texture;
 
+        private string texPath;
+
         public Mesh()
         {
             Vertices = Cube.Vertices;
             Indices = Cube.Indices;
+            texPath = Cube.TexturePath;
 
             Load();
         }
 
-        public Mesh(string file_name)
+        public Mesh(string file_name, string tex_file_name)
         {
             ModelLoader.LoadMesh(file_name, out float[] Vertices, out int[] Indices, out float[] TextCords);
             this.Vertices = Vertices;
             this.Indices = Indices;
+            texPath = tex_file_name;
             Load();
         }
 
@@ -40,26 +44,23 @@ namespace game_2.Brain
 
             VBO = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
-            GL.BufferData(BufferTarget.ArrayBuffer, Vertices.Length * sizeof(float), Vertices, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, Vertices.Length * sizeof(float), Vertices, BufferUsageHint.DynamicDraw);
 
             IBO = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, IBO);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, Indices.Length * sizeof(uint), Indices, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, Indices.Length * sizeof(int), Indices, BufferUsageHint.DynamicDraw);
 
             shader = new Shader(ShaderLoader.LoadVertexShader(), ShaderLoader.LoadFragmentShader());
-            shader.Use();
 
             var location = shader.GetAttribLocation("aPosition");
-
             GL.EnableVertexAttribArray(location);
-            GL.VertexAttribPointer(location, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0); // 3 * sizeof(float)
+            GL.VertexAttribPointer(location, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
 
             var texCordLocation = shader.GetAttribLocation("aTexCoord");
             GL.EnableVertexAttribArray(texCordLocation);
-            GL.VertexAttribPointer(texCordLocation, 2, VertexAttribPointerType.Float, false, 3 * sizeof(float), 3 * sizeof(float)); ///////HUI
+            GL.VertexAttribPointer(texCordLocation, 2, VertexAttribPointerType.Float, false, 5  * sizeof(float), 3 * sizeof(float));
 
-            texture = Texture.Load(Cube.TexturePath);
-            texture.Use(TextureUnit.Texture0);
+            texture = Texture.Load(texPath);
 
             GL.CullFace(CullFaceMode.Front);
             GL.Enable(EnableCap.DepthTest);
@@ -69,9 +70,7 @@ namespace game_2.Brain
         {
             GL.BindVertexArray(VAO);
             GL.DrawElements(PrimitiveType.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
-            
-
-            //texture.Use(TextureUnit.Texture0);
+            texture.Use(TextureUnit.Texture0);
         }
 
         public void Dispose()
@@ -79,7 +78,5 @@ namespace game_2.Brain
             GL.DeleteBuffer(VBO);
             GL.DeleteVertexArray(VAO);
         }
-
-        
     }
 }

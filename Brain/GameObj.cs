@@ -17,9 +17,9 @@ namespace game_2.Brain
             pipeline.mPersProj = new mPersProj();
         }
 
-        public GameObj(string file_name)
+        public GameObj(string file_name, string tex_file_name)
         {
-            mesh = new Mesh(file_name);
+            mesh = new Mesh(file_name, tex_file_name);
             pipeline = new Pipeline();
 
             pipeline.mPersProj = new mPersProj();

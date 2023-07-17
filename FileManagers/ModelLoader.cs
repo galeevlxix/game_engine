@@ -21,6 +21,8 @@ namespace game_2.FileManagers
             Vertices = new float[0];
             Indices = new int[0];
             TextCords = new float[0];
+
+
             if (regOBJ.IsMatch(file_name))
             {
                 LoadFromObj(new StreamReader(file_name), ref Vertices, ref Indices, ref TextCords);
