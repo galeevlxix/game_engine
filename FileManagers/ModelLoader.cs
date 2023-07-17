@@ -46,8 +46,8 @@ namespace game_2.FileManagers
                 return;
             }
 
-            Vertices = Triangles.Vertices;
-            Indices = Triangles.Indices;
+            Vertices = Cube.Vertices;
+            Indices = Cube.Indices;
             Console.WriteLine("Unknown file format");
         }
 

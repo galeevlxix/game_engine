@@ -19,8 +19,8 @@ namespace game_2.Brain
 
         public Mesh()
         {
-            Vertices = Triangles.Vertices;
-            Indices = Triangles.Indices;
+            Vertices = Cube.Vertices;
+            Indices = Cube.Indices;
 
             Load();
         }
@@ -35,7 +35,6 @@ namespace game_2.Brain
 
         private void Load()
         {
-
             VAO = GL.GenVertexArray();
             GL.BindVertexArray(VAO);
 
@@ -59,7 +58,7 @@ namespace game_2.Brain
             GL.EnableVertexAttribArray(texCordLocation);
             GL.VertexAttribPointer(texCordLocation, 2, VertexAttribPointerType.Float, false, 3 * sizeof(float), 3 * sizeof(float)); ///////HUI
 
-            texture = Texture.Load("C:\\Users\\Lenovo\\source\\repos\\game_2\\Textures\\container.png");
+            texture = Texture.Load(Cube.TexturePath);
             texture.Use(TextureUnit.Texture0);
 
             GL.CullFace(CullFaceMode.Front);

@@ -14,7 +14,7 @@
         public static readonly int[] Indices =
         {
             1, 2, 3,
-            2, 3, 4
+            1, 3, 0
         };
 
         public static readonly string TexturePath = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Textures\\tnt_texture.png";

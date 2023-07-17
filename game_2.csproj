@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Assimp" Version="3.0.0" />
     <PackageReference Include="OpenTK" Version="4.1.0" />
     <PackageReference Include="OpenTK.Graphics" Version="4.1.0" />
     <PackageReference Include="OpenTK.Windowing.Common" Version="4.1.0" />

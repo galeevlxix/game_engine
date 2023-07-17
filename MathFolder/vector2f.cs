@@ -10,5 +10,11 @@ namespace game_2.MathFolder
     {
         public float x;
         public float y;
+
+        public vector2f(float x, float y)
+        {
+            this.x = x;
+            this.y = y;
+        }
     }
 }

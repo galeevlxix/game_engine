@@ -60,9 +60,8 @@ namespace game_2
 
             //Models.Add("axe", gameObj2);
             //Models.Add("girl", gameObj1);
-
             Models.Add("cube", new GameObj());
-
+            
             GameTime.Start();
         }
         
@@ -107,8 +106,7 @@ namespace game_2
             base.OnRenderFrame(args);
             cam.OnRender();
 
-            GL.Clear(ClearBufferMask.ColorBufferBit);
-            GL.Clear(ClearBufferMask.DepthBufferBit);
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             /*            Models["girl"].pipeline.Scale(0.1f);
                         Models["girl"].pipeline.Position(-2, 0, math3d.sin((GameTime.Time / 500) % (2 * math3d.PI)) * 5 - 10);
@@ -125,6 +123,7 @@ namespace game_2
             Models.SetCamera(cam);
 
             Models.Draw();
+
             SwapBuffers();
         }
 
