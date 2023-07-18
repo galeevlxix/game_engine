@@ -4,117 +4,118 @@ namespace game_2.Brain
 {
     public class ObjectArray
     {
-        private Dictionary<string, GameObj> dict;
+        private List<GameObj> obj_list;
 
         public ObjectArray()
         {
-            dict = new Dictionary<string, GameObj>();
+            obj_list = new List<GameObj>();
         }
 
-        public ObjectArray(string name, GameObj gameObj)
+        public ObjectArray(GameObj gameObj)
         {
-            dict = new Dictionary<string, GameObj>();
-            Add(name, gameObj);
+            obj_list = new List<GameObj>();
+            Add(gameObj);
         }
 
-        public ObjectArray(Dictionary<string, GameObj> dict)
+        public ObjectArray(List<GameObj> dict)
         {
-            this.dict = dict;
+            this.obj_list = dict;
         }
 
-        public void Add(string name, GameObj gameObj)
+        public void Add(GameObj gameObj)
         {
-            dict.Add(name, gameObj);
+            obj_list.Add(gameObj);
         }
 
-        public void Remove(string name)
+        public void Insert(int index, GameObj gameObj)
         {
-            dict.Remove(name);
+            obj_list.Insert(index, gameObj);
+        }
+
+        public void RemoveAt(int i)
+        {
+            obj_list.RemoveAt(i);
+        }
+
+        public void Remove(GameObj gameObj)
+        {
+            obj_list.Remove(gameObj);
         }
 
         public void Clear()
         {
-            dict.Clear();
-        }
-
-        public bool Contains(string name)
-        {
-            return dict.ContainsKey(name);
+            obj_list.ForEach(a => a.Clear());
         }
 
         public int Count 
         { 
             get 
             { 
-                return dict.Count; 
+                return obj_list.Count; 
             } 
+        }
+
+        public void DrawRev()
+        {
+            for (int i = this.Count - 1; i >= 0; i--)
+            {
+                obj_list[i].Draw();
+            }
         }
 
         public void Draw()
         {
-            foreach (GameObj gameObj in dict.Values)
+            for (int i = 0; i < obj_list.Count; i++)
             {
-                gameObj.Draw();
+                obj_list[i].Draw();
             }
         }
 
         public void SetCamera(Camera cam)
         {
-            foreach (GameObj gameObj in dict.Values)
-            {
-                gameObj.pipeline.SetCamera(cam.Pos, cam.Target, cam.Up);
-            }
+            obj_list.ForEach(obj => obj.pipeline.SetCamera(cam.Pos, cam.Target, cam.Up));
         }
 
         public void Reset()
         {
-            foreach(GameObj gameObj in dict.Values)
-            {
-                gameObj.pipeline.Reset();
-            }
+            obj_list.ForEach(obj => obj.pipeline.Reset());
         }
 
-        public GameObj this [string name]
+        public GameObj this [int index]
         {
             get
             {
-                return dict[name];
+                return obj_list[index];
             }
             set
             {
-                dict[name] = value;
+                obj_list[index] = value;
             }
         }
 
-        public void Rotate(string name, float x, float y, float z)
+        public void Rotate(int index, float x, float y, float z)
         {
-            dict[name].pipeline.Rotate(x, y, z);
+            obj_list[index].pipeline.Rotate(x, y, z);
         }
 
-        public void Position(string name, float x, float y, float z)
+        public void Position(int index, float x, float y, float z)
         {
-            dict[name].pipeline.Position(x, y, z);
+            obj_list[index].pipeline.Position(x, y, z);
         }
 
-        public void Scale(string name, float x, float y, float z)
+        public void Scale(int index, float x, float y, float z)
         {
-            dict[name].pipeline.Scale(x, y, z);
+            obj_list[index].pipeline.Scale(x, y, z);
         }
 
         public void ChangeWindowSize(int width, int height)
         {
-            foreach (GameObj gameObj in dict.Values)
-            {
-                gameObj.pipeline.ChangeWindowSize((float)width, (float)height);
-            }
+            obj_list.ForEach(obj => obj.pipeline.ChangeWindowSize((float)width, (float)height));
         }
 
         public void ChangeFov(float fov)
         {
-            foreach (GameObj gameObj in dict.Values)
-            {
-                gameObj.pipeline.mPersProj.FOV = fov;
-            }
+            obj_list.ForEach(obj => obj.pipeline.mPersProj.FOV = fov);
         }
     }
 }

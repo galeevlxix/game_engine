@@ -48,8 +48,8 @@ namespace game_2.FileManagers
                 return;
             }
 
-            Vertices = Cube.Vertices;
-            Indices = Cube.Indices;
+            Vertices = Box.Vertices;
+            Indices = Box.Indices;
             Console.WriteLine("Unknown file format");
         }
 

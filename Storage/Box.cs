@@ -1,6 +1,6 @@
 ﻿namespace game_2.Storage
 {
-    public static class Cube
+    public static class Box
     {
         public static readonly float[] Vertices = new float[]
         {           //куб
@@ -60,11 +60,6 @@
                         // âåðõíÿÿ
                         17, 19, 16,
                         16, 19, 18
-        };
-
-        public static readonly float[] cubeTextCords = new float[]
-        {
-
         };
 
         public static readonly string TexturePath = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Textures\\container.png";

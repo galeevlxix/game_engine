@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using game_2.FileManagers;
 using game_2.MathFolder;
+using game_2.Storage;
 
 namespace game_2.Brain
 {
@@ -9,11 +10,22 @@ namespace game_2.Brain
         protected Mesh mesh;
         public Pipeline pipeline;
 
-        public GameObj()
+        public GameObj(int g)
         {
-            mesh = new Mesh();
+            if (g == 1)
+            {
+                mesh = new Mesh(Box.Vertices, Box.Indices, Box.TexturePath);
+            }
+            else if (g == 2)
+            {
+                mesh = new Mesh(Floor.Vertices, Floor.Indices, Floor.TexturePath);
+            }
+            else
+            {
+                mesh = new Mesh();
+            }
+            
             pipeline = new Pipeline();
-
             pipeline.mPersProj = new mPersProj();
         }
 
@@ -29,7 +41,13 @@ namespace game_2.Brain
         {
             mesh.Draw();
             mesh.shader.setMatrix(matrix4f.ToFloatArray(pipeline.getMVP()));
-            mesh.shader.Use();
+            mesh.shader.Use();            
+        }
+
+        public void Clear()
+        {
+            mesh.Dispose();
+            mesh.shader.Dispose();
         }
     }
 }

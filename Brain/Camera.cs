@@ -6,11 +6,13 @@ namespace game_2.Brain
 {
     public class Camera
     {
-        public vector3f Pos { get; private set; }
+        public vector3f Pos { get; set; }
         public vector3f Target { get; private set; }
         public vector3f Up { get; private set; }
+        private vector3f Left;
 
-        private vector3f Left = new vector3f();
+        public mPersProj persProj { get; private set; }
+        public matrix4f persProjMatrix { get; private set; }
 
         private float angle_h;  //горизонтальный поворот
         private float angle_v;  //вертикальный поворот
@@ -18,7 +20,9 @@ namespace game_2.Brain
         private float velocity = 0.00015f;
         private float sensitivity = 0.002f;
         private float brakingKeyBo = 0.01f;
-        private float brakingMouse = 0.04f;
+        private float brakingMouse = 0.03f;
+
+        private float zeroLimit = 0.0001f;
 
         private float speedX;
         private float speedY;
@@ -34,6 +38,12 @@ namespace game_2.Brain
             Target.Normalize();
             Up = vector3f.Up;
 
+            Left = new vector3f();
+
+            persProjMatrix = new matrix4f();
+            persProj = new mPersProj();
+            persProjMatrix.InitPersProjTransform(persProj);
+
             Init();
         }
 
@@ -45,6 +55,30 @@ namespace game_2.Brain
 
             Up = cameraUp;
             Up.Normalize();
+
+            Left = new vector3f();
+
+            persProjMatrix = new matrix4f();
+            persProj = new mPersProj();
+            persProjMatrix.InitPersProjTransform(persProj);
+
+            Init();
+        }
+
+        public Camera(vector3f cameraPos, vector3f cameraTarget, vector3f cameraUp, mPersProj mPersProj)
+        {
+            Pos = cameraPos;
+            Target = cameraTarget;
+            Target.Normalize();
+
+            Up = cameraUp;
+            Up.Normalize();
+
+            Left = new vector3f();
+
+            persProjMatrix = new matrix4f();
+            persProj = mPersProj;
+            persProjMatrix.InitPersProjTransform(mPersProj);
 
             Init();
         }
@@ -135,12 +169,57 @@ namespace game_2.Brain
 
         public void OnRender()
         {
-            speedX *= 1 - brakingKeyBo;
-            speedY *= 1 - brakingKeyBo;
-            speedZ *= 1 - brakingKeyBo;
+            float m_speedX = speedX * (1 - brakingKeyBo);
+            float m_speedY = speedY * (1 - brakingKeyBo);
+            float m_speedZ = speedZ * (1 - brakingKeyBo);
 
-            angularX *= 1 - brakingMouse;
-            angularY *= 1 - brakingMouse;
+            float m_angularX = angularX * (1 - brakingMouse);
+            float m_angularY = angularY * (1 - brakingMouse);
+
+            if (m_speedX < zeroLimit && m_speedX > -zeroLimit)
+            {
+                speedX = 0;
+            }
+            else
+            {
+                speedX = m_speedX;
+            }
+
+            if (m_speedY < zeroLimit && m_speedY > -zeroLimit)
+            {
+                speedY = 0;
+            }
+            else
+            {
+                speedY = m_speedY;
+            }
+
+            if (m_speedZ < zeroLimit && m_speedZ > -zeroLimit)
+            {
+                speedZ = 0;
+            }
+            else
+            {
+                speedZ = m_speedZ;
+            }
+
+            if (m_angularX < zeroLimit && m_angularX > -zeroLimit)
+            {
+                angularX = 0;
+            }
+            else
+            {
+                angularX = m_angularX;
+            }
+
+            if (m_angularY < zeroLimit && m_angularY > -zeroLimit)
+            {
+                angularY = 0;
+            }
+            else
+            {
+                angularY = m_angularY;
+            }
 
             Pos += Target * speedZ;
 
@@ -175,6 +254,12 @@ namespace game_2.Brain
 
             Up = vector3f.Cross(Target, Haxis);
             Up.Normalize();
+        }
+
+        public void setFOV(float fov)
+        {
+            persProj.FOV = fov;
+            persProjMatrix.InitPersProjTransform(persProj);
         }
     }
 }

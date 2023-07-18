@@ -1,4 +1,5 @@
-﻿using OpenTK.Mathematics;
+﻿using game_2.Brain;
+using OpenTK.Mathematics;
 
 namespace game_2.MathFolder
 {
@@ -145,7 +146,20 @@ namespace game_2.MathFolder
             m[3, 0] = 0.0f; m[3, 1] = 0.0f; m[3, 2] = -1.0f; m[3, 3] = 0;
             this.Trans();
         }
-        
+
+        public void InitPersProjTransform(mPersProj mPersProj)
+        {
+            float ar = mPersProj.width / mPersProj.height;
+            float zRange = mPersProj.zNear - mPersProj.zFar;
+            float tanHalfFOV = math3d.tan(math3d.ToRadian(mPersProj.FOV) * 0.5f);
+
+            m[0, 0] = 1.0f / (tanHalfFOV * ar); m[0, 1] = 0.0f; m[0, 2] = 0.0f; m[0, 3] = 0;
+            m[1, 0] = 0.0f; m[1, 1] = 1.0f / tanHalfFOV; m[1, 2] = 0.0f; m[1, 3] = 0;
+            m[2, 0] = 0.0f; m[2, 1] = 0.0f; m[2, 2] = (mPersProj.zNear + mPersProj.zFar) / zRange; m[2, 3] = 2.0f * mPersProj.zFar * mPersProj.zNear / zRange;
+            m[3, 0] = 0.0f; m[3, 1] = 0.0f; m[3, 2] = -1.0f; m[3, 3] = 0;
+            this.Trans();
+        }
+
         public void Trans()
         {
             for (int i = 0; i < 4; i++)
