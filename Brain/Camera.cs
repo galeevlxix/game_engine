@@ -122,15 +122,6 @@ namespace game_2.Brain
 
         public void OnKeyboard(KeyboardState key)
         {
-            if (key.IsKeyDown(Keys.LeftControl))
-            {
-                velocity = 0.00001f;
-            }
-            else
-            {
-                velocity = 0.00015f;
-            }
-
             if (key.IsKeyDown(Keys.W))
             {
                 speedZ -= velocity;

@@ -30,6 +30,7 @@ namespace game_2
         GameObj obj8;
         GameObj obj9;
         GameObj obj10;
+        GameObj obj11;
 
         Camera cam;
 
@@ -72,6 +73,7 @@ namespace game_2
             obj8 = new GameObj(FloorModel);
             obj9 = new GameObj(FloorModel);
             obj10 = new GameObj(FloorModel);
+            obj11 = new GameObj(BoxModel);
 
             Models.Add(obj1); 
             Models.Add(obj2);
@@ -83,7 +85,7 @@ namespace game_2
             Models.Add(obj8);
             Models.Add(obj9);
             Models.Add(obj10);
-            
+            Models.Add(obj11);
             GameTime.Start();
         }
         
@@ -123,6 +125,8 @@ namespace game_2
             cam.OnKeyboard(KeyboardState);
         }
 
+        float posx = -6, posz = -6;
+
         protected override void OnRenderFrame(FrameEventArgs args)
         {
             base.OnRenderFrame(args);
@@ -131,7 +135,7 @@ namespace game_2
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             Models[0].pipeline.Scale(1f);
-            Models[0].pipeline.Position(0, 1, 0);
+            Models[0].pipeline.Position(0, math3d.abs(math3d.sin(GameTime.Time/500) * 1.5f) + 0.97f, 0);
             Models[0].pipeline.Rotate(0, 0, 0);
 
             Models[1].pipeline.Scale(1f);
@@ -167,14 +171,40 @@ namespace game_2
             Models[8].pipeline.Rotate(0, 0, 0);
 
             Models[9].pipeline.Scale(1f);
-            Models[9].pipeline.Position(6, 0, 06);
+            Models[9].pipeline.Position(6, 0, 6);
             Models[9].pipeline.Rotate(0, 0, 0);
+
+            if (posz == -6f && posx + 0.01f <= 6f)
+            {
+                posx += 0.01f;
+                if (posx >= 5.9f && posx <= 6f) posx = 6f;
+            } 
+            else if (posx == 6f && posz + 0.01f <= 6f)
+            {
+                posz += 0.01f;
+                if (posz >= 5.9f && posz <= 6f) posz = 6f;
+            } 
+            else if (posz == 6f && posx - 0.01f >= -6f)
+            {
+                posx += -0.01f;
+                if (posx <= -5.9f && posx >= -6f) posx = -6f;
+            }
+            else if (posx == -6f && posz - 0.01f >= -6f)
+            {
+                posz += -0.01f;
+                if (posz <= -5.9f && posz >= -6f) posz = -6f;
+            }
+
+            Models[10].pipeline.Scale(1f);
+            Models[10].pipeline.Position(posx, 1, posz);
+            Models[10].pipeline.Rotate(0, 0, 0);
 
             Models.SetCamera(cam);
 
             Models.Draw();
 
             SwapBuffers();
+            GLFW.PollEvents();
         }
 
         protected override void OnMouseDown(MouseButtonEventArgs e)
