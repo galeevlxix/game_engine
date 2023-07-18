@@ -135,7 +135,7 @@ namespace game_2
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             Models[0].pipeline.Scale(1f);
-            Models[0].pipeline.Position(0, math3d.abs(math3d.sin(GameTime.Time/500) * 1.5f) + 0.97f, 0);
+            Models[0].pipeline.Position(0, math3d.abs(math3d.sin(GameTime.Time/300) * 1.5f) + 0.97f, 0);
             Models[0].pipeline.Rotate(0, 0, 0);
 
             Models[1].pipeline.Scale(1f);
