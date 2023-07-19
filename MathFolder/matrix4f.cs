@@ -111,10 +111,10 @@ namespace game_2.MathFolder
 
         public void InitScaleTransform(float x, float y, float z)
         {
-            m[0, 0] = x; m[0, 1] = 0.0f; m[0, 2] = 0.0f; m[0, 3] = 0.0f;
-            m[1, 0] = 0.0f; m[1, 1] = y; m[1, 2] = 0.0f; m[1, 3] = 0.0f;
-            m[2, 0] = 0.0f; m[2, 1] = 0.0f; m[2, 2] = z; m[2, 3] = 0.0f;
-            m[3, 0] = 0.0f; m[3, 1] = 0.0f; m[3, 2] = 0.0f; m[3, 3] = 1.0f;
+            m[0, 0] = x;        m[0, 1] = 0.0f;     m[0, 2] = 0.0f;     m[0, 3] = 0.0f;
+            m[1, 0] = 0.0f;     m[1, 1] = y;        m[1, 2] = 0.0f;     m[1, 3] = 0.0f;
+            m[2, 0] = 0.0f;     m[2, 1] = 0.0f;     m[2, 2] = z;        m[2, 3] = 0.0f;
+            m[3, 0] = 0.0f;     m[3, 1] = 0.0f;     m[3, 2] = 0.0f;     m[3, 3] = 1.0f;
         }
 
         public void InitCameraTransform(vector3f Target, vector3f Up)
@@ -126,10 +126,10 @@ namespace game_2.MathFolder
             U = vector3f.Cross(U, N);
             vector3f V = vector3f.Cross(N, U);
 
-            m[0, 0] = U.x; m[0, 1] = U.y; m[0, 2] = U.z; m[0, 3] = 0.0f;
-            m[1, 0] = V.x; m[1, 1] = V.y; m[1, 2] = V.z; m[1, 3] = 0.0f;
-            m[2, 0] = N.x; m[2, 1] = N.y; m[2, 2] = N.z; m[2, 3] = 0.0f;
-            m[3, 0] = 0.0f; m[3, 1] = 0.0f; m[3, 2] = 0.0f; m[3, 3] = 1.0f;
+            m[0, 0] = U.x;      m[0, 1] = U.y;      m[0, 2] = U.z;      m[0, 3] = 0.0f;
+            m[1, 0] = V.x;      m[1, 1] = V.y;      m[1, 2] = V.z;      m[1, 3] = 0.0f;
+            m[2, 0] = N.x;      m[2, 1] = N.y;      m[2, 2] = N.z;      m[2, 3] = 0.0f;
+            m[3, 0] = 0.0f;     m[3, 1] = 0.0f;     m[3, 2] = 0.0f;     m[3, 3] = 1.0f;
 
             this.Trans();
         }

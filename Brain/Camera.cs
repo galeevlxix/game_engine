@@ -122,6 +122,7 @@ namespace game_2.Brain
 
         public void OnKeyboard(KeyboardState key)
         {
+            if (!key.IsAnyKeyDown) return;
             if (key.IsKeyDown(Keys.W))
             {
                 speedZ -= velocity;
@@ -155,7 +156,6 @@ namespace game_2.Brain
             angularX += DeltaX * sensitivity;
             angularY += DeltaY * sensitivity;
 
-            Update();
         }
 
         public void OnRender()
@@ -224,6 +224,8 @@ namespace game_2.Brain
 
             if (angle_v + angularY < 90 && angle_v + angularY > -90)
                 angle_v += angularY;
+
+            Update();
         }
 
         private void Update()
