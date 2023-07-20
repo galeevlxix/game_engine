@@ -18,7 +18,7 @@ namespace game_2.Brain
         private static float brakingKeyBo = 0.01f;
         private static float brakingMouse = 0.03f;
 
-        private static float zeroLimit = 0.0001f;
+        private static float zeroLimit = 0.00004f;
 
         private static float speedX;
         private static float speedY;
@@ -102,6 +102,16 @@ namespace game_2.Brain
         public static void OnKeyboard(KeyboardState key)
         {
             if (!key.IsAnyKeyDown) return;
+
+            if (key.IsKeyDown(Keys.LeftControl))
+            {
+                velocity = 0.00005f;
+            }
+            else
+            {
+                velocity = 0.00015f;
+            }
+
             if (key.IsKeyDown(Keys.W))
             {
                 speedZ -= velocity;
@@ -126,6 +136,7 @@ namespace game_2.Brain
             {
                 speedY -= velocity;
             }
+
         }
 
         public static void OnMouse(float DeltaX, float DeltaY)       //сюда реальные координаты мыши, а не дельта

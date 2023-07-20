@@ -1,5 +1,4 @@
-﻿using game_2.MathFolder;
-using game_2.Storage;
+﻿using game_2.Storage;
 
 namespace game_2.Brain
 {
