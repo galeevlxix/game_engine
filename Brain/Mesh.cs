@@ -34,6 +34,7 @@ namespace game_2.Brain
             this.Vertices = Vertices;
             this.Indices = Indices;
             texPath = tex_file_name;
+
             Load();
         }
 
@@ -42,6 +43,7 @@ namespace game_2.Brain
             this.Vertices = Vertices;
             this.Indices = Indices;
             this.texPath = texPath;
+
             Load();
         }
 
@@ -67,12 +69,16 @@ namespace game_2.Brain
 
             // Устанавливаем указатели атрибутов вершины
             var location = shader.GetAttribLocation("aPosition");
-            GL.VertexAttribPointer(location, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
+            GL.VertexAttribPointer(location, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 0);
             GL.EnableVertexAttribArray(location);
 
             var texCordLocation = shader.GetAttribLocation("aTexCoord");
-            GL.VertexAttribPointer(texCordLocation, 2, VertexAttribPointerType.Float, false, 5  * sizeof(float), 3 * sizeof(float));
+            GL.VertexAttribPointer(texCordLocation, 2, VertexAttribPointerType.Float, false, 8  * sizeof(float), 3 * sizeof(float));
             GL.EnableVertexAttribArray(texCordLocation);
+
+            var normCordLocation = shader.GetAttribLocation("aNormal");
+            GL.VertexAttribPointer(normCordLocation, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 5 * sizeof(float));
+            GL.EnableVertexAttribArray(normCordLocation);
 
             // Текстуры
             texture = Texture.Load(texPath);

@@ -9,11 +9,11 @@ namespace game_2.Storage
     public class Floor
     {
         public static readonly float[] Vertices = new float[]
-        {   //cords    //textures
-            -3, 0, -3, -1, -1,
-             3, 0, -3,  1, -1,
-             3, 0,  3,  1,  1,
-            -3, 0,  3, -1,  1
+        {   //cords     //textures  //normals
+            -3, 0, -3,  0,  0,      0, 1, 0,
+             3, 0, -3,  1,  0,      0, 1, 0,
+             3, 0,  3,  1,  1,      0, 1, 0,
+            -3, 0,  3,  0,  1,      0, 1, 0,
         };
 
         public static readonly int[] Indices = new int[]

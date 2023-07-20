@@ -58,8 +58,8 @@ namespace game_2.Brain
         public void OnRender()
         {
             this[0].pipeline.Scale(1f);
-            this[0].pipeline.Position(0, math3d.abs(math3d.sin(GameTime.Time / 300) * 1.5f) + 0.97f, 0);
-            this[0].pipeline.Rotate(0, 0, 0);
+            this[0].pipeline.Position(0, 1, 0);
+            this[0].pipeline.Rotate(0, GameTime.Time/10, 0);
 
             this[1].pipeline.Scale(1f);
             this[1].pipeline.Position(-6, 0, -6);
