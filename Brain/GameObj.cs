@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-using game_2.FileManagers;
-using game_2.MathFolder;
+﻿using game_2.MathFolder;
 using game_2.Storage;
 
 namespace game_2.Brain
@@ -26,7 +24,6 @@ namespace game_2.Brain
             }
             
             pipeline = new Pipeline();
-            pipeline.mPersProj = new mPersProj();
         }
 
         public GameObj(string file_name, string tex_file_name)
@@ -34,20 +31,20 @@ namespace game_2.Brain
             mesh = new Mesh(file_name, tex_file_name);
             pipeline = new Pipeline();
 
-            pipeline.mPersProj = new mPersProj();
         }
 
         public virtual void Draw()
         {
             mesh.Draw();
-            mesh.shader.setMatrix(matrix4f.ToFloatArray(pipeline.getMVP()));
+            mesh.shader.setMatrix(pipeline.getMVP().ToOpenTK());
             mesh.shader.Use();            
         }
 
-        public void Clear()
+        public void OnDelete()
         {
             mesh.Dispose();
             mesh.shader.Dispose();
+            mesh.texture.Dispose();
         }
     }
 }

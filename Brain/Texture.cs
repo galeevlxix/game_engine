@@ -6,7 +6,7 @@ using StbImageSharp;
 
 namespace game_2.Brain
 {
-    public class Texture
+    public class Texture : IDisposable
     {
         public readonly int Handle;
 
@@ -54,6 +54,11 @@ namespace game_2.Brain
         {
             GL.ActiveTexture(TextureUnit);
             GL.BindTexture(TextureTarget.Texture2D, Handle);
+        }
+
+        public void Dispose()
+        {
+            GL.DeleteTexture(Handle);
         }
     }
 }

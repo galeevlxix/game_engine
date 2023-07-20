@@ -7,7 +7,10 @@ namespace game_2.Brain
     {
         int Handle;
         int MVPID;
-      
+        int PersProjID;
+        int CameraPosID;
+        int CameraRotID;
+
         public Shader(string vs, string fs)
         {
             //дескрипторы шейдеров 
@@ -37,6 +40,30 @@ namespace game_2.Brain
             {
                 string infolog = GL.GetProgramInfoLog(Handle);
                 Console.WriteLine(infolog);
+            }
+
+            MVPID = GL.GetUniformLocation(Handle, "mvp");
+            if (MVPID < 0)
+            {
+                Console.WriteLine("mvp наебнулось");
+            }
+
+            PersProjID = GL.GetUniformLocation(Handle, "pers");
+            if (PersProjID < 0)
+            {
+                Console.WriteLine("pers наебнулось");
+            }
+
+            CameraPosID = GL.GetUniformLocation(Handle, "campos");
+            if (CameraPosID < 0)
+            {
+                Console.WriteLine("campos наебнулось");
+            }
+
+            CameraRotID = GL.GetUniformLocation(Handle, "camrot");
+            if (CameraRotID < 0)
+            {
+                Console.WriteLine("camrot наебнулось");
             }
 
             //очистка вершинных и фрагментных шейдеров
@@ -69,7 +96,14 @@ namespace game_2.Brain
 
         public void setMatrix(Matrix4 m)
         {
+            Matrix4 p = mPersProj.PersProjMatrix.ToOpenTK();
+            Matrix4 c_pos = Camera.CameraTranslation.ToOpenTK();
+            Matrix4 c_rot = Camera.CameraRotation.ToOpenTK();
+
             GL.UniformMatrix4(MVPID, true, ref m);
+            GL.UniformMatrix4(PersProjID, true, ref p);
+            GL.UniformMatrix4(CameraPosID, true, ref c_pos);
+            GL.UniformMatrix4(CameraRotID, true, ref c_rot);
         }
 
         public void Use()

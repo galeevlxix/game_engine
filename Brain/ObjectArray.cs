@@ -44,7 +44,7 @@ namespace game_2.Brain
 
         public void Clear()
         {
-            obj_list.ForEach(a => a.Clear());
+            obj_list.ForEach(a => a.OnDelete());
         }
 
         public int Count 
@@ -69,11 +69,6 @@ namespace game_2.Brain
             {
                 obj_list[i].Draw();
             }
-        }
-
-        public void SetCamera(Camera cam)
-        {
-            obj_list.ForEach(obj => obj.pipeline.SetCamera(cam.Pos, cam.Target, cam.Up));
         }
 
         public void Reset()
@@ -106,16 +101,6 @@ namespace game_2.Brain
         public void Scale(int index, float x, float y, float z)
         {
             obj_list[index].pipeline.Scale(x, y, z);
-        }
-
-        public void ChangeWindowSize(int width, int height)
-        {
-            obj_list.ForEach(obj => obj.pipeline.ChangeWindowSize((float)width, (float)height));
-        }
-
-        public void ChangeFov(float fov)
-        {
-            obj_list.ForEach(obj => obj.pipeline.mPersProj.FOV = fov);
         }
     }
 }

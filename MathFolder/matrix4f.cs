@@ -140,23 +140,10 @@ namespace game_2.MathFolder
             float zRange = zNear - zFar;
             float tanHalfFOV = math3d.tan(math3d.ToRadian(FOV) * 0.5f);
 
-            m[0, 0] = 1.0f / (tanHalfFOV * ar); m[0, 1] = 0.0f; m[0, 2] = 0.0f; m[0, 3] = 0;
-            m[1, 0] = 0.0f; m[1, 1] = 1.0f / tanHalfFOV; m[1, 2] = 0.0f; m[1, 3] = 0;
-            m[2, 0] = 0.0f; m[2, 1] = 0.0f; m[2, 2] = (zNear + zFar) / zRange; m[2, 3] = 2.0f * zFar * zNear / zRange;
-            m[3, 0] = 0.0f; m[3, 1] = 0.0f; m[3, 2] = -1.0f; m[3, 3] = 0;
-            this.Trans();
-        }
-
-        public void InitPersProjTransform(mPersProj mPersProj)
-        {
-            float ar = mPersProj.width / mPersProj.height;
-            float zRange = mPersProj.zNear - mPersProj.zFar;
-            float tanHalfFOV = math3d.tan(math3d.ToRadian(mPersProj.FOV) * 0.5f);
-
-            m[0, 0] = 1.0f / (tanHalfFOV * ar); m[0, 1] = 0.0f; m[0, 2] = 0.0f; m[0, 3] = 0;
-            m[1, 0] = 0.0f; m[1, 1] = 1.0f / tanHalfFOV; m[1, 2] = 0.0f; m[1, 3] = 0;
-            m[2, 0] = 0.0f; m[2, 1] = 0.0f; m[2, 2] = (mPersProj.zNear + mPersProj.zFar) / zRange; m[2, 3] = 2.0f * mPersProj.zFar * mPersProj.zNear / zRange;
-            m[3, 0] = 0.0f; m[3, 1] = 0.0f; m[3, 2] = -1.0f; m[3, 3] = 0;
+            m[0, 0] = 1.0f / (tanHalfFOV * ar);     m[0, 1] = 0.0f;                 m[0, 2] = 0.0f;                     m[0, 3] = 0;
+            m[1, 0] = 0.0f;                         m[1, 1] = 1.0f / tanHalfFOV;    m[1, 2] = 0.0f;                     m[1, 3] = 0;
+            m[2, 0] = 0.0f;                         m[2, 1] = 0.0f;                 m[2, 2] = (zNear + zFar) / zRange;  m[2, 3] = 2.0f * zFar * zNear / zRange;
+            m[3, 0] = 0.0f;                         m[3, 1] = 0.0f;                 m[3, 2] = -1.0f;                    m[3, 3] = 0;
             this.Trans();
         }
 
@@ -176,35 +163,13 @@ namespace game_2.MathFolder
             }
         }
         
-        public static Matrix4 ToFloatArray(matrix4f m)
+        public Matrix4 ToOpenTK()
         {
-            float[] f = new float[16];
-
-            for (int i = 0; i < 4; i++)
-            {
-                for (int j = 0; j < 4; j++)
-                {
-                    f[i * 4 + j] = m[i, j];
-                }
-            }
-
             return new Matrix4(
-                f[0], 
-                f[1],
-                f[2],
-                f[3],
-                f[4],
-                f[5],
-                f[6],
-                f[7],
-                f[8],
-                f[9],
-                f[10],
-                f[11],
-                f[12],
-                f[13],
-                f[14],
-                f[15]
+                m[0, 0], m[0, 1], m[0, 2], m[0, 3],
+                m[1, 0], m[1, 1], m[1, 2], m[1, 3],
+                m[2, 0], m[2, 1], m[2, 2], m[2, 3],
+                m[3, 0], m[3, 1], m[3, 2], m[3, 3]
                 );
         }
     }

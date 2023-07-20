@@ -1,37 +1,36 @@
 ﻿using game_2.MathFolder;
-using OpenTK.Windowing.Common;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace game_2.Brain
 {
-    public class Camera
+    public static class Camera
     {
-        public vector3f Pos { get; set; }
-        public vector3f Target { get; private set; }
-        public vector3f Up { get; private set; }
-        private vector3f Left;
+        public static vector3f Pos { get; set; }
+        public static vector3f Target { get; private set; }
+        public static vector3f Up { get; private set; }
+        private static vector3f Left;
 
-        public mPersProj persProj { get; private set; }
-        public matrix4f persProjMatrix { get; private set; }
+        private static float angle_h;  //горизонтальный поворот
+        private static float angle_v;  //вертикальный поворот
 
-        private float angle_h;  //горизонтальный поворот
-        private float angle_v;  //вертикальный поворот
+        private static float velocity = 0.00015f;
+        private static float sensitivity = 0.002f;
+        private static float brakingKeyBo = 0.01f;
+        private static float brakingMouse = 0.03f;
 
-        private float velocity = 0.00015f;
-        private float sensitivity = 0.002f;
-        private float brakingKeyBo = 0.01f;
-        private float brakingMouse = 0.03f;
+        private static float zeroLimit = 0.0001f;
 
-        private float zeroLimit = 0.0001f;
+        private static float speedX;
+        private static float speedY;
+        private static float speedZ;
 
-        private float speedX;
-        private float speedY;
-        private float speedZ;
+        private static float angularX;
+        private static float angularY;
 
-        private float angularX;
-        private float angularY;
+        public static matrix4f CameraTranslation { get; private set; }
+        public static matrix4f CameraRotation { get; private set; }
 
-        public Camera()
+        public static void InitCamera()
         {
             Pos = vector3f.Zero;
             Target = vector3f.Ford;
@@ -40,14 +39,13 @@ namespace game_2.Brain
 
             Left = new vector3f();
 
-            persProjMatrix = new matrix4f();
-            persProj = new mPersProj();
-            persProjMatrix.InitPersProjTransform(persProj);
+            CameraTranslation = new matrix4f();
+            CameraRotation = new matrix4f();
 
             Init();
         }
 
-        public Camera(vector3f cameraPos, vector3f cameraTarget, vector3f cameraUp)
+        public static void InitCamera(vector3f cameraPos, vector3f cameraTarget, vector3f cameraUp)
         {
             Pos = cameraPos;
             Target = cameraTarget;
@@ -58,32 +56,13 @@ namespace game_2.Brain
 
             Left = new vector3f();
 
-            persProjMatrix = new matrix4f();
-            persProj = new mPersProj();
-            persProjMatrix.InitPersProjTransform(persProj);
+            CameraTranslation = new matrix4f();
+            CameraRotation = new matrix4f();
 
             Init();
         }
 
-        public Camera(vector3f cameraPos, vector3f cameraTarget, vector3f cameraUp, mPersProj mPersProj)
-        {
-            Pos = cameraPos;
-            Target = cameraTarget;
-            Target.Normalize();
-
-            Up = cameraUp;
-            Up.Normalize();
-
-            Left = new vector3f();
-
-            persProjMatrix = new matrix4f();
-            persProj = mPersProj;
-            persProjMatrix.InitPersProjTransform(mPersProj);
-
-            Init();
-        }
-
-        private void Init()
+        private static void Init()
         {
             vector3f HTarget = new vector3f(Target.x, 0, Target.z);
             HTarget.Normalize();
@@ -120,7 +99,7 @@ namespace game_2.Brain
             angularY = 0;
         }
 
-        public void OnKeyboard(KeyboardState key)
+        public static void OnKeyboard(KeyboardState key)
         {
             if (!key.IsAnyKeyDown) return;
             if (key.IsKeyDown(Keys.W))
@@ -149,7 +128,7 @@ namespace game_2.Brain
             }
         }
 
-        public void OnMouse(float DeltaX, float DeltaY)       //сюда реальные координаты мыши, а не дельта
+        public static void OnMouse(float DeltaX, float DeltaY)       //сюда реальные координаты мыши, а не дельта
         {
             //if ((DeltaX == 0) && (DeltaY == 0)) return;
 
@@ -158,7 +137,7 @@ namespace game_2.Brain
 
         }
 
-        public void OnRender()
+        public static void OnRender()
         {
             float m_speedX = speedX * (1 - brakingKeyBo);
             float m_speedY = speedY * (1 - brakingKeyBo);
@@ -226,9 +205,12 @@ namespace game_2.Brain
                 angle_v += angularY;
 
             Update();
+
+            CameraTranslation.InitTranslationTransform(-Pos.x, -Pos.y, -Pos.z);
+            CameraRotation.InitCameraTransform(Target, Up);
         }
 
-        private void Update()
+        private static void Update()
         {
             vector3f Vaxis = vector3f.Up;
 
@@ -247,12 +229,6 @@ namespace game_2.Brain
 
             Up = vector3f.Cross(Target, Haxis);
             Up.Normalize();
-        }
-
-        public void setFOV(float fov)
-        {
-            persProj.FOV = fov;
-            persProjMatrix.InitPersProjTransform(persProj);
         }
     }
 }

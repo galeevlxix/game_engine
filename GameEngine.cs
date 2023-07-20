@@ -12,6 +12,7 @@ namespace game_2
     public class GameEngine : GameWindow
     {
         bool isMouseDown;
+        bool loaded = false;
 
         ObjectArray Models;
 
@@ -31,8 +32,6 @@ namespace game_2
         GameObj obj9;
         GameObj obj10;
         GameObj obj11;
-
-        Camera cam;
 
         int BoxModel = 1;
         int FloorModel = 2;
@@ -60,8 +59,8 @@ namespace game_2
             ///////////////параметры игры
 
             Models = new ObjectArray();
-            cam = new Camera();
-            cam.Pos = new vector3f(0, 3, 4);
+            Camera.InitCamera();
+            Camera.Pos = new vector3f(0, 3, 4);
 
             obj1 = new GameObj(BoxModel);
             obj2 = new GameObj(FloorModel);
@@ -86,7 +85,9 @@ namespace game_2
             Models.Add(obj9);
             Models.Add(obj10);
             Models.Add(obj11);
+
             GameTime.Start();
+            loaded = true;
         }
         
         protected override void OnUpdateFrame(FrameEventArgs args)
@@ -105,11 +106,11 @@ namespace game_2
 
             if (isMouseDown)
             {
-                Models.ChangeFov(10);
+                mPersProj.ChangeFOV(25);
             }
             else
             {
-                Models.ChangeFov(50);
+                mPersProj.ChangeFOV(50);
             }
 
             if (KeyboardState.IsKeyDown(Keys.LeftAlt))
@@ -121,8 +122,8 @@ namespace game_2
                 GameTime.Next();
             }
 
-            cam.OnMouse(-MouseState.Delta.X, -MouseState.Delta.Y);
-            cam.OnKeyboard(KeyboardState);
+            Camera.OnMouse(-MouseState.Delta.X, -MouseState.Delta.Y);
+            Camera.OnKeyboard(KeyboardState);
         }
 
         float posx = -6, posz = -6;
@@ -130,7 +131,7 @@ namespace game_2
         protected override void OnRenderFrame(FrameEventArgs args)
         {
             base.OnRenderFrame(args);
-            cam.OnRender();
+            Camera.OnRender();
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
@@ -199,8 +200,6 @@ namespace game_2
             Models[10].pipeline.Position(posx, 1, posz);
             Models[10].pipeline.Rotate(0, 0, 0);
 
-            Models.SetCamera(cam);
-
             Models.Draw();
 
             SwapBuffers();
@@ -225,10 +224,7 @@ namespace game_2
             GL.Viewport(0, 0, e.Width, e.Height);
             WindowsWidth = e.Width;
             WindowsHeight = e.Height;
-            if (Models != null && Models.Count > 0)
-            {
-                Models.ChangeWindowSize(WindowsWidth, WindowsHeight);
-            }
+            if (loaded) mPersProj.ChangeWindowSize(WindowsWidth, WindowsHeight);
         }
 
         protected override void OnUnload()
