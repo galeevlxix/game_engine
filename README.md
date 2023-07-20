@@ -1,19 +1,15 @@
 ### Разработка графического программного обеспечения для визуализации и работы с трехмерными объектами
 ст. Галеев Тимур, гр. 3530203/00102 (летняя практика)
 # Оглавление
-[Первые шаги и треугольник](#s1)
-
-[Индексная отрисовка](#s3)
-
-[Интерполяционный цвет](#s4)
-
-[Вращение, перемещение, масштаб](#s5)
-
-[Добавим класс GameObj](#s6)
-
-[Разные форматы файлов](#s7)
-
-[Камера](#s8)
+[Первые шаги и треугольник](#s1)  
+[Индексная отрисовка](#s3)  
+[Интерполяционный цвет](#s4)  
+[Вращение, перемещение, масштаб](#s5)  
+[Добавим класс GameObj](#s6)  
+[Разные форматы файлов](#s7)  
+[Камера](#s8)  
+[Текстуры](#s9)  
+[Нормали](#s10)  
 
 <a name="s1"></a>
 # Первые шаги и треугольник 
@@ -1494,3 +1490,231 @@ Pipeline будет вспомогательным классом для соз�
 ```
 ## Результат:
 ![camera](https://github.com/galeevlxix/game_engine/blob/WorkingWithTheModel/screens/camera%20(1).gif)
+<a name = "s9"></a>
+# Текстуры
+## Класс Texture
+В методе загрузки текстуры `Load` первым делом создаем пустую текстуру `Handle` для нашего использования.  
+`stb_image` загружается с верхнего левого пикселя, в то время как OpenGL загружается с нижнего левого, в результате чего текстура переворачивается по вертикали. Функция `stbi_set_flip_vertically_on_load` исправит это недоразумение, заставив текстуру отображаться должным образом.  
+Далее мы читаем файл, загружаем изображение и вводим значения параметров для `TexImage2D`.  
+Потом с помощью функции `TexParameter` мы настраеваем параметры текстуры: перенос и фильтрацию.  
+После того, как текстура была создана, генерируем коллекцию этой текстуры в формате mipmapped с помощью функции `GenerateMipmap`. Mipmaps используются при изменении расстояния до объектов. MIP-карта с более высоким разрешением используется для объектов, которые находятся ближе, а MIP-карта с более низким разрешением используется для объектов, которые находятся дальше. Коллекция начинается с разрешения изображения текстуры и уменьшает разрешение вдвое, пока не будет создано изображение текстуры размера 1x1.
+```c#
+        private readonly int Handle;
+
+        private Texture(int glHandle)
+        {
+            Handle = glHandle;
+        }
+
+        public static Texture Load(string file_name)
+        {
+            int handle = GL.GenTexture();
+
+            GL.BindTexture(TextureTarget.Texture2D, handle);
+
+            StbImage.stbi_set_flip_vertically_on_load(1);
+
+            using (Stream stream = File.OpenRead(file_name))
+            {
+                ImageResult image = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
+                GL.TexImage2D(
+                    TextureTarget.Texture2D,    //Тип создаваемой текстуры
+                    0,                          //Уровень детализации
+                    PixelInternalFormat.Rgba,   //Формат для хранения пикселей на графическом процессоре
+                    image.Width,                //Ширина изображения
+                    image.Height,               //Высота изображения
+                    0,                          //Граница изображения
+                    PixelFormat.Rgba,           //Формат байтов   
+                    PixelType.UnsignedByte,     //Тип пикселей
+                    image.Data);                //Массив пикселей
+            }
+
+            //Фильтрация
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);    
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+
+            //Перенос
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
+
+            //генерируем коллекцию mipmapped
+            GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+
+            return new Texture(handle);
+        }
+```
+Функция применения текстуры:  
+```c#
+        public void Use(TextureUnit TextureUnit = TextureUnit.Texture0)
+        {
+            GL.ActiveTexture(TextureUnit);
+            GL.BindTexture(TextureTarget.Texture2D, Handle);
+        }
+```
+## Добавление текстуры в Mesh
+Здесь нам нужно будет изменить положения атрибутов вершин, чтобы отправлять координаты текстуры шейдерам. В функции `Load` изменим код на:  
+```c#
+        private void Load()
+        {
+            // Генерация и привязка VAO и VBO
+            VAO = GL.GenVertexArray();
+            GL.BindVertexArray(VAO);
+
+            VBO = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
+            // Привязываем данные вершины к текущему буферу по умолчанию
+            // Static Draw, потому что наши данные о вершинах в буфере не меняются
+            GL.BufferData(BufferTarget.ArrayBuffer, Vertices.Length * sizeof(float), Vertices, BufferUsageHint.StaticDraw);
+
+            // Element Buffer
+            IBO = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, IBO);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, Indices.Length * sizeof(int), Indices, BufferUsageHint.StaticDraw);
+
+            // Шейдеры
+            shader = new Shader(ShaderLoader.LoadVertexShader(), ShaderLoader.LoadFragmentShader());
+
+            // Устанавливаем указатели атрибутов вершины
+            var location = shader.GetAttribLocation("aPosition");
+            GL.VertexAttribPointer(location, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
+            GL.EnableVertexAttribArray(location);
+
+            var texCordLocation = shader.GetAttribLocation("aTexCoord");
+            GL.VertexAttribPointer(texCordLocation, 2, VertexAttribPointerType.Float, false, 5  * sizeof(float), 3 * sizeof(float));
+            GL.EnableVertexAttribArray(texCordLocation);
+
+            // Текстуры
+            texture = Texture.Load(texPath);
+
+            // Развязываем VAO и VBO
+            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+            GL.BindVertexArray(0);
+
+            GL.Enable(EnableCap.DepthTest);
+        }
+```
+Также в функцию `Draw` добавим:
+```c#
+            texture.Use(TextureUnit.Texture0);
+```
+## Шейдеры
+В вершинный шейдер поступают еше и координаты текстур для каждой вершины:
+```hlsl
+#version 330                                           
+layout (location = 0) in vec3 aPosition; 
+layout (location = 1) in vec2 aTexCoord;
+
+out vec2 texCoord;
+
+uniform mat4 mvp;         
+
+void main()                                            
+{        
+	texCoord = aTexCoord;
+	gl_Position = vec4(aPosition, 1.0) * mvp;           
+}
+```
+И тут же отправляются во фрагментный шейдер:
+```hlsl
+#version 330
+out vec4 outputColor;
+
+in vec2 texCoord;
+
+uniform sampler2D texture0;
+
+void main() 
+{ 
+	outputColor = texture(texture0, texCoord);
+}
+```
+## Модели
+Чуть позже я изменю загрузчик 3D-моделей, чтобы вытягивать из них координаты текстур и нормалей. А пока создадим свои простые отечественные модели: пол и ящик. В них будут координаты вершин, индексы и текстуры.
+```c#
+    public static class Box
+    {
+        public static readonly float[] Vertices = new float[]
+        {           //cords                 //textures
+                    -1.0f, 1.0f, 1.0f,      0.0f, 1.0f,
+                    1.0f, 1.0f, 1.0f,       1.0f, 1.0f,
+                    -1.0f, -1.0f, 1.0f,     0.0f, 0.0f,
+                    1.0f, -1.0f, 1.0f,      1.0f, 0.0f,
+
+                    1.0f, 1.0f, 1.0f,       0.0f, 1.0f,
+                    1.0f, 1.0f, -1.0f,      1.0f, 1.0f,
+                    1.0f, -1.0f, 1.0f,      0.0f, 0.0f,
+                    1.0f, -1.0f, -1.0f,     1.0f, 0.0f,
+
+                    1.0f, 1.0f, -1.0f,      0.0f, 1.0f,
+                    -1.0f, 1.0f, -1.0f,     1.0f, 1.0f,
+                    1.0f, -1.0f, -1.0f,     0.0f, 0.0f,
+                    -1.0f, -1.0f, -1.0f,    1.0f, 0.0f,
+
+                    -1.0f, 1.0f, -1.0f,     0.0f, 1.0f,
+                    -1.0f, 1.0f, 1.0f,      1.0f, 1.0f,
+                    -1.0f, -1.0f, -1.0f,    0.0f, 0.0f,
+                    -1.0f, -1.0f, 1.0f,     1.0f, 0.0f,
+
+                    -1.0f, 1.0f, -1.0f,     0.0f, 1.0f,
+                    1.0f, 1.0f, -1.0f,      1.0f, 1.0f,
+                    -1.0f, 1.0f, 1.0f,      0.0f, 0.0f,
+                    1.0f, 1.0f, 1.0f,       1.0f, 0.0f,
+
+                    -1.0f, -1.0f, 1.0f,     0.0f, 1.0f,
+                    1.0f, -1.0f, 1.0f,      1.0f, 1.0f,
+                    -1.0f, -1.0f, -1.0f,    0.0f, 0.0f,
+                    1.0f, -1.0f, -1.0f,     1.0f, 0.0f,
+        };
+
+        public static readonly int[] Indices = new int[]
+        {
+                        9, 11, 8,
+                        8, 11, 10,
+
+                        1, 3, 0,
+                        0, 3, 2,
+
+                        5, 7, 4,
+                        4, 7, 6,
+
+                        13, 15, 12,
+                        12, 15, 14,
+
+                        22, 20, 23,
+                        23, 20, 21,
+
+                        17, 19, 16,
+                        16, 19, 18
+        };
+
+        public static readonly string TexturePath = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Textures\\container.png";
+    }
+```
+```c#
+    public class Floor
+    {
+        public static readonly float[] Vertices = new float[]
+        {   //cords    //textures
+            -3, 0, -3,  0,  0,
+             3, 0, -3,  1,  0,
+             3, 0,  3,  1,  1,
+            -3, 0,  3,  0,  1
+        };
+
+        public static readonly int[] Indices = new int[]
+        {
+            0, 1, 2,
+            0, 2, 3
+        };
+
+        public static readonly string TexturePath = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Textures\\grass.png";
+    }
+```
+## Результат
+![tex](https://github.com/galeevlxix/game_engine/blob/WorkingWithTheModel/screens/textures.png)
+
+<a name = "s10"></a>
+# Нормали
+
+## Результат
+![normals](https://github.com/galeevlxix/game_engine/blob/WorkingWithTheModel/screens/bandicam%202023-07-21%2002-51-44-481.gif)
