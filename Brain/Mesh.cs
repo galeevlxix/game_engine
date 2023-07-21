@@ -30,7 +30,7 @@ namespace game_2.Brain
 
         public Mesh(string file_name, string tex_file_name)
         {
-            ModelLoader.LoadMesh(file_name, out float[] Vertices, out int[] Indices, out float[] TextCords);
+            ModelLoader.LoadMesh(file_name, out float[] Vertices, out int[] Indices);
             this.Vertices = Vertices;
             this.Indices = Indices;
             texPath = tex_file_name;

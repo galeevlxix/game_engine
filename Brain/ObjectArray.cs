@@ -29,7 +29,6 @@ namespace game_2.Brain
             int BoxModel = 1;
             int FloorModel = 2;
 
-            GameObj obj1 = new GameObj(BoxModel);
             GameObj obj2 = new GameObj(FloorModel);
             GameObj obj3 = new GameObj(FloorModel);
             GameObj obj4 = new GameObj(FloorModel);
@@ -41,7 +40,9 @@ namespace game_2.Brain
             GameObj obj10 = new GameObj(FloorModel);
             GameObj obj11 = new GameObj(BoxModel);
 
-            this.Add(obj1);
+            GameObj _model = new GameObj("C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\obj_files\\monkey\\monkey.obj", "C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\obj_files\\monkey\\DefTexture.png");
+
+            this.Add(_model);
             this.Add(obj2);
             this.Add(obj3);
             this.Add(obj4);
@@ -57,8 +58,8 @@ namespace game_2.Brain
         float posx = -6, posz = -6;
         public void OnRender()
         {
-            this[0].pipeline.Scale(1f);
-            this[0].pipeline.Position(0, 1, 0);
+            this[0].pipeline.Scale(2f);
+            this[0].pipeline.Position(0, 2, 0);
             this[0].pipeline.Rotate(0, GameTime.Time/10, 0);
 
             this[1].pipeline.Scale(1f);

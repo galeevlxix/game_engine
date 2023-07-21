@@ -22,7 +22,7 @@ namespace game_2.Brain
             GL.ActiveTexture(TextureUnit.Texture0);
             GL.BindTexture(TextureTarget.Texture2D, handle);
 
-            StbImage.stbi_set_flip_vertically_on_load(1);
+            //StbImage.stbi_set_flip_vertically_on_load(1);
 
             using (Stream stream = File.OpenRead(file_name))
             {

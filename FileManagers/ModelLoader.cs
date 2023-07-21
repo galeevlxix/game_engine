@@ -1,25 +1,26 @@
 ﻿using System.Globalization;
 using System.Text.RegularExpressions;
 using game_2.Storage;
+using OpenTK.Graphics.OpenGL;
+using OpenTK.Windowing.Desktop;
 
 namespace game_2.FileManagers
 {
-    public static class ModelLoader
+    public static class ModelLoader 
     {
         private static Regex regOBJ = new Regex(@"\w*obj$");
         private static Regex regFBX = new Regex(@"\w*fbx$");
         private static Regex regPLY = new Regex(@"\w*ply$");
         private static Regex regDAE = new Regex(@"\w*dae$");
 
-        public static void LoadMesh(string file_name, out float[] Vertices, out int[] Indices, out float[] TextCords)
+        public static void LoadMesh(string file_name, out float[] Vertices, out int[] Indices)
         {
             Vertices = new float[0];
             Indices = new int[0];
-            TextCords = new float[0];
 
             if (regOBJ.IsMatch(file_name))
             {
-                LoadFromObj(new StreamReader(file_name), ref Vertices, ref Indices, ref TextCords);
+                LoadFromObj(new StreamReader(file_name), ref Vertices, ref Indices);
                 Console.WriteLine("+obj");
                 return;
             }
@@ -47,17 +48,19 @@ namespace game_2.FileManagers
             Console.WriteLine("Unknown file format");
         }
 
-        private static void LoadFromObj(TextReader tr, ref float[] Vertices, ref int[] Indices, ref float[] TextCords)
+        private static void LoadFromObj(TextReader tr, ref float[] Vertices, ref int[] Indices)
         {
-            List<float> vertices = new List<float>();
-            List<int> fig = new List<int>();
-            List<string> f = new List<string>();
+            List<float> _modelVerts = new List<float>();
+            List<int> _modelInd = new List<int>();
+            int _iter = 0;
 
-            List<float> textCords = new List<float>();
+            List<List<float>> vertCords = new List<List<float>>();
 
-            vertices.Add(0.0f);
-            vertices.Add(0.0f);
-            vertices.Add(0.0f);
+            List<List<float>> textCords = new List<List<float>>();
+
+            List<List<float>> normCords = new List<List<float>>();
+
+            int[] vertInd, texInd, normInd;
 
             string line;
 
@@ -70,59 +73,129 @@ namespace game_2.FileManagers
                 switch (parts[0])
                 {
                     case "v":
-                        vertices.Add(float.Parse(parts[1], CultureInfo.InvariantCulture));
-                        vertices.Add(float.Parse(parts[2], CultureInfo.InvariantCulture));
-                        vertices.Add(float.Parse(parts[3], CultureInfo.InvariantCulture));
+                        vertCords.Add(new List<float>
+                        {
+                            float.Parse(parts[1], CultureInfo.InvariantCulture),
+                            float.Parse(parts[2], CultureInfo.InvariantCulture),
+                            float.Parse(parts[3], CultureInfo.InvariantCulture)
+                        });
+                        break;
+                    case "vt":
+                        textCords.Add(new List<float>
+                        {
+                            float.Parse(parts[1], CultureInfo.InvariantCulture),
+                            float.Parse(parts[2], CultureInfo.InvariantCulture)
+                        });
+                        break;
+                    case "vn":
+                        normCords.Add(new List<float>
+                        {
+                            float.Parse(parts[1], CultureInfo.InvariantCulture),
+                            float.Parse(parts[2], CultureInfo.InvariantCulture),
+                            float.Parse(parts[3], CultureInfo.InvariantCulture)
+                        });
                         break;
                     case "f":
-                        f.Clear();
+                        if (vertCords.Count == 0 || textCords.Count == 0 || normCords.Count == 0)
+                        {
+                            Console.WriteLine("Модель хуйня");
+                            return;
+                        }
+
+                        List<string> fString = new List<string>();
                         for (int i = 0; i < parts.Length; i++)
                         {
-                            if (parts[i] != "") f.Add(parts[i]);
+                            if (parts[i] != "" && parts[i] != null && parts[i] != "f") fString.Add(parts[i]);
                         }
-                        if (f.Count == 4)
+
+                        if (fString.Count == 3)
                         {
-                            foreach (string v in f)
+                            vertInd = new int[3];
+                            texInd = new int[3];
+                            normInd = new int[3];
+                            int _i = 0;
+
+                            foreach (string v in fString)
                             {
-                                if (v != "f")
-                                {
-                                    var w = v.Split('/');
-                                    fig.Add(int.Parse(w[0]));
-                                }
+                                string[] w = v.Split('/');
+
+                                vertInd[_i] = int.Parse(w[0]) - 1;
+                                texInd[_i] = int.Parse(w[1]) - 1;
+                                normInd[_i] = int.Parse(w[2]) - 1;
+                                _i++;
                             }
+
+                            for (int i = 0; i < 3; i++)
+                            {
+                                foreach (float v in vertCords[vertInd[i]])
+                                {
+                                    _modelVerts.Add(v);
+                                }
+                                foreach (float t in textCords[texInd[i]])
+                                {
+                                    _modelVerts.Add(t);
+                                }
+                                foreach (float n in normCords[normInd[i]])
+                                {
+                                    _modelVerts.Add(n);
+                                }
+                                _modelInd.Add(_iter++);
+                            }                            
                         }
-                        if (f.Count == 5)
+                        if (fString.Count == 4)
                         {
+                            vertInd = new int[4];
+                            texInd = new int[4];
+                            normInd = new int[4];
+                            int _i = 0;
+
                             var temp = new List<int>();
 
                             foreach (string v in parts)
                             {
-                                if (v != "f")
+                                string[] w = v.Split('/');
+
+                                vertInd[_i] = int.Parse(w[0]) - 1;
+                                texInd[_i] = int.Parse(w[1]) - 1;
+                                normInd[_i] = int.Parse(w[2]) - 1;
+                                _i++;
+                            }
+
+                            for (int i = 0; i < 4; i++)
+                            {
+                                foreach (float v in vertCords[vertInd[i]])
                                 {
-                                    var w = v.Split('/');
-                                    if (w[0] != "")
-                                        temp.Add(int.Parse(w[0]));
+                                    _modelVerts.Add(v);
+                                }
+                                foreach (float t in textCords[texInd[i]])
+                                {
+                                    _modelVerts.Add(t);
+                                }
+                                foreach (float n in normCords[normInd[i]])
+                                {
+                                    _modelVerts.Add(n);
                                 }
                             }
 
-                            fig.Add(temp[0]);
-                            fig.Add(temp[2]);
-                            fig.Add(temp[3]);
+                            int i0 = _iter++;
+                            int i1 = _iter++;
+                            int i2 = _iter++;
+                            int i3 = _iter++;
 
-                            fig.Add(temp[0]);
-                            fig.Add(temp[1]);
-                            fig.Add(temp[2]);
+                            _modelInd.Add(i0);
+                            _modelInd.Add(i2);
+                            _modelInd.Add(i3);
+
+                            _modelInd.Add(i0);
+                            _modelInd.Add(i1);
+                            _modelInd.Add(i2);
                         }
-                        break;
-                    case "vt":
-                        textCords.Add(float.Parse(parts[1], CultureInfo.InvariantCulture));
-                        textCords.Add(float.Parse(parts[2], CultureInfo.InvariantCulture));
                         break;
                 }
             }
-            Vertices = vertices.ToArray();
-            Indices = fig.ToArray();
-            TextCords = textCords.ToArray();
+
+            Vertices = _modelVerts.ToArray();
+            Indices = _modelInd.ToArray();
         }
 
         private static void LoadFromFbx(TextReader tr, ref float[] Vertices, ref int[] Indices)
