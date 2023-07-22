@@ -10,7 +10,7 @@
 [Камера](#s8)  
 [Текстуры](#s9)  
 [Нормали](#s10)  
-
+[Извлечение текстур и нормалей из obj](#s11)  
 <a name="s1"></a>
 # Первые шаги и треугольник 
 Для реализации графического приложения я использую библиотеку `OpenTK`. Она предоставляет нам большой набор функций, которые мы можем использовать для управления графикой, и упрощает работу с OpenGL. OpenTK можно использовать для игр, научных приложений или других проектов, требующих трехмерной графики, аудио или вычислительной функциональности.  
@@ -1715,6 +1715,307 @@ void main()
 
 <a name = "s10"></a>
 # Нормали
+Если заглянуть через блокнот в файл 3D-модели формата `.obj`, то мы увидим, что, помимо координат вершин `v` и текстур `vt`, у объекта есть еще и вектора нормалей `vn`. Нормали - это такие нормализованные векторы, перпендикулярные плоскости примитивных треугольников.  
+Файл модели куба:
+```obj
+v -0.500000 0.500000 0.500000
+v -0.500000 -0.500000 0.500000
+v -0.500000 0.500000 -0.500000
+...
+v 0.500000 0.500000 0.500000
+v -0.500000 0.500000 -0.500000
+v 0.500000 0.500000 -0.500000
+vt 0.056302 0.934555
+vt 0.308284 0.682573
+vt 0.308284 0.934555
+...
+vt 0.373878 0.929480
+vt 0.356402 0.304927
+vt 0.696564 0.671249
+vn -1.0000 0.0000 0.0000
+vn 1.0000 0.0000 0.0000
+vn 0.0000 -0.0000 1.0000
+vn 0.0000 0.0000 -1.0000
+vn 0.0000 -1.0000 -0.0000
+vn 0.0000 1.0000 0.0000
+s off
+f 3/1/1 2/2/1 1/3/1
+f 6/4/2 7/5/2 5/6/2
+f 10/7/3 11/8/3 9/9/3
+...
+f 15/10/4 16/22/4 14/11/4
+f 19/13/5 20/23/5 18/14/5
+f 22/16/6 24/24/6 23/17/6
+```
+Если мы взгялнем на поверхности (строки, начинающиеся с `f`), то мы увидим, что у каждого примитива (в нашем случае треугольника) есть по три вершины, а у каждой вершины есть по 3 индекса: _координата вершины_/_координата текстуры_/_вектор нормали_. Нормаль есть у каждой вершины. Она перпендикулярна примитиву и нормализована, то есть длина вектора нормали равна 1.  
+Когда свет попадает на полигон, угол светового луча сравнивается с нормалью. При отражении используется тот же угол относительно нормали.
+## Добавление нормалей в модели
+Давайте добавим эти нормальные векторы к ящику и полу, которые мы создал в прошлом разделе. Индексы мы оставим без измнения.
+### Ящик:
+```c#
+        public static readonly float[] Vertices = new float[]
+        {           //cords                 //textures      //normals
+                    -1.0f, 1.0f, 1.0f,      0.0f, 1.0f,     0.0f, 0.0f, 1.0f,
+                    1.0f, 1.0f, 1.0f,       1.0f, 1.0f,     0.0f, 0.0f, 1.0f,
+                    -1.0f, -1.0f, 1.0f,     0.0f, 0.0f,     0.0f, 0.0f, 1.0f,
+                    1.0f, -1.0f, 1.0f,      1.0f, 0.0f,     0.0f, 0.0f, 1.0f,
 
+                    1.0f, 1.0f, 1.0f,       0.0f, 1.0f,     1.0f, 0.0f, 0.0f,
+                    1.0f, 1.0f, -1.0f,      1.0f, 1.0f,     1.0f, 0.0f, 0.0f,
+                    1.0f, -1.0f, 1.0f,      0.0f, 0.0f,     1.0f, 0.0f, 0.0f,
+                    1.0f, -1.0f, -1.0f,     1.0f, 0.0f,     1.0f, 0.0f, 0.0f,
+
+                    1.0f, 1.0f, -1.0f,      0.0f, 1.0f,     0.0f, 0.0f, -1.0f,
+                    -1.0f, 1.0f, -1.0f,     1.0f, 1.0f,     0.0f, 0.0f, -1.0f,
+                    1.0f, -1.0f, -1.0f,     0.0f, 0.0f,     0.0f, 0.0f, -1.0f,
+                    -1.0f, -1.0f, -1.0f,    1.0f, 0.0f,     0.0f, 0.0f, -1.0f,
+
+                    -1.0f, 1.0f, -1.0f,     0.0f, 1.0f,     -1.0f, 0.0f, 0.0f,
+                    -1.0f, 1.0f, 1.0f,      1.0f, 1.0f,     -1.0f, 0.0f, 0.0f,
+                    -1.0f, -1.0f, -1.0f,    0.0f, 0.0f,     -1.0f, 0.0f, 0.0f,
+                    -1.0f, -1.0f, 1.0f,     1.0f, 0.0f,     -1.0f, 0.0f, 0.0f,
+
+                    -1.0f, 1.0f, -1.0f,     0.0f, 1.0f,     0.0f, 1.0f, 0.0f,
+                    1.0f, 1.0f, -1.0f,      1.0f, 1.0f,     0.0f, 1.0f, 0.0f,
+                    -1.0f, 1.0f, 1.0f,      0.0f, 0.0f,     0.0f, 1.0f, 0.0f,
+                    1.0f, 1.0f, 1.0f,       1.0f, 0.0f,     0.0f, 1.0f, 0.0f,
+
+                    -1.0f, -1.0f, 1.0f,     0.0f, 1.0f,     0.0f, -1.0f, 0.0f,
+                    1.0f, -1.0f, 1.0f,      1.0f, 1.0f,     0.0f, -1.0f, 0.0f,
+                    -1.0f, -1.0f, -1.0f,    0.0f, 0.0f,     0.0f, -1.0f, 0.0f,
+                    1.0f, -1.0f, -1.0f,     1.0f, 0.0f,     0.0f, -1.0f, 0.0f,
+        };
+```
+### Пол:
+```c#
+        public static readonly float[] Vertices = new float[]
+        {   //cords     	//textures  	//normals
+            -3, 0, -3,  	0,  0,      	0, 1, 0,
+             3, 0, -3,  	1,  0,      	0, 1, 0,
+             3, 0,  3,  	1,  1,      	0, 1, 0,
+            -3, 0,  3,  	0,  1,      	0, 1, 0,
+        };
+```
+## Mesh
+Теперь изменим код в функции `Init` класса `Mesh` на:
+```c#
+            // Устанавливаем указатели атрибутов вершины
+            var location = shader.GetAttribLocation("aPosition");
+            GL.VertexAttribPointer(location, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 0);
+            GL.EnableVertexAttribArray(location);
+
+            var texCordLocation = shader.GetAttribLocation("aTexCoord");
+            GL.VertexAttribPointer(texCordLocation, 2, VertexAttribPointerType.Float, false, 8  * sizeof(float), 3 * sizeof(float));
+            GL.EnableVertexAttribArray(texCordLocation);
+
+            var normCordLocation = shader.GetAttribLocation("aNormal");
+            GL.VertexAttribPointer(normCordLocation, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 5 * sizeof(float));
+            GL.EnableVertexAttribArray(normCordLocation);
+```
+Здесь мы отправляем наши координаты вершин, текстур и нормали в шейдеры.
+## Шейдеры
+### Вершинный шейдер
+В вершинный шейдер теперь попадают нормали, и перед тем, как отправиться во фрагментный шейдер, они умножаются на `mvp`, потому что наши объекты не стоят на месте, а масштабируются, крутятся и перемещаются.
+```hlsl
+#version 330                                           
+layout (location = 0) in vec3 aPosition; 
+layout (location = 1) in vec2 aTexCoord;
+layout (location = 2) in vec3 aNormal;
+ 
+out vec2 texCoord;
+out vec3 vNormal;
+
+uniform mat4 mvp;
+uniform mat4 campos;
+uniform mat4 camrot;
+uniform mat4 pers;
+
+void main()                                            
+{        
+	texCoord = aTexCoord;
+	gl_Position = vec4(aPosition, 1.0) * mvp * campos * camrot * pers;
+	vNormal = (vec4(aNormal, 0.0) * mvp).xyz;
+}
+```
+### Фрашментный шейдер
+Сюда мы добавим окружающий свет с интенсивностью `ambientLightIntensity` и свет от "солнца" с интенсивностью `sunLightIntensity` и направлением `sunLightDirection`. Используя наши нормали и параметры света, мы можем определить насколько темным или светлым будет пиксель в данной точке у объекта. Результирующее значение интенсивности света `lightIntensity` мы умножаем на `texel.rgb`.  
+```hlsl
+#version 330
+out vec4 outputColor;
+
+in vec2 texCoord;
+in vec3 vNormal;
+
+uniform sampler2D texture0;
+
+void main() 
+{ 
+    	vec3 ambientLightIntensity = vec3(0.3, 0.3, 0.3);
+    	vec3 sunLightIntensity = vec3(1, 1, 1);
+    	vec3 sunLightDirection = normalize(vec3(-20, 20, 20.0));
+
+    	vec4 texel = texture(texture0, texCoord);
+
+    	vec3 lightIntensity = ambientLightIntensity + sunLightIntensity * max(dot(vNormal, sunLightDirection), 0.0f);
+
+	outputColor = vec4(texel.rgb * lightIntensity, texel.a);
+}             
+```
+Это самая простая реализация света, но в будущем мы займемся им более основательно.
 ## Результат
 ![normals](https://github.com/galeevlxix/game_engine/blob/WorkingWithTheModel/screens/bandicam%202023-07-21%2002-51-44-481.gif)
+<a name="s11"></a>
+# Извлечение текстур и нормалей из obj
+## Изменение ModelLoader
+Теперь в функции извлечения вершин из obj мы сами собираем массивы `_modelVerts` и `_modelInd`.
+```c#
+        private static void LoadFromObj(TextReader tr, ref float[] Vertices, ref int[] Indices)
+        {
+            List<float> _modelVerts = new List<float>();
+            List<int> _modelInd = new List<int>();
+            int _iter = 0;
+
+            List<List<float>> vertCords = new List<List<float>>();
+
+            List<List<float>> textCords = new List<List<float>>();
+
+            List<List<float>> normCords = new List<List<float>>();
+
+            int[] vertInd, texInd, normInd;
+
+            string line;
+
+            while ((line = tr.ReadLine()) != null)
+            {
+                line = line.Replace("  ", " ");
+                var parts = line.Split(' ');
+
+                if (parts.Length == 0) continue;
+                switch (parts[0])
+                {
+                    case "v":
+                        vertCords.Add(new List<float>
+                        {
+                            float.Parse(parts[1], CultureInfo.InvariantCulture),
+                            float.Parse(parts[2], CultureInfo.InvariantCulture),
+                            float.Parse(parts[3], CultureInfo.InvariantCulture)
+                        });
+                        break;
+                    case "vt":
+                        textCords.Add(new List<float>
+                        {
+                            float.Parse(parts[1], CultureInfo.InvariantCulture),
+                            float.Parse(parts[2], CultureInfo.InvariantCulture)
+                        });
+                        break;
+                    case "vn":
+                        normCords.Add(new List<float>
+                        {
+                            float.Parse(parts[1], CultureInfo.InvariantCulture),
+                            float.Parse(parts[2], CultureInfo.InvariantCulture),
+                            float.Parse(parts[3], CultureInfo.InvariantCulture)
+                        });
+                        break;
+                    case "f":
+                        if (vertCords.Count == 0 || textCords.Count == 0 || normCords.Count == 0)
+                        {
+                            Console.WriteLine("Wrong model");
+                            return;
+                        }
+
+                        List<string> fString = new List<string>();
+                        for (int i = 0; i < parts.Length; i++)
+                        {
+                            if (parts[i] != "" && parts[i] != null && parts[i] != "f") fString.Add(parts[i]);
+                        }
+
+                        if (fString.Count == 3)
+                        {
+                            vertInd = new int[3];
+                            texInd = new int[3];
+                            normInd = new int[3];
+                            int _i = 0;
+
+                            foreach (string v in fString)
+                            {
+                                string[] w = v.Split('/');
+
+                                vertInd[_i] = int.Parse(w[0]) - 1;
+                                texInd[_i] = int.Parse(w[1]) - 1;
+                                normInd[_i] = int.Parse(w[2]) - 1;
+                                _i++;
+                            }
+
+                            for (int i = 0; i < 3; i++)
+                            {
+                                foreach (float v in vertCords[vertInd[i]])
+                                {
+                                    _modelVerts.Add(v);
+                                }
+                                foreach (float t in textCords[texInd[i]])
+                                {
+                                    _modelVerts.Add(t);
+                                }
+                                foreach (float n in normCords[normInd[i]])
+                                {
+                                    _modelVerts.Add(n);
+                                }
+                                _modelInd.Add(_iter++);
+                            }                            
+                        }
+                        if (fString.Count == 4)
+                        {
+                            vertInd = new int[4];
+                            texInd = new int[4];
+                            normInd = new int[4];
+                            int _i = 0;
+
+                            foreach (string v in parts)
+                            {
+                                string[] w = v.Split('/');
+
+                                vertInd[_i] = int.Parse(w[0]) - 1;
+                                texInd[_i] = int.Parse(w[1]) - 1;
+                                normInd[_i] = int.Parse(w[2]) - 1;
+                                _i++;
+                            }
+
+                            for (int i = 0; i < 4; i++)
+                            {
+                                foreach (float v in vertCords[vertInd[i]])
+                                {
+                                    _modelVerts.Add(v);
+                                }
+                                foreach (float t in textCords[texInd[i]])
+                                {
+                                    _modelVerts.Add(t);
+                                }
+                                foreach (float n in normCords[normInd[i]])
+                                {
+                                    _modelVerts.Add(n);
+                                }
+                            }
+
+                            int i0 = _iter++;
+                            int i1 = _iter++;
+                            int i2 = _iter++;
+                            int i3 = _iter++;
+
+                            _modelInd.Add(i0);
+                            _modelInd.Add(i2);
+                            _modelInd.Add(i3);
+
+                            _modelInd.Add(i0);
+                            _modelInd.Add(i1);
+                            _modelInd.Add(i2);
+                        }
+                        break;
+                }
+            }
+
+            Vertices = _modelVerts.ToArray();
+            Indices = _modelInd.ToArray();
+        }
+```
+## Результат
+![monkey](https://github.com/galeevlxix/game_engine/blob/WorkingWithTheModel/screens/обезьяна.gif)
