@@ -12,8 +12,7 @@ void main()
     vec3 sunLightIntensity = vec3(1, 1, 1);
     vec3 sunLightDirection = normalize(vec3(-20, 20, 20.0));
 
-    vec2 flipped = vec2(texCoord.x, 1 - texCoord.y);
-    vec4 texel = texture(texture0, flipped);
+    vec4 texel = texture(texture0, texCoord);
 
     vec3 lightIntensity = ambientLightIntensity + sunLightIntensity * max(dot(vNormal, sunLightDirection), 0.0f);
 

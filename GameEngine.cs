@@ -12,6 +12,8 @@ namespace game_2
     {
         private bool isMouseDown;
         private bool loaded = false;
+        int counter = 0;
+        List<double> points = new List<double>();
 
         private ObjectArray Models;
 
@@ -54,10 +56,11 @@ namespace game_2
             loaded = true;
         }
         
+        // Примерно deltaTime = 0.002s
         // Обновление окна
         protected override void OnUpdateFrame(FrameEventArgs args)
         {
-            base.OnUpdateFrame(args);            
+            base.OnUpdateFrame(args);
 
             KeyboardState input = KeyboardState;
             if (input.IsKeyDown(Keys.Escape))
@@ -91,6 +94,7 @@ namespace game_2
             Camera.OnKeyboard(KeyboardState);
         }
 
+        // Примерно deltaTime = 0.002s
         // Рендер окна
         protected override void OnRenderFrame(FrameEventArgs args)
         {

@@ -45,25 +45,25 @@ namespace game_2.Brain
             MVPID = GL.GetUniformLocation(Handle, "mvp");
             if (MVPID < 0)
             {
-                Console.WriteLine("mvp наебнулось");
+                Console.WriteLine("mvp не инициализировалось");
             }
 
             PersProjID = GL.GetUniformLocation(Handle, "pers");
             if (PersProjID < 0)
             {
-                Console.WriteLine("pers наебнулось");
+                Console.WriteLine("pers не инициализировалось");
             }
 
             CameraPosID = GL.GetUniformLocation(Handle, "campos");
             if (CameraPosID < 0)
             {
-                Console.WriteLine("campos наебнулось");
+                Console.WriteLine("campos не инициализировалось");
             }
 
             CameraRotID = GL.GetUniformLocation(Handle, "camrot");
             if (CameraRotID < 0)
             {
-                Console.WriteLine("camrot наебнулось");
+                Console.WriteLine("camrot не инициализировалось");
             }
 
             //очистка вершинных и фрагментных шейдеров

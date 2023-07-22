@@ -98,7 +98,7 @@ namespace game_2.FileManagers
                     case "f":
                         if (vertCords.Count == 0 || textCords.Count == 0 || normCords.Count == 0)
                         {
-                            Console.WriteLine("Модель хуйня");
+                            Console.WriteLine("Wrong model");
                             return;
                         }
 
@@ -148,8 +148,6 @@ namespace game_2.FileManagers
                             texInd = new int[4];
                             normInd = new int[4];
                             int _i = 0;
-
-                            var temp = new List<int>();
 
                             foreach (string v in parts)
                             {
