@@ -1,11 +1,4 @@
 ﻿using game_2.MathFolder;
-using OpenTK.Graphics.OpenGL;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace game_2.Brain
 {

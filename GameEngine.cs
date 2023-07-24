@@ -5,6 +5,8 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 using game_2.Brain;
 using OpenTK.Mathematics;
 using game_2.MathFolder;
+using System.Threading.Tasks;
+using System.Timers;
 
 namespace game_2
 {
@@ -12,8 +14,6 @@ namespace game_2
     {
         private bool isMouseDown;
         private bool loaded = false;
-        int counter = 0;
-        List<double> points = new List<double>();
 
         private ObjectArray Models;
 
@@ -52,11 +52,11 @@ namespace game_2
             Camera.InitCamera();
             Camera.Pos = new vector3f(0, 3, 4);
 
-            GameTime.Start();
             loaded = true;
         }
-        
+
         // Примерно deltaTime = 0.002s
+        // Примерно deltaTime = 0.00002s при IsMultiThreaded = true
         // Обновление окна
         protected override void OnUpdateFrame(FrameEventArgs args)
         {
@@ -66,10 +66,6 @@ namespace game_2
             if (input.IsKeyDown(Keys.Escape))
             {
                 Close();
-            }
-            if (input.IsKeyDown(Keys.P))
-            {
-                GameTime.PlayOrPause();
             }
 
             if (isMouseDown)
@@ -81,29 +77,22 @@ namespace game_2
                 mPersProj.ChangeFOV(50);
             }
 
-            if (KeyboardState.IsKeyDown(Keys.LeftAlt))
-            {
-                GameTime.NextFaster();
-            }
-            else
-            {
-                GameTime.Next();
-            }
-
-            Camera.OnMouse(-MouseState.Delta.X, -MouseState.Delta.Y);
-            Camera.OnKeyboard(KeyboardState);
+            Camera.OnMouse(-MouseState.Delta.X, -MouseState.Delta.Y, args.Time);
+            Camera.OnKeyboard(KeyboardState, args.Time);
         }
 
         // Примерно deltaTime = 0.002s
+        // Примерно deltaTime = 0,0016s при IsMultiThreaded = true
         // Рендер окна
         protected override void OnRenderFrame(FrameEventArgs args)
         {
             base.OnRenderFrame(args);
-            Camera.OnRender();
+
+            Camera.OnRender(args.Time);
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            Models.OnRender();
+            Models.OnRender(args.Time);
             Models.Draw();
 
             SwapBuffers();
@@ -135,7 +124,6 @@ namespace game_2
         protected override void OnUnload()
         {
             base.OnUnload();
-            GameTime.End();
         }
 
         protected override void OnClosed()

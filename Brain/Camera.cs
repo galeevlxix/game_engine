@@ -13,12 +13,13 @@ namespace game_2.Brain
         private static float angle_h;  //горизонтальный поворот
         private static float angle_v;  //вертикальный поворот
 
-        private static float velocity = 0.00015f;
-        private static float sensitivity = 0.002f;
-        private static float brakingKeyBo = 0.01f;
-        private static float brakingMouse = 0.03f;
+        private static float velocity = 100f;
+        private static float sensitivity = 0.5f;
+        private static float brakingKeyBo = 0.008f;
+        private static float brakingMouse = 0.02f;
 
-        private static float zeroLimit = 0.00004f;
+        private static float min_speed = 0.00004f;
+        private static float max_speed = 20f;
 
         private static float speedX;
         private static float speedY;
@@ -29,6 +30,9 @@ namespace game_2.Brain
 
         public static matrix4f CameraTranslation { get; private set; }
         public static matrix4f CameraRotation { get; private set; }
+
+
+        private static bool inited = false;
 
         public static void InitCamera()
         {
@@ -97,19 +101,22 @@ namespace game_2.Brain
             speedZ = 0.00f;
             angularX = 0;
             angularY = 0;
+
+            inited = true;
         }
 
-        public static void OnKeyboard(KeyboardState key)
+        public static void OnKeyboard(KeyboardState key, double deltaTime)
         {
             if (!key.IsAnyKeyDown) return;
+            if (!inited) return;
 
             if (key.IsKeyDown(Keys.LeftControl))
             {
-                velocity = 0.00005f;
+                velocity = 0.2f;
             }
             else
             {
-                velocity = 0.00015f;
+                velocity = 0.1f;
             }
 
             if (key.IsKeyDown(Keys.W))
@@ -136,79 +143,30 @@ namespace game_2.Brain
             {
                 speedY -= velocity;
             }
-
         }
 
-        public static void OnMouse(float DeltaX, float DeltaY)       //сюда реальные координаты мыши, а не дельта
+        public static void OnMouse(float DeltaX, float DeltaY, double deltaTime)       //сюда реальные координаты мыши, а не дельта
         {
             //if ((DeltaX == 0) && (DeltaY == 0)) return;
+            if (!inited) return;
 
-            angularX += DeltaX * sensitivity;
-            angularY += DeltaY * sensitivity;
+            angularX += DeltaX * sensitivity * (float)deltaTime;
+            angularY += DeltaY * sensitivity * (float)deltaTime;
 
         }
 
-        public static void OnRender()
+        public static void OnRender(double deltaTime)
         {
-            float m_speedX = speedX * (1 - brakingKeyBo);
-            float m_speedY = speedY * (1 - brakingKeyBo);
-            float m_speedZ = speedZ * (1 - brakingKeyBo);
+            if (!inited) return;
+            Braking();
 
-            float m_angularX = angularX * (1 - brakingMouse);
-            float m_angularY = angularY * (1 - brakingMouse);
-
-            if (m_speedX < zeroLimit && m_speedX > -zeroLimit)
-            {
-                speedX = 0;
-            }
-            else
-            {
-                speedX = m_speedX;
-            }
-
-            if (m_speedY < zeroLimit && m_speedY > -zeroLimit)
-            {
-                speedY = 0;
-            }
-            else
-            {
-                speedY = m_speedY;
-            }
-
-            if (m_speedZ < zeroLimit && m_speedZ > -zeroLimit)
-            {
-                speedZ = 0;
-            }
-            else
-            {
-                speedZ = m_speedZ;
-            }
-
-            if (m_angularX < zeroLimit && m_angularX > -zeroLimit)
-            {
-                angularX = 0;
-            }
-            else
-            {
-                angularX = m_angularX;
-            }
-
-            if (m_angularY < zeroLimit && m_angularY > -zeroLimit)
-            {
-                angularY = 0;
-            }
-            else
-            {
-                angularY = m_angularY;
-            }
-
-            Pos += Target * speedZ;
+            Pos += Target * speedZ * (float)deltaTime;
 
             Left = vector3f.Cross(Target, Up);
             Left.Normalize();
-            Pos += Left * speedX;
+            Pos += Left * speedX * (float)deltaTime;
 
-            Pos += vector3f.Up * speedY;
+            Pos += vector3f.Up * speedY * (float)deltaTime;
 
             angle_h += angularX;
 
@@ -219,6 +177,61 @@ namespace game_2.Brain
 
             CameraTranslation.InitTranslationTransform(-Pos.x, -Pos.y, -Pos.z);
             CameraRotation.InitCameraTransform(Target, Up);
+        }
+
+        private static void Braking()
+        {
+            float m_speedX = speedX * (1 - brakingKeyBo);
+            float m_speedY = speedY * (1 - brakingKeyBo);
+            float m_speedZ = speedZ * (1 - brakingKeyBo);
+
+            float m_angularX = angularX * (1 - brakingMouse);
+            float m_angularY = angularY * (1 - brakingMouse);
+
+            if (m_speedX < min_speed && m_speedX > -min_speed)
+            {
+                speedX = 0;
+            }
+            else
+            {
+                speedX = m_speedX;
+            }
+
+            if (m_speedY < min_speed && m_speedY > -min_speed)
+            {
+                speedY = 0;
+            }
+            else
+            {
+                speedY = m_speedY;
+            }
+
+            if (m_speedZ < min_speed && m_speedZ > -min_speed)
+            {
+                speedZ = 0;
+            }
+            else
+            {
+                speedZ = m_speedZ;
+            }
+
+            if (m_angularX < min_speed && m_angularX > -min_speed)
+            {
+                angularX = 0;
+            }
+            else
+            {
+                angularX = m_angularX;
+            }
+
+            if (m_angularY < min_speed && m_angularY > -min_speed)
+            {
+                angularY = 0;
+            }
+            else
+            {
+                angularY = m_angularY;
+            }
         }
 
         private static void Update()

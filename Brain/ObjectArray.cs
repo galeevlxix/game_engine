@@ -56,11 +56,17 @@ namespace game_2.Brain
         }
 
         float posx = -6, posz = -6;
-        public void OnRender()
+        float speed = 10;
+        float rotationSpeed = 90;
+        float rotationAngle = 0;
+
+        public void OnRender(double deltaTime)
         {
+            rotationAngle += rotationSpeed * (float)deltaTime;
+
             this[0].pipeline.Scale(2f);
             this[0].pipeline.Position(0, 2, 0);
-            this[0].pipeline.Rotate(0, GameTime.Time/10, 0);
+            this[0].pipeline.Rotate(0, rotationAngle, 0);
 
             this[1].pipeline.Scale(1f);
             this[1].pipeline.Position(-6, 0, -6);
@@ -100,22 +106,22 @@ namespace game_2.Brain
 
             if (posz == -6f && posx + 0.01f <= 6f)
             {
-                posx += 0.01f;
+                posx += speed * (float)deltaTime;
                 if (posx >= 5.9f && posx <= 6f) posx = 6f;
             }
             else if (posx == 6f && posz + 0.01f <= 6f)
             {
-                posz += 0.01f;
+                posz += speed * (float)deltaTime;
                 if (posz >= 5.9f && posz <= 6f) posz = 6f;
             }
             else if (posz == 6f && posx - 0.01f >= -6f)
             {
-                posx += -0.01f;
+                posx += -speed * (float)deltaTime;
                 if (posx <= -5.9f && posx >= -6f) posx = -6f;
             }
             else if (posx == -6f && posz - 0.01f >= -6f)
             {
-                posz += -0.01f;
+                posz += -speed * (float)deltaTime;
                 if (posz <= -5.9f && posz >= -6f) posz = -6f;
             }
 

@@ -14,6 +14,8 @@ namespace game_2
             windowSettings.WindowState = WindowState.Maximized;
             windowSettings.Title = "Game";
 
+            settings.IsMultiThreaded = false;
+
             GameEngine engine = new GameEngine(settings, windowSettings);
             engine.Init();
             engine.Run();
