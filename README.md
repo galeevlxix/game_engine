@@ -1,16 +1,17 @@
 ### Разработка графического программного обеспечения для визуализации и работы с трехмерными объектами
 ст. Галеев Тимур, гр. 3530203/00102 (летняя практика)
 # Оглавление
-[Первые шаги и треугольник](#s1)  
-[Индексная отрисовка](#s3)  
-[Интерполяционный цвет](#s4)  
-[Вращение, перемещение, масштаб](#s5)  
-[Добавим класс GameObj](#s6)  
-[Разные форматы файлов](#s7)  
-[Камера](#s8)  
-[Текстуры](#s9)  
-[Нормали](#s10)  
-[Извлечение текстур и нормалей из obj](#s11)  
+[1. Первые шаги и треугольник](#s1)  
+[2. Индексная отрисовка](#s3)  
+[3. Интерполяционный цвет](#s4)  
+[4. Вращение, перемещение, масштаб](#s5)  
+[5. Добавим класс GameObj](#s6)  
+[6. Разные форматы файлов](#s7)  
+[7. Камера](#s8)  
+[8. Текстуры](#s9)  
+[9. Нормали](#s10)  
+[10. Извлечение текстур и нормалей из obj](#s11)  
+[11. DeltaTime](#s12)  
 <a name="s1"></a>
 # Первые шаги и треугольник 
 Для реализации графического приложения я использую библиотеку `OpenTK`. Она предоставляет нам большой набор функций, которые мы можем использовать для управления графикой, и упрощает работу с OpenGL. OpenTK можно использовать для игр, научных приложений или других проектов, требующих трехмерной графики, аудио или вычислительной функциональности.  
@@ -2019,3 +2020,190 @@ void main()
 ```
 ## Результат
 ![monkey](https://github.com/galeevlxix/game_engine/blob/WorkingWithTheModel/screens/обезьяна.gif)
+<a name="s12"></a>
+# DeltaTime
+Когда в нашей игре стабильно 60 FPS, у нас за секунду обновляются 60 кадров, то есть 60 раз в секунду вызываются функции `OnUpdateFrame` и `OnRenderFrame`. Если мы с 60 FPS в функции рендера будем вызывать метод `obj.Move(0.1f, 0.0f, 0.0f)`, отвечающий за передвижение по оси X какого-то объекта `obj` на 0.1f, то за 60 кадров в секунду объект переместится на 6 блоков.  
+Перемещение на 6 блоков в секунду выполняется при условии, что у нас стабильно 60 FPS. Но что если наш FPS упадет до 30? Тогда наш объект будет перемещаться только на 3 блока в секунду. Учитывая, что в играх FPS может постоянно скакать, предсказать перемещение объекта будет невозможно.  
+В OpenTK есть значение DeltaTime, которое является аргументом функций `OnUpdateFrame` и `OnRenderFrame`. DeltaTime - это интервал в секундах от последнего кадра до текущего. Его мы и будем использовать для решения этой проблемы.  
+Чтобы наш объект передвигался со стабильной скоростью 10 блоков в секунду, мы просто будем в функции рендера двигать его на `ObjectSpeed * DeltaTime`. Тогда, сколько бы у нас не было FPS, объект будет двигаться со стабильной скоростью ObjectSpeed = 10 блоков/с. 
+## В Pipeline
+Добавим функции, в которых к текущим значениям прибавляются скорости, помноженные на время.
+```c#
+        // Вращать
+
+        public void Rotate(float speedX, float speedY, float speedZ, float time)
+        {
+            RotateVector.x += speedX * time;
+            RotateVector.y += speedY * time;
+            RotateVector.z += speedZ * time;
+        }
+
+        // Передвижение
+
+        public void Move(float speedX, float speedY, float speedZ, float time)
+        {
+            PositionVector.x += speedX * time;
+            PositionVector.y += speedY * time;
+            PositionVector.z += speedZ * time;
+        }
+
+        public void MoveX(float speedX, float time)
+        {
+            PositionVector.x += speedX * time;
+        }
+
+        public void MoveY(float speedY, float time)
+        {
+            PositionVector.y += speedY * time;
+        }
+
+        public void MoveZ(float speedZ, float time)
+        {
+            PositionVector.z += speedZ * time;
+        }
+
+        // Увеличение
+
+        public void Expand(float speedX, float speedY, float speedZ, float time)
+        {
+            ScaleVector.x += speedX * time;
+            ScaleVector.y += speedY * time;
+            ScaleVector.z += speedZ * time;
+        }
+
+        public void Expand(float speed, float time)
+        {
+            ScaleVector.x += speed * time;
+            ScaleVector.y += speed * time;
+            ScaleVector.z += speed * time;
+        }
+```
+## В Camera
+Приращение скоростей передвижения и вращения камеры и их постепенное торможение тоже теперь зависят от DeltaTime.
+```c#
+        public static void OnRender(float deltaTime)
+        {
+            if (!inited) return;
+            Braking(deltaTime);
+
+            Pos += Target * speedZ * deltaTime;
+
+            Left = vector3f.Cross(Target, Up);
+            Left.Normalize();
+            Pos += Left * speedX * deltaTime;
+
+            Pos += vector3f.Up * speedY * deltaTime;
+
+            angle_h += angularX * deltaTime;
+
+            if (angle_v + angularY * deltaTime < 90 && angle_v + angularY * deltaTime > -90)
+                angle_v += angularY * deltaTime;
+
+            Update();
+
+            CameraTranslation.InitTranslationTransform(-Pos.x, -Pos.y, -Pos.z);
+            CameraRotation.InitCameraTransform(Target, Up);
+        }
+
+        private static void Braking(float deltaTime)
+        {
+            float m_speedX = speedX * (1 - brakingKeyBo * deltaTime);
+            float m_speedY = speedY * (1 - brakingKeyBo * deltaTime);
+            float m_speedZ = speedZ * (1 - brakingKeyBo * deltaTime);
+
+            float m_angularX = angularX * (1 - brakingMouse * deltaTime);
+            float m_angularY = angularY * (1 - brakingMouse * deltaTime);
+
+            if (m_speedX < min_speed && m_speedX > -min_speed)
+            {
+                speedX = 0;
+            }
+            else
+            {
+                speedX = m_speedX;
+            }
+
+            if (m_speedY < min_speed && m_speedY > -min_speed)
+            {
+                speedY = 0;
+            }
+            else
+            {
+                speedY = m_speedY;
+            }
+
+            if (m_speedZ < min_speed && m_speedZ > -min_speed)
+            {
+                speedZ = 0;
+            }
+            else
+            {
+                speedZ = m_speedZ;
+            }
+
+            if (m_angularX < min_speed && m_angularX > -min_speed)
+            {
+                angularX = 0;
+            }
+            else
+            {
+                angularX = m_angularX;
+            }
+
+            if (m_angularY < min_speed && m_angularY > -min_speed)
+            {
+                angularY = 0;
+            }
+            else
+            {
+                angularY = m_angularY;
+            }
+        }
+```
+## Объекты
+Чтобы теперь двигать, вращать и увеличивать объекты, зададим сначала их постоянные скорости. А потом в методе рендера класса массива объектов будем вызывать уже знакомые функции - вращение обезьянки `this[0]` со скоростью 90 градусов в секунду, перемещение кубика `this[10]` со скоростью 10 блоков в секунду и увеличение мужика `this[11]` со скоростью, зависящей от времени.
+```c#
+        float cube_speed = 10;
+        float monkey_rotationSpeed = 90;
+
+        public void OnRender(float deltaTime)
+        {
+            this[0].pipeline.Rotate(0, monkey_rotationSpeed, 0, deltaTime);
+
+            if (this[10].pipeline.PosZ == -6f && this[10].pipeline.PosX + 0.01f <= 6f)
+            {
+                this[10].pipeline.MoveX(cube_speed, deltaTime);
+                if (this[10].pipeline.PosX >= 5.9f && this[10].pipeline.PosX <= 6f)
+                    this[10].pipeline.SetPositionX(6f);
+            }
+            else if (this[10].pipeline.PosX == 6f && this[10].pipeline.PosZ + 0.01f <= 6f)
+            {
+                this[10].pipeline.MoveZ(cube_speed, deltaTime);
+                if (this[10].pipeline.PosZ >= 5.9f && this[10].pipeline.PosZ <= 6f) 
+                    this[10].pipeline.SetPositionZ(6f);
+            }
+            else if (this[10].pipeline.PosZ == 6f && this[10].pipeline.PosX - 0.01f >= -6f)
+            {
+                this[10].pipeline.MoveX(-cube_speed, deltaTime);
+                if (this[10].pipeline.PosX <= -5.9f && this[10].pipeline.PosX >= -6f)
+                    this[10].pipeline.SetPositionX(-6f);
+            }
+            else if (this[10].pipeline.PosX == -6f && this[10].pipeline.PosZ - 0.01f >= -6f)
+            {
+                this[10].pipeline.MoveZ(-cube_speed, deltaTime);
+                if (this[10].pipeline.PosZ <= -5.9f && this[10].pipeline.PosZ >= -6f)
+                    this[10].pipeline.SetPositionZ(-6f);
+            }
+
+            counter += deltaTime;
+            this[11].pipeline.Expand(math3d.sin((float)counter), deltaTime);
+        }
+```
+## При обновлении кадра
+В `OnRenderFrame`:
+```c#
+            Camera.OnRender((float)args.Time);
+            Models.OnRender((float)args.Time);
+```
+## Результат
+![dt](https://github.com/galeevlxix/game_engine/blob/WorkingWithTheModel/screens/DeltaTimeScene%20(online-video-cutter.com).gif)
