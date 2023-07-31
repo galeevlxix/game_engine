@@ -1,4 +1,5 @@
 ﻿using game_2.MathFolder;
+using OpenTK.Graphics.ES20;
 using System.Reflection;
 
 namespace game_2.Brain
@@ -21,7 +22,7 @@ namespace game_2.Brain
 
         public ObjectArray(List<GameObj> dict)
         {
-            this.obj_list = dict;
+            obj_list = dict;
         }
 
         private void Init()
@@ -42,93 +43,113 @@ namespace game_2.Brain
 
             GameObj _model = new GameObj("C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\obj_files\\monkey\\monkey.obj", "C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\obj_files\\monkey\\DefTexture.png");
 
-            this.Add(_model);
-            this.Add(obj2);
-            this.Add(obj3);
-            this.Add(obj4);
-            this.Add(obj5);
-            this.Add(obj6);
-            this.Add(obj7);
-            this.Add(obj8);
-            this.Add(obj9);
-            this.Add(obj10);
-            this.Add(obj11);
+            GameObj _house = new GameObj("C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\obj_files\\warr.obj", "C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\obj_files\\monkey\\CharTexturesHighRes0_029.png");
+
+            //GameObj steve = new GameObj("C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\obj_files\\Steve.obj", "C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\obj_files\\Copy of steve.png");
+            
+            Add(_model);
+            Add(obj2);
+            Add(obj3);
+            Add(obj4);
+            Add(obj5);
+            Add(obj6);
+            Add(obj7);
+            Add(obj8);
+            Add(obj9);
+            Add(obj10);
+            Add(obj11);
+            Add(_house);
+            //Add(steve);
+
+            this[0].pipeline.SetScale(1f);
+            this[0].pipeline.SetPosition(0, 2, 0);
+            this[0].pipeline.SetAngle(0, 0, 0);
+
+            this[1].pipeline.SetScale(1f);
+            this[1].pipeline.SetPosition(-6, 0, -6);
+            this[1].pipeline.SetAngle(0, 0, 0);
+
+            this[2].pipeline.SetScale(1f);
+            this[2].pipeline.SetPosition(-6, 0, 0);
+            this[2].pipeline.SetAngle(0, 0, 0);
+
+            this[3].pipeline.SetScale(1f);
+            this[3].pipeline.SetPosition(-6, 0, 6);
+            this[3].pipeline.SetAngle(0, 0, 0);
+
+            this[4].pipeline.SetScale(1f);
+            this[4].pipeline.SetPosition(0, 0, -6);
+            this[4].pipeline.SetAngle(0, 0, 0);
+
+            this[5].pipeline.SetScale(1f);
+            this[5].pipeline.SetPosition(0, 0, 0);
+            this[5].pipeline.SetAngle(0, 0, 0);
+
+            this[6].pipeline.SetScale(1f);
+            this[6].pipeline.SetPosition(0, 0, 6);
+            this[6].pipeline.SetAngle(0, 0, 0);
+
+            this[7].pipeline.SetScale(1f);
+            this[7].pipeline.SetPosition(6, 0, -6);
+            this[7].pipeline.SetAngle(0, 0, 0);
+
+            this[8].pipeline.SetScale(1f);
+            this[8].pipeline.SetPosition(6, 0, 0);
+            this[8].pipeline.SetAngle(0, 0, 0);
+
+            this[9].pipeline.SetScale(1f);
+            this[9].pipeline.SetPosition(6, 0, 6);
+            this[9].pipeline.SetAngle(0, 0, 0);
+
+            this[10].pipeline.SetScale(1f);
+            this[10].pipeline.SetAngle(0, 0, 0);
+            this[10].pipeline.SetPosition(-6, 1, -6);
+
+            this[11].pipeline.SetScale(2f);
+            this[11].pipeline.SetAngle(0, 0, 0);
+            this[11].pipeline.SetPosition(3.5f, 0, 0);
+
+/*            this[12].pipeline.SetScale(20f);
+            this[12].pipeline.SetAngle(0, 0, 0);
+            this[12].pipeline.SetPosition(-3.5f, 0, 0);*/
         }
 
-        float posx = -6, posz = -6;
-        float speed = 10;
-        float rotationSpeed = 90;
-        float rotationAngle = 0;
+        float cube_speed = 10;
+        float monkey_rotationSpeed = 90;
 
         public void OnRender(double deltaTime)
         {
-            rotationAngle += rotationSpeed * (float)deltaTime;
+            this[0].pipeline.Rotate(0, monkey_rotationSpeed, 0, deltaTime);
 
-            this[0].pipeline.Scale(2f);
-            this[0].pipeline.Position(0, 2, 0);
-            this[0].pipeline.Rotate(0, rotationAngle, 0);
-
-            this[1].pipeline.Scale(1f);
-            this[1].pipeline.Position(-6, 0, -6);
-            this[1].pipeline.Rotate(0, 0, 0);
-
-            this[2].pipeline.Scale(1f);
-            this[2].pipeline.Position(-6, 0, 0);
-            this[2].pipeline.Rotate(0, 0, 0);
-
-            this[3].pipeline.Scale(1f);
-            this[3].pipeline.Position(-6, 0, 6);
-            this[3].pipeline.Rotate(0, 0, 0);
-
-            this[4].pipeline.Scale(1f);
-            this[4].pipeline.Position(0, 0, -6);
-            this[4].pipeline.Rotate(0, 0, 0);
-
-            this[5].pipeline.Scale(1f);
-            this[5].pipeline.Position(0, 0, 0);
-            this[5].pipeline.Rotate(0, 0, 0);
-
-            this[6].pipeline.Scale(1f);
-            this[6].pipeline.Position(0, 0, 6);
-            this[6].pipeline.Rotate(0, 0, 0);
-
-            this[7].pipeline.Scale(1f);
-            this[7].pipeline.Position(6, 0, -6);
-            this[7].pipeline.Rotate(0, 0, 0);
-
-            this[8].pipeline.Scale(1f);
-            this[8].pipeline.Position(6, 0, 0);
-            this[8].pipeline.Rotate(0, 0, 0);
-
-            this[9].pipeline.Scale(1f);
-            this[9].pipeline.Position(6, 0, 6);
-            this[9].pipeline.Rotate(0, 0, 0);
-
-            if (posz == -6f && posx + 0.01f <= 6f)
+            if (this[10].pipeline.PosZ == -6f && this[10].pipeline.PosX + 0.01f <= 6f)
             {
-                posx += speed * (float)deltaTime;
-                if (posx >= 5.9f && posx <= 6f) posx = 6f;
+                this[10].pipeline.MoveX(cube_speed, deltaTime);
+                if (this[10].pipeline.PosX >= 5.9f && this[10].pipeline.PosX <= 6f)
+                    this[10].pipeline.SetPositionX(6f);
             }
-            else if (posx == 6f && posz + 0.01f <= 6f)
+            else if (this[10].pipeline.PosX == 6f && this[10].pipeline.PosZ + 0.01f <= 6f)
             {
-                posz += speed * (float)deltaTime;
-                if (posz >= 5.9f && posz <= 6f) posz = 6f;
+                this[10].pipeline.MoveZ(cube_speed, deltaTime);
+                if (this[10].pipeline.PosZ >= 5.9f && this[10].pipeline.PosZ <= 6f) 
+                    this[10].pipeline.SetPositionZ(6f);
             }
-            else if (posz == 6f && posx - 0.01f >= -6f)
+            else if (this[10].pipeline.PosZ == 6f && this[10].pipeline.PosX - 0.01f >= -6f)
             {
-                posx += -speed * (float)deltaTime;
-                if (posx <= -5.9f && posx >= -6f) posx = -6f;
+                this[10].pipeline.MoveX(-cube_speed, deltaTime);
+                if (this[10].pipeline.PosX <= -5.9f && this[10].pipeline.PosX >= -6f)
+                    this[10].pipeline.SetPositionX(-6f);
             }
-            else if (posx == -6f && posz - 0.01f >= -6f)
+            else if (this[10].pipeline.PosX == -6f && this[10].pipeline.PosZ - 0.01f >= -6f)
             {
-                posz += -speed * (float)deltaTime;
-                if (posz <= -5.9f && posz >= -6f) posz = -6f;
+                this[10].pipeline.MoveZ(-cube_speed, deltaTime);
+                if (this[10].pipeline.PosZ <= -5.9f && this[10].pipeline.PosZ >= -6f)
+                    this[10].pipeline.SetPositionZ(-6f);
             }
-
-            this[10].pipeline.Scale(1f);
-            this[10].pipeline.Position(posx, 1, posz);
-            this[10].pipeline.Rotate(0, 0, 0);
+            counter += deltaTime;
+            this[11].pipeline.Expand(math3d.sin((float)counter), deltaTime);
         }
+
+        double counter = 0;
 
         public void Add(GameObj gameObj)
         {
@@ -163,14 +184,6 @@ namespace game_2.Brain
             } 
         }
 
-        public void DrawRev()
-        {
-            for (int i = this.Count - 1; i >= 0; i--)
-            {
-                obj_list[i].Draw();
-            }
-        }
-
         public void Draw()
         {
             for (int i = 0; i < obj_list.Count; i++)
@@ -196,19 +209,44 @@ namespace game_2.Brain
             }
         }
 
-        public void Rotate(int index, float x, float y, float z)
+        public void SetAngle(int index, float x, float y, float z)
         {
-            obj_list[index].pipeline.Rotate(x, y, z);
+            obj_list[index].pipeline.SetAngle(x, y, z);
         }
 
-        public void Position(int index, float x, float y, float z)
+        public void SetPosition(int index, float x, float y, float z)
         {
-            obj_list[index].pipeline.Position(x, y, z);
+            obj_list[index].pipeline.SetPosition(x, y, z);
         }
 
-        public void Scale(int index, float x, float y, float z)
+        public void SetScale(int index, float x, float y, float z)
         {
-            obj_list[index].pipeline.Scale(x, y, z);
+            obj_list[index].pipeline.SetScale(x, y, z);
+        }
+
+        public void ShowHitBoxes()
+        {
+            obj_list.ForEach(obj => obj.ShowHitBox());
+        }
+        public void HideHitBoxes()
+        {
+            obj_list.ForEach(obj => obj.HideHitBox());
+        }
+
+        bool hb = false;
+
+        public void ShowOrHideHitBoxes()
+        {
+            if (hb)
+            {
+                HideHitBoxes();
+                hb = false;
+            }
+            else
+            {
+                ShowHitBoxes();
+                hb = true;
+            }
         }
     }
 }

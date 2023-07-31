@@ -5,8 +5,6 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 using game_2.Brain;
 using OpenTK.Mathematics;
 using game_2.MathFolder;
-using System.Threading.Tasks;
-using System.Timers;
 
 namespace game_2
 {
@@ -76,9 +74,6 @@ namespace game_2
             {
                 mPersProj.ChangeFOV(50);
             }
-
-            Camera.OnMouse(-MouseState.Delta.X, -MouseState.Delta.Y, args.Time);
-            Camera.OnKeyboard(KeyboardState, args.Time);
         }
 
         // Примерно deltaTime = 0.002s
@@ -88,7 +83,10 @@ namespace game_2
         {
             base.OnRenderFrame(args);
 
-            Camera.OnRender(args.Time);
+            Camera.OnRender((float)args.Time);
+
+            Camera.OnMouse(-MouseState.Delta.X, -MouseState.Delta.Y, (float)args.Time);
+            Camera.OnKeyboard(KeyboardState);
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
@@ -104,12 +102,14 @@ namespace game_2
         {
             base.OnMouseDown(e);
             if (!isMouseDown && e.Button == MouseButton.Button1) isMouseDown = true;
+            if (e.Button == MouseButton.Button2) Models.ShowHitBoxes();
         }
 
         protected override void OnMouseUp(MouseButtonEventArgs e)
         {
             base.OnMouseUp(e);
             if (isMouseDown && e.Button == MouseButton.Button1) isMouseDown = false;
+            if (e.Button == MouseButton.Button2) Models.HideHitBoxes();
         }
 
         protected override void OnResize(ResizeEventArgs e)

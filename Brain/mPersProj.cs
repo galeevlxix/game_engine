@@ -7,7 +7,7 @@ namespace game_2.Brain
         private static float FOV = 50;
         private static float width = 1920;
         private static float height = 1080;
-        private static float zNear = 0.001f;
+        private static float zNear = 0.01f;
         private static float zFar = 100;
         public static matrix4f PersProjMatrix = new matrix4f();
 

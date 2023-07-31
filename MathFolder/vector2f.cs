@@ -16,5 +16,11 @@ namespace game_2.MathFolder
             this.x = x;
             this.y = y;
         }
+
+        public vector2f() 
+        {
+            x = 0;
+            y = 0;
+        }
     }
 }

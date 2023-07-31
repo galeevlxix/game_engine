@@ -39,6 +39,16 @@ namespace game_2.Brain
             mesh.shader.Use();            
         }
 
+        public void ShowHitBox()
+        {
+            mesh.ShowHitBox = true;
+        }
+
+        public void HideHitBox()
+        {
+            mesh.ShowHitBox = false;
+        }
+
         public void OnDelete()
         {
             mesh.Dispose();

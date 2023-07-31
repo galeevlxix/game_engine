@@ -15,11 +15,10 @@ namespace game_2.Brain
 
         private static float velocity = 100f;
         private static float sensitivity = 0.5f;
-        private static float brakingKeyBo = 0.008f;
-        private static float brakingMouse = 0.02f;
+        private static float brakingKeyBo = 5f;
+        private static float brakingMouse = 20f;
 
         private static float min_speed = 0.00004f;
-        private static float max_speed = 20f;
 
         private static float speedX;
         private static float speedY;
@@ -105,7 +104,7 @@ namespace game_2.Brain
             inited = true;
         }
 
-        public static void OnKeyboard(KeyboardState key, double deltaTime)
+        public static void OnKeyboard(KeyboardState key)
         {
             if (!key.IsAnyKeyDown) return;
             if (!inited) return;
@@ -145,28 +144,28 @@ namespace game_2.Brain
             }
         }
 
-        public static void OnMouse(float DeltaX, float DeltaY, double deltaTime)       //сюда реальные координаты мыши, а не дельта
+        public static void OnMouse(float DeltaX, float DeltaY, float deltaTime)       //сюда реальные координаты мыши, а не дельта
         {
             //if ((DeltaX == 0) && (DeltaY == 0)) return;
             if (!inited) return;
 
-            angularX += DeltaX * sensitivity * (float)deltaTime;
-            angularY += DeltaY * sensitivity * (float)deltaTime;
+            angularX += DeltaX * sensitivity * deltaTime;
+            angularY += DeltaY * sensitivity * deltaTime;
 
         }
 
-        public static void OnRender(double deltaTime)
+        public static void OnRender(float deltaTime)
         {
             if (!inited) return;
-            Braking();
+            Braking(deltaTime);
 
-            Pos += Target * speedZ * (float)deltaTime;
+            Pos += Target * speedZ * deltaTime;
 
             Left = vector3f.Cross(Target, Up);
             Left.Normalize();
-            Pos += Left * speedX * (float)deltaTime;
+            Pos += Left * speedX * deltaTime;
 
-            Pos += vector3f.Up * speedY * (float)deltaTime;
+            Pos += vector3f.Up * speedY * deltaTime;
 
             angle_h += angularX;
 
@@ -179,14 +178,14 @@ namespace game_2.Brain
             CameraRotation.InitCameraTransform(Target, Up);
         }
 
-        private static void Braking()
+        private static void Braking(float deltaTime)
         {
-            float m_speedX = speedX * (1 - brakingKeyBo);
-            float m_speedY = speedY * (1 - brakingKeyBo);
-            float m_speedZ = speedZ * (1 - brakingKeyBo);
+            float m_speedX = speedX * (1 - brakingKeyBo * deltaTime);
+            float m_speedY = speedY * (1 - brakingKeyBo * deltaTime);
+            float m_speedZ = speedZ * (1 - brakingKeyBo * deltaTime);
 
-            float m_angularX = angularX * (1 - brakingMouse);
-            float m_angularY = angularY * (1 - brakingMouse);
+            float m_angularX = angularX * (1 - brakingMouse * deltaTime);
+            float m_angularY = angularY * (1 - brakingMouse * deltaTime);
 
             if (m_speedX < min_speed && m_speedX > -min_speed)
             {

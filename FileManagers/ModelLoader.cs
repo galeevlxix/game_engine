@@ -99,7 +99,11 @@ namespace game_2.FileManagers
                         if (vertCords.Count == 0 || textCords.Count == 0 || normCords.Count == 0)
                         {
                             Console.WriteLine("Wrong model");
-                            return;
+                        }
+
+                        if (normCords.Count == 0)
+                        {
+                            
                         }
 
                         List<string> fString = new List<string>();
@@ -195,6 +199,8 @@ namespace game_2.FileManagers
             Vertices = _modelVerts.ToArray();
             Indices = _modelInd.ToArray();
         }
+
+        
 
         private static void LoadFromFbx(TextReader tr, ref float[] Vertices, ref int[] Indices)
         {
