@@ -8,6 +8,8 @@ namespace game_2.Brain
         private vector3f ScaleVector;
         private vector3f PositionVector;
 
+        // Получить значения
+
         public float PosX
         {
             get
@@ -87,6 +89,8 @@ namespace game_2.Brain
             PositionVector = vector3f.Zero;
         }
 
+        // Установить значение
+
         public void SetAngle(float angleX, float angleY, float angleZ)
         {
             RotateVector.x = angleX;
@@ -130,47 +134,53 @@ namespace game_2.Brain
             PositionVector.z = PosZ;
         }
 
-        public void Rotate(float speedX, float speedY, float speedZ, double time)
+        // Вращать
+
+        public void Rotate(float speedX, float speedY, float speedZ, float time)
         {
-            RotateVector.x += speedX * (float)time;
-            RotateVector.y += speedY * (float)time;
-            RotateVector.z += speedZ * (float)time;
+            RotateVector.x += speedX * time;
+            RotateVector.y += speedY * time;
+            RotateVector.z += speedZ * time;
         }
 
-        public void Move(float speedX, float speedY, float speedZ, double time)
+        // Передвижение
+
+        public void Move(float speedX, float speedY, float speedZ, float time)
         {
-            PositionVector.x += speedX * (float)time;
-            PositionVector.y += speedY * (float)time;
-            PositionVector.z += speedZ * (float)time;
+            PositionVector.x += speedX * time;
+            PositionVector.y += speedY * time;
+            PositionVector.z += speedZ * time;
         }
 
-        public void MoveX(float speedX, double time)
+        public void MoveX(float speedX, float time)
         {
-            PositionVector.x += speedX * (float)time;
+            PositionVector.x += speedX * time;
         }
 
-        public void MoveY(float speedY, double time)
+        public void MoveY(float speedY, float time)
         {
-            PositionVector.y += speedY * (float)time;
+            PositionVector.y += speedY * time;
         }
 
-        public void MoveZ(float speedZ, double time)
+        public void MoveZ(float speedZ, float time)
         {
-            PositionVector.z += speedZ * (float)time;
+            PositionVector.z += speedZ * time;
         }
 
-        public void Expand(float speedX, float speedY, float speedZ, double time)
+        // Увеличение
+
+        public void Expand(float speedX, float speedY, float speedZ, float time)
         {
-            ScaleVector.x += speedX * (float)time;
-            ScaleVector.y += speedY * (float)time;
-            ScaleVector.z += speedZ * (float)time;
+            ScaleVector.x += speedX * time;
+            ScaleVector.y += speedY * time;
+            ScaleVector.z += speedZ * time;
         }
 
-        public void Expand(float speed, double time)
+        public void Expand(float speed, float time)
         {
-            ScaleVector.x += speed * (float)time;
-            ScaleVector.y += speed * (float)time;
-            ScaleVector.z += speed * (float)time;
+            ScaleVector.x += speed * time;
+            ScaleVector.y += speed * time;
+            ScaleVector.z += speed * time;
         }
 
         public void Reset()

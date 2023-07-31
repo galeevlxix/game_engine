@@ -117,7 +117,7 @@ namespace game_2.Brain
         float cube_speed = 10;
         float monkey_rotationSpeed = 90;
 
-        public void OnRender(double deltaTime)
+        public void OnRender(float deltaTime)
         {
             this[0].pipeline.Rotate(0, monkey_rotationSpeed, 0, deltaTime);
 

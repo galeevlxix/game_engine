@@ -144,13 +144,13 @@ namespace game_2.Brain
             }
         }
 
-        public static void OnMouse(float DeltaX, float DeltaY, float deltaTime)       //сюда реальные координаты мыши, а не дельта
+        public static void OnMouse(float DeltaX, float DeltaY)       //сюда реальные координаты мыши, а не дельта
         {
             //if ((DeltaX == 0) && (DeltaY == 0)) return;
             if (!inited) return;
 
-            angularX += DeltaX * sensitivity * deltaTime;
-            angularY += DeltaY * sensitivity * deltaTime;
+            angularX += DeltaX * sensitivity;
+            angularY += DeltaY * sensitivity;
 
         }
 
@@ -167,10 +167,10 @@ namespace game_2.Brain
 
             Pos += vector3f.Up * speedY * deltaTime;
 
-            angle_h += angularX;
+            angle_h += angularX * deltaTime;
 
-            if (angle_v + angularY < 90 && angle_v + angularY > -90)
-                angle_v += angularY;
+            if (angle_v + angularY * deltaTime < 90 && angle_v + angularY * deltaTime > -90)
+                angle_v += angularY * deltaTime;
 
             Update();
 

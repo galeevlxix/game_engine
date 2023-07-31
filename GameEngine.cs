@@ -74,6 +74,8 @@ namespace game_2
             {
                 mPersProj.ChangeFOV(50);
             }
+            Camera.OnMouse(-MouseState.Delta.X, -MouseState.Delta.Y);
+            Camera.OnKeyboard(KeyboardState);
         }
 
         // Примерно deltaTime = 0.002s
@@ -85,12 +87,9 @@ namespace game_2
 
             Camera.OnRender((float)args.Time);
 
-            Camera.OnMouse(-MouseState.Delta.X, -MouseState.Delta.Y, (float)args.Time);
-            Camera.OnKeyboard(KeyboardState);
-
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            Models.OnRender(args.Time);
+            Models.OnRender((float)args.Time);
             Models.Draw();
 
             SwapBuffers();
