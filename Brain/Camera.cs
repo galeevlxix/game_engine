@@ -1,5 +1,6 @@
 ﻿using game_2.MathFolder;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using System.Diagnostics;
 
 namespace game_2.Brain
 {
@@ -13,12 +14,19 @@ namespace game_2.Brain
         private static float angle_h;  //горизонтальный поворот
         private static float angle_v;  //вертикальный поворот
 
-        private static float velocity = 100f;
+        private static float velocity;
         private static float sensitivity = 0.5f;
         private static float brakingKeyBo = 5f;
         private static float brakingMouse = 20f;
 
         private static float min_speed = 0.00004f;
+        private static float max_speed;
+
+        private static float max_normal_speed = 10;
+        private static float max_fast_speed = 15;
+
+        private static float normal_velocity = 0.1f;
+        private static float fast_velocity = 0.2f;
 
         private static float speedX;
         private static float speedY;
@@ -29,9 +37,6 @@ namespace game_2.Brain
 
         public static matrix4f CameraTranslation { get; private set; }
         public static matrix4f CameraRotation { get; private set; }
-
-
-        private static bool inited = false;
 
         public static void InitCamera()
         {
@@ -101,62 +106,65 @@ namespace game_2.Brain
             angularX = 0;
             angularY = 0;
 
-            inited = true;
         }
 
         public static void OnKeyboard(KeyboardState key)
         {
             if (!key.IsAnyKeyDown) return;
-            if (!inited) return;
 
             if (key.IsKeyDown(Keys.LeftControl))
             {
-                velocity = 0.2f;
+                velocity = fast_velocity;
+                max_speed = max_fast_speed;
             }
             else
             {
-                velocity = 0.1f;
+                velocity = normal_velocity;
+                max_speed = max_normal_speed;
             }
 
             if (key.IsKeyDown(Keys.W))
             {
-                speedZ -= velocity;
+                if (math3d.sqrt(speedX * speedX + speedY * speedY + (speedZ - velocity) * (speedZ - velocity)) <= max_speed)
+                    speedZ -= velocity;
             }
             if (key.IsKeyDown(Keys.S))
             {
-                speedZ += velocity;
+                if (math3d.sqrt(speedX * speedX + speedY * speedY + (speedZ + velocity) * (speedZ + velocity)) <= max_speed)
+                    speedZ += velocity;
             }
             if (key.IsKeyDown(Keys.A))
             {
-                speedX += velocity;
+                if (math3d.sqrt((speedX + velocity) * (speedX + velocity) + speedY * speedY + speedZ * speedZ) <= max_speed)
+                    speedX += velocity;
             }
             if (key.IsKeyDown(Keys.D))
             {
-                speedX -= velocity;
+                if (math3d.sqrt((speedX - velocity) * (speedX - velocity) + speedY * speedY + speedZ * speedZ) <= max_speed)
+                    speedX -= velocity;
             }
             if (key.IsKeyDown(Keys.Space))
             {
-                speedY += velocity;
+                if (math3d.sqrt(speedX * speedX + (speedY + velocity) * (speedY + velocity) + speedZ * speedZ) <= max_speed)
+                    speedY += velocity;
             }
             if (key.IsKeyDown(Keys.LeftShift))
             {
-                speedY -= velocity;
+                if (math3d.sqrt(speedX * speedX + (speedY - velocity) * (speedY - velocity) + speedZ * speedZ) <= max_speed)
+                    speedY -= velocity;
             }
         }
 
         public static void OnMouse(float DeltaX, float DeltaY)       //сюда реальные координаты мыши, а не дельта
         {
             //if ((DeltaX == 0) && (DeltaY == 0)) return;
-            if (!inited) return;
 
             angularX += DeltaX * sensitivity;
             angularY += DeltaY * sensitivity;
-
         }
 
         public static void OnRender(float deltaTime)
         {
-            if (!inited) return;
             Braking(deltaTime);
 
             Pos += Target * speedZ * deltaTime;

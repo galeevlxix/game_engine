@@ -1,17 +1,22 @@
 ﻿using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 
-namespace game_2.Brain
+namespace game_2.Brain.ObjectFolder
 {
     public class Shader : IDisposable
     {
-        int Handle;
-        int MVPID;
-        int PersProjID;
-        int CameraPosID;
-        int CameraRotID;
+        protected int Handle;
+        protected int MVPID;
+        protected int PersProjID;
+        protected int CameraPosID;
+        protected int CameraRotID;
 
         public Shader(string vs, string fs)
+        {
+            Init(vs, fs);
+        }
+
+        public void Init(string vs, string fs)
         {
             //дескрипторы шейдеров 
             int VertexShader;
@@ -23,7 +28,7 @@ namespace game_2.Brain
 
             FragmentShader = GL.CreateShader(ShaderType.FragmentShader);
             GL.ShaderSource(FragmentShader, fs);
-            
+
             //компиляция шейдеров
             CompileShaders(VertexShader, FragmentShader);
 

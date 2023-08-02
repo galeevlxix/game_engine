@@ -5,6 +5,7 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 using game_2.Brain;
 using OpenTK.Mathematics;
 using game_2.MathFolder;
+using game_2.Brain.SkyBoxFolder;
 
 namespace game_2
 {
@@ -17,6 +18,8 @@ namespace game_2
 
         private int WindowsWidth;
         private int WindowsHeight;
+
+        Skybox skybox;
 
         private readonly Color4 BackGroundColor;
 
@@ -45,11 +48,11 @@ namespace game_2
 
             ///////////////параметры игры
 
-            Models = new ObjectArray();
-
             Camera.InitCamera();
-            Camera.Pos = new vector3f(0, 3, 4);
+            Camera.Pos = new vector3f(0, 3, 4);            
 
+            Models = new ObjectArray();
+            skybox = new Skybox();
             loaded = true;
         }
 
@@ -88,9 +91,11 @@ namespace game_2
             Camera.OnRender((float)args.Time);
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
+                       
             Models.OnRender((float)args.Time);
             Models.Draw();
+
+            skybox.Draw();
 
             SwapBuffers();
             GLFW.PollEvents();
@@ -129,6 +134,7 @@ namespace game_2
         {
             base.OnClosed();
             Models.Clear();
+            skybox.OnDelete();
         }
     }
 }

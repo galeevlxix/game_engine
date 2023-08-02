@@ -19,7 +19,7 @@ namespace game_2.Storage
         public static readonly int[] Indices = new int[]
         {
             0, 1, 2,
-            0, 2, 3
+            0, 2, 3,
         };
 
         public static readonly string TexturePath = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Textures\\grass.png";

@@ -1,6 +1,7 @@
-﻿using game_2.Storage;
+﻿using game_2.Brain;
+using game_2.Storage;
 
-namespace game_2.Brain
+namespace game_2.Brain.ObjectFolder
 {
     public class GameObj
     {
@@ -21,7 +22,7 @@ namespace game_2.Brain
             {
                 mesh = new Mesh();
             }
-            
+
             pipeline = new Pipeline();
         }
 
@@ -34,9 +35,7 @@ namespace game_2.Brain
 
         public virtual void Draw()
         {
-            mesh.Draw();
-            mesh.shader.setMatrix(pipeline.getMVP().ToOpenTK());
-            mesh.shader.Use();            
+            mesh.Draw(pipeline.getMVP().ToOpenTK());
         }
 
         public void ShowHitBox()

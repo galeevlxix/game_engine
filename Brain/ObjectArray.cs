@@ -1,4 +1,5 @@
-﻿using game_2.MathFolder;
+﻿using game_2.Brain.ObjectFolder;
+using game_2.MathFolder;
 using OpenTK.Graphics.ES20;
 using System.Reflection;
 
@@ -40,14 +41,15 @@ namespace game_2.Brain
             GameObj obj9 = new GameObj(FloorModel);
             GameObj obj10 = new GameObj(FloorModel);
             GameObj obj11 = new GameObj(BoxModel);
+            //GameObj obj12 = new GameObj(BoxModel);
 
-            GameObj _model = new GameObj("C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\obj_files\\monkey\\monkey.obj", "C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\obj_files\\monkey\\DefTexture.png");
+            GameObj _monkey = new GameObj("C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\obj_files\\monkey\\monkey.obj", "C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\obj_files\\monkey\\DefTexture.png");
 
-            GameObj _house = new GameObj("C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\obj_files\\warr.obj", "C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\obj_files\\monkey\\CharTexturesHighRes0_029.png");
+            GameObj _man = new GameObj("C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\obj_files\\warr.obj", "C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\obj_files\\monkey\\CharTexturesHighRes0_029.png");
 
             //GameObj steve = new GameObj("C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\obj_files\\Steve.obj", "C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\obj_files\\Copy of steve.png");
             
-            Add(_model);
+            Add(_monkey);
             Add(obj2);
             Add(obj3);
             Add(obj4);
@@ -58,7 +60,8 @@ namespace game_2.Brain
             Add(obj9);
             Add(obj10);
             Add(obj11);
-            Add(_house);
+            Add(_man);
+            //Add(obj12);
             //Add(steve);
 
             this[0].pipeline.SetScale(1f);
@@ -109,44 +112,49 @@ namespace game_2.Brain
             this[11].pipeline.SetAngle(0, 0, 0);
             this[11].pipeline.SetPosition(3.5f, 0, 0);
 
-/*            this[12].pipeline.SetScale(20f);
+/*            this[12].pipeline.SetScale(56f);
             this[12].pipeline.SetAngle(0, 0, 0);
-            this[12].pipeline.SetPosition(-3.5f, 0, 0);*/
+            this[12].pipeline.SetPosition(0f, 0, 0);*/
         }
 
         float cube_speed = 10;
         float monkey_rotationSpeed = 90;
 
+        bool cube_moving = true;
+
         public void OnRender(float deltaTime)
         {
             this[0].pipeline.Rotate(0, monkey_rotationSpeed, 0, deltaTime);
 
-            if (this[10].pipeline.PosZ == -6f && this[10].pipeline.PosX + 0.01f <= 6f)
-            {
-                this[10].pipeline.MoveX(cube_speed, deltaTime);
-                if (this[10].pipeline.PosX >= 5.9f && this[10].pipeline.PosX <= 6f)
-                    this[10].pipeline.SetPositionX(6f);
-            }
-            else if (this[10].pipeline.PosX == 6f && this[10].pipeline.PosZ + 0.01f <= 6f)
-            {
-                this[10].pipeline.MoveZ(cube_speed, deltaTime);
-                if (this[10].pipeline.PosZ >= 5.9f && this[10].pipeline.PosZ <= 6f) 
-                    this[10].pipeline.SetPositionZ(6f);
-            }
-            else if (this[10].pipeline.PosZ == 6f && this[10].pipeline.PosX - 0.01f >= -6f)
-            {
-                this[10].pipeline.MoveX(-cube_speed, deltaTime);
-                if (this[10].pipeline.PosX <= -5.9f && this[10].pipeline.PosX >= -6f)
-                    this[10].pipeline.SetPositionX(-6f);
-            }
-            else if (this[10].pipeline.PosX == -6f && this[10].pipeline.PosZ - 0.01f >= -6f)
-            {
-                this[10].pipeline.MoveZ(-cube_speed, deltaTime);
-                if (this[10].pipeline.PosZ <= -5.9f && this[10].pipeline.PosZ >= -6f)
-                    this[10].pipeline.SetPositionZ(-6f);
-            }
+            if (cube_moving)
+                if (this[10].pipeline.PosZ == -6f && this[10].pipeline.PosX + 0.01f <= 6f)
+                {
+                    this[10].pipeline.MoveX(cube_speed, deltaTime);
+                    if (this[10].pipeline.PosX >= 5.9f && this[10].pipeline.PosX <= 6f)
+                        this[10].pipeline.SetPositionX(6f);
+                }
+                else if (this[10].pipeline.PosX == 6f && this[10].pipeline.PosZ + 0.01f <= 6f)
+                {
+                    this[10].pipeline.MoveZ(cube_speed, deltaTime);
+                    if (this[10].pipeline.PosZ >= 5.9f && this[10].pipeline.PosZ <= 6f)
+                        this[10].pipeline.SetPositionZ(6f);
+                }
+                else if (this[10].pipeline.PosZ == 6f && this[10].pipeline.PosX - 0.01f >= -6f)
+                {
+                    this[10].pipeline.MoveX(-cube_speed, deltaTime);
+                    if (this[10].pipeline.PosX <= -5.9f && this[10].pipeline.PosX >= -6f)
+                        this[10].pipeline.SetPositionX(-6f);
+                }
+                else if (this[10].pipeline.PosX == -6f && this[10].pipeline.PosZ - 0.01f >= -6f)
+                {
+                    this[10].pipeline.MoveZ(-cube_speed, deltaTime);
+                    if (this[10].pipeline.PosZ <= -5.9f && this[10].pipeline.PosZ >= -6f)
+                        this[10].pipeline.SetPositionZ(-6f);
+                }
             counter += deltaTime;
             this[11].pipeline.Expand(math3d.sin((float)counter), deltaTime);
+
+            //this[12].pipeline.SetPosition(Camera.Pos.x, Camera.Pos.y, Camera.Pos.z);
         }
 
         double counter = 0;

@@ -2,16 +2,17 @@
 using game_2.Storage;
 using game_2.FileManagers;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using OpenTK.Mathematics;
 using System.Numerics;
 using game_2.MathFolder;
 
-namespace game_2.Brain
+namespace game_2.Brain.ObjectFolder
 {
     public class Mesh : IDisposable
     {
-        private int VBO { get; set; }
-        private int VAO { get; set; }
-        private int IBO { get; set; }
+        protected int VBO { get; set; }
+        protected int VAO { get; set; }
+        protected int IBO { get; set; }
 
         protected float[] Vertices { get; set; }
         protected int[] Indices { get; set; }
@@ -172,8 +173,8 @@ namespace game_2.Brain
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, ibo_border);
             GL.BufferData(BufferTarget.ElementArrayBuffer, indices_border.Length * sizeof(int), indices_border, BufferUsageHint.StaticDraw);
 
-            shader_borber = new Shader(ShaderLoader.LoadShader("C:\\Users\\Lenovo\\source\\repos\\game_2\\Shaders\\vertShaderBorder.hlsl"), 
-                ShaderLoader.LoadShader("C:\\Users\\Lenovo\\source\\repos\\game_2\\Shaders\\fragmShaderBorder.hlsl"));
+            shader_borber = new Shader(ShaderLoader.LoadShader("C:\\Users\\Lenovo\\source\\repos\\game_2\\Shaders\\Border\\vertShaderBorder.hlsl"),
+                ShaderLoader.LoadShader("C:\\Users\\Lenovo\\source\\repos\\game_2\\Shaders\\Border\\fragmShaderBorder.hlsl"));
 
             // Устанавливаем указатели атрибутов вершины
             var location = shader_borber.GetAttribLocation("aPosition");
@@ -193,7 +194,7 @@ namespace game_2.Brain
         private Shader shader_borber;
 
 
-        private void Load()
+        protected virtual void Load()
         {
             // Генерация и привязка VAO и VBO
             VAO = GL.GenVertexArray();
@@ -219,7 +220,7 @@ namespace game_2.Brain
             GL.EnableVertexAttribArray(location);
 
             var texCordLocation = shader.GetAttribLocation("aTexCoord");
-            GL.VertexAttribPointer(texCordLocation, 2, VertexAttribPointerType.Float, false, 8  * sizeof(float), 3 * sizeof(float));
+            GL.VertexAttribPointer(texCordLocation, 2, VertexAttribPointerType.Float, false, 8 * sizeof(float), 3 * sizeof(float));
             GL.EnableVertexAttribArray(texCordLocation);
 
             var normCordLocation = shader.GetAttribLocation("aNormal");
@@ -239,16 +240,23 @@ namespace game_2.Brain
         public bool ShowHitBox = false;
         private bool MustShowHB = true;
 
-        public void Draw()
+        public void Draw(Matrix4 matrix)
         {
             texture.Use(TextureUnit.Texture0);
             GL.BindVertexArray(VAO);
             GL.DrawElements(PrimitiveType.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
+            GL.BindVertexArray(0);
+            shader.setMatrix(matrix);
+            shader.Use();
+
             if (ShowHitBox && MustShowHB)
             {
                 GL.BindVertexArray(vao_border);
                 GL.DrawElements(PrimitiveType.Triangles, indices_border.Length, DrawElementsType.UnsignedInt, 0);
-            }
+                GL.BindVertexArray(0);
+                shader_borber.setMatrix(matrix);
+                shader_borber.Use();
+            }            
         }
 
         public void Dispose()

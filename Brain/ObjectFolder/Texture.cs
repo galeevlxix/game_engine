@@ -4,7 +4,7 @@ using PixelFormat = OpenTK.Graphics.OpenGL.PixelFormat;
 using System.IO;
 using StbImageSharp;
 
-namespace game_2.Brain
+namespace game_2.Brain.ObjectFolder
 {
     public class Texture : IDisposable
     {
@@ -30,12 +30,12 @@ namespace game_2.Brain
                 GL.TexImage2D(
                     TextureTarget.Texture2D,    //target
                     0,                          //level
-                    PixelInternalFormat.Rgba,   
-                    image.Width, 
-                    image.Height, 
+                    PixelInternalFormat.Rgba,
+                    image.Width,
+                    image.Height,
                     0,                          //border
-                    PixelFormat.Rgba, 
-                    PixelType.UnsignedByte, 
+                    PixelFormat.Rgba,
+                    PixelType.UnsignedByte,
                     image.Data);
             }
 
