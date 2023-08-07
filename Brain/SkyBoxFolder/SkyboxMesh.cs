@@ -8,11 +8,11 @@ namespace game_2.Brain.SkyBoxFolder
 {
     public class SkyboxMesh : Mesh
     {
-        public SkyboxMesh() : base()
+        public SkyboxMesh()
         {
             Vertices = SkyboxVertices.Vertices;
             Indices = SkyboxVertices.Indices;
-            texPath = SkyboxVertices.TexturePath;
+            texture_file_name = SkyboxVertices.TexturePath;
 
             Load();
         }
@@ -36,8 +36,8 @@ namespace game_2.Brain.SkyBoxFolder
 
             // Шейдеры
             shader = new Shader(
-                ShaderLoader.LoadShader("C:\\Users\\Lenovo\\source\\repos\\game_2\\Shaders\\Object\\VertexShader.hlsl"), 
-                ShaderLoader.LoadShader("C:\\Users\\Lenovo\\source\\repos\\game_2\\Shaders\\Object\\FragmentShader.hlsl"));
+                ShaderLoader.LoadShader("C:\\Users\\Lenovo\\source\\repos\\game_2\\Shaders\\Skybox\\SkyboxVetexShader.hlsl"), 
+                ShaderLoader.LoadShader("C:\\Users\\Lenovo\\source\\repos\\game_2\\Shaders\\Skybox\\SkyboxFragShader.hlsl"));
 
             // Устанавливаем указатели атрибутов вершины
             var location = shader.GetAttribLocation("aPosition");
@@ -48,7 +48,7 @@ namespace game_2.Brain.SkyBoxFolder
             GL.VertexAttribPointer(texCordLocation, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * sizeof(float));
             GL.EnableVertexAttribArray(texCordLocation);
 
-            texture = Texture.Load(texPath);
+            texture = Texture.Load(texture_file_name);
 
             // Развязываем VAO и VBO
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);

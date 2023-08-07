@@ -8,8 +8,6 @@ namespace game_2.Brain.ObjectFolder
         protected Mesh mesh;
         public Pipeline pipeline;
 
-        private float width = 1.0f;
-
         public GameObj()
         {
             mesh = new Mesh();
@@ -76,8 +74,6 @@ namespace game_2.Brain.ObjectFolder
         public void OnDelete()
         {
             mesh.Dispose();
-            mesh.shader.Dispose();
-            mesh.texture.Dispose();
         }
     }
 }

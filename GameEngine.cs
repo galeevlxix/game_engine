@@ -100,7 +100,6 @@ namespace game_2
             Models.Draw();
 
             skybox.Draw();
-
             aim.Draw();
 
             SwapBuffers();

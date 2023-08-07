@@ -4,7 +4,7 @@ namespace game_2.Brain.AimFolder
 {
     public class Aim : GameObj
     {
-        public Aim() : base() 
+        public Aim()
         {
             mesh = new AimMesh();
             pipeline = new Pipeline();

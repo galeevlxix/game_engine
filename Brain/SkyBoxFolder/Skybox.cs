@@ -4,7 +4,7 @@ namespace game_2.Brain.SkyBoxFolder
 {
     public class Skybox : GameObj
     {
-        public Skybox() : base() 
+        public Skybox()
         {
             mesh = new SkyboxMesh();
             pipeline = new Pipeline();

@@ -1,22 +1,21 @@
 ﻿using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 
-namespace game_2.Brain.ObjectFolder
+namespace game_2.Brain
 {
     public class Shader : IDisposable
     {
         protected int Handle;
-        protected int MVPID;
-        protected int PersProjID;
-        protected int CameraPosID;
-        protected int CameraRotID;
+
+        private Dictionary<string, int> _uniformLocations;
+        private int numberOfUniforms;
 
         public Shader(string vs, string fs)
         {
             Init(vs, fs);
         }
 
-        public void Init(string vs, string fs)
+        private void Init(string vs, string fs)
         {
             //дескрипторы шейдеров 
             int VertexShader;
@@ -47,28 +46,15 @@ namespace game_2.Brain.ObjectFolder
                 Console.WriteLine(infolog);
             }
 
-            MVPID = GL.GetUniformLocation(Handle, "mvp");
-            if (MVPID < 0)
-            {
-                Console.WriteLine("mvp не инициализировалось");
-            }
+            GL.GetProgram(Handle, GetProgramParameterName.ActiveUniforms, out numberOfUniforms);
 
-            PersProjID = GL.GetUniformLocation(Handle, "pers");
-            if (PersProjID < 0)
-            {
-                Console.WriteLine("pers не инициализировалось");
-            }
+            _uniformLocations = new Dictionary<string, int>();
 
-            CameraPosID = GL.GetUniformLocation(Handle, "campos");
-            if (CameraPosID < 0)
+            for (int i = 0; i < numberOfUniforms; i++)
             {
-                Console.WriteLine("campos не инициализировалось");
-            }
-
-            CameraRotID = GL.GetUniformLocation(Handle, "camrot");
-            if (CameraRotID < 0)
-            {
-                Console.WriteLine("camrot не инициализировалось");
+                string key = GL.GetActiveUniform(Handle, i, out _, out _);
+                int location = GL.GetUniformLocation(Handle, key);
+                _uniformLocations.Add(key, location);
             }
 
             //очистка вершинных и фрагментных шейдеров
@@ -99,27 +85,36 @@ namespace game_2.Brain.ObjectFolder
             }
         }
 
-        public void setMatrix(Matrix4 m)
+        public void setMatrices(Matrix4 m)
         {
             Matrix4 p = mPersProj.PersProjMatrix.ToOpenTK();
             Matrix4 c_pos = Camera.CameraTranslation.ToOpenTK();
             Matrix4 c_rot = Camera.CameraRotation.ToOpenTK();
-
-            GL.UniformMatrix4(MVPID, true, ref m);
-            GL.UniformMatrix4(PersProjID, true, ref p);
-            GL.UniformMatrix4(CameraPosID, true, ref c_pos);
-            GL.UniformMatrix4(CameraRotID, true, ref c_rot);
+            
+            setMatrices(m, c_pos, c_rot, p);
         }
 
-        public void setMatrix(Matrix4 mvp, Matrix4 c_pos, Matrix4 c_rot, Matrix4 p)
+        public void setMatrices(Matrix4 mvp, Matrix4 c_pos, Matrix4 c_rot, Matrix4 p)
         {
-            GL.UniformMatrix4(MVPID, true, ref mvp);
-            GL.UniformMatrix4(PersProjID, true, ref p);
-            GL.UniformMatrix4(CameraPosID, true, ref c_pos);
-            GL.UniformMatrix4(CameraRotID, true, ref c_rot);
+            setMatrix("mvp", mvp);
+            setMatrix("pers", p);
+            setMatrix("campos", c_pos);
+            setMatrix("camrot", c_rot);
         }
 
-        public void Use()
+        public void setMatrix(string name, Matrix4 data)
+        {
+            Use();
+            GL.UniformMatrix4(_uniformLocations[name], true, ref data);
+        }
+
+        public void setInt(string name, int data)
+        {
+            Use();
+            GL.Uniform1(_uniformLocations[name], data);
+        }
+
+        private void Use()
         {
             GL.UseProgram(Handle);
         }

@@ -1,10 +1,8 @@
 ﻿using OpenTK.Graphics.OpenGL;
-using System.Drawing;
 using PixelFormat = OpenTK.Graphics.OpenGL.PixelFormat;
-using System.IO;
 using StbImageSharp;
 
-namespace game_2.Brain.ObjectFolder
+namespace game_2.Brain
 {
     public class Texture : IDisposable
     {
@@ -19,7 +17,6 @@ namespace game_2.Brain.ObjectFolder
         {
             int handle = GL.GenTexture();   //Создаем
 
-            GL.ActiveTexture(TextureUnit.Texture0);
             GL.BindTexture(TextureTarget.Texture2D, handle);
 
             StbImage.stbi_set_flip_vertically_on_load(1);
@@ -44,6 +41,7 @@ namespace game_2.Brain.ObjectFolder
 
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapR, (int)TextureWrapMode.Repeat);
 
             GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
 

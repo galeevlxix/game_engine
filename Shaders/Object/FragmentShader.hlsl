@@ -5,14 +5,15 @@ in vec2 texCoord;
 in vec3 vNormal;
 
 uniform sampler2D texture0;
+uniform sampler2D texture1;
 
 void main() 
 { 
-    vec3 ambientLightIntensity = vec3(0.5, 0.5, 0.5);
-    vec3 sunLightIntensity = vec3(1, 1, 1);
-    vec3 sunLightDirection = normalize(vec3(20, 20, -20.0));
+    vec3 ambientLightIntensity = vec3(0.1, 0.1, 0.1);
+    vec3 sunLightIntensity = vec3(0.8, 0.8, 0.8);
+    vec3 sunLightDirection = normalize(vec3(20, 20, 10.0));
 
-    vec4 texel = texture(texture0, texCoord);
+    vec4 texel = mix(texture(texture0, texCoord), texture(texture1, texCoord), 0.2);
 
     vec3 lightIntensity = ambientLightIntensity + sunLightIntensity * max(dot(vNormal, sunLightDirection), 0.0f);
 

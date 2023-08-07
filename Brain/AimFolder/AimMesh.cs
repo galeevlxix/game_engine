@@ -8,11 +8,11 @@ namespace game_2.Brain.AimFolder
 {
     public class AimMesh : SkyboxMesh
     {
-        public AimMesh() 
+        public AimMesh()
         {
             Vertices = AimVertices.Vertices;
             Indices = AimVertices.Indices;
-            texPath = AimVertices.TexturePath;
+            texture_file_name =  AimVertices.TexturePath ;
             pers_proj = pers_mat();
 
             Load();
@@ -20,11 +20,13 @@ namespace game_2.Brain.AimFolder
 
         public override void Draw(Matrix4 matrix)
         {
-            texture.Use(TextureUnit.Texture0);
+            for (int i = 0; i < texture_file_name.Length; i++)
+            {
+                texture.Use(TextureUnit.Texture0);
+            }
             GL.BindVertexArray(VAO);
+            shader.setMatrices(matrix, Matrix4.Identity, Matrix4.Identity, pers_proj);
             GL.DrawElements(PrimitiveType.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
-            shader.setMatrix(matrix, Matrix4.Identity, Matrix4.Identity, pers_proj );
-            shader.Use();
         }
 
         private Matrix4 pers_proj;

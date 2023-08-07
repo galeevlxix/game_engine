@@ -7,6 +7,9 @@ namespace game_2.Brain
     {
         private List<GameObj> obj_list;
 
+        private const string ModelFolderPath = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\";
+        private const string TextureFolderPath = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Textures\\";
+
         public ObjectArray()
         {
             obj_list = new List<GameObj>();
@@ -32,9 +35,13 @@ namespace game_2.Brain
 
             GameObj obj11 = new GameObj(BoxModel);
 
-            GameObj _monkey = new GameObj("C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\obj_files\\monkey\\monkey.obj", "C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\obj_files\\monkey\\DefTexture.png");
+            GameObj _monkey = new GameObj(
+                ModelFolderPath + "obj_files\\monkey\\monkey.obj", 
+                TextureFolderPath + "DefTexture.png");
 
-            GameObj _man = new GameObj("C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\obj_files\\warr.obj", "C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\obj_files\\monkey\\CharTexturesHighRes0_029.png");
+            GameObj _man = new GameObj(
+                ModelFolderPath + "obj_files\\warr.obj", 
+                TextureFolderPath + "CharTexturesHighRes0_029.png");
 
             Add(_monkey);
             Add(obj11);
@@ -143,13 +150,8 @@ namespace game_2.Brain
         {
             for (int i = 0; i < obj_list.Count; i++)
             {
-                obj_list[i].Draw(30);
+                obj_list[i].Draw();
             }
-        }
-
-        private void Generate()
-        {
-
         }
 
         public void Reset()
