@@ -1,4 +1,4 @@
-﻿using game_2.Brain;
+﻿using game_2.MathFolder;
 using game_2.Storage;
 
 namespace game_2.Brain.ObjectFolder
@@ -7,6 +7,14 @@ namespace game_2.Brain.ObjectFolder
     {
         protected Mesh mesh;
         public Pipeline pipeline;
+
+        private float width = 1.0f;
+
+        public GameObj()
+        {
+            mesh = new Mesh();
+            pipeline = new Pipeline();
+        }
 
         public GameObj(int g)
         {
@@ -30,12 +38,16 @@ namespace game_2.Brain.ObjectFolder
         {
             mesh = new Mesh(file_name, tex_file_name);
             pipeline = new Pipeline();
-
         }
 
         public virtual void Draw()
         {
             mesh.Draw(pipeline.getMVP().ToOpenTK());
+        }
+
+        public virtual void Draw(int dist)
+        {
+            mesh.Draw(pipeline.getMVP().ToOpenTK(), Check_Distance(dist));
         }
 
         public void ShowHitBox()
@@ -46,6 +58,19 @@ namespace game_2.Brain.ObjectFolder
         public void HideHitBox()
         {
             mesh.ShowHitBox = false;
+        }
+
+        public bool Check_Distance(float d)
+        {
+            var dx = Camera.Pos.x - pipeline.PositionVector.x;
+            var dy = Camera.Pos.y - pipeline.PositionVector.y;
+            var dz = Camera.Pos.z - pipeline.PositionVector.z;
+
+            if (dx * dx + dy * dy + dz * dz <= d * d)
+            {
+                return true;
+            }
+            return false;
         }
 
         public void OnDelete()

@@ -6,6 +6,7 @@ using game_2.Brain;
 using OpenTK.Mathematics;
 using game_2.MathFolder;
 using game_2.Brain.SkyBoxFolder;
+using game_2.Brain.AimFolder;
 
 namespace game_2
 {
@@ -20,6 +21,8 @@ namespace game_2
         private int WindowsHeight;
 
         Skybox skybox;
+
+        Aim aim;
 
         private readonly Color4 BackGroundColor;
 
@@ -49,10 +52,11 @@ namespace game_2
             ///////////////параметры игры
 
             Camera.InitCamera();
-            Camera.Pos = new vector3f(0, 3, 4);            
+            Camera.Pos = new vector3f(0, 3, 4);
 
             Models = new ObjectArray();
             skybox = new Skybox();
+            aim = new Aim();
             loaded = true;
         }
 
@@ -78,7 +82,7 @@ namespace game_2
                 mPersProj.ChangeFOV(50);
             }
             Camera.OnMouse(-MouseState.Delta.X, -MouseState.Delta.Y);
-            Camera.OnKeyboard(KeyboardState);
+            Camera.OnKeyboard(KeyboardState, (float)args.Time);
         }
 
         // Примерно deltaTime = 0.002s
@@ -96,6 +100,8 @@ namespace game_2
             Models.Draw();
 
             skybox.Draw();
+
+            aim.Draw();
 
             SwapBuffers();
             GLFW.PollEvents();
@@ -132,9 +138,10 @@ namespace game_2
 
         protected override void OnClosed()
         {
-            base.OnClosed();
             Models.Clear();
             skybox.OnDelete();
+            aim.OnDelete();
+            base.OnClosed();
         }
     }
 }

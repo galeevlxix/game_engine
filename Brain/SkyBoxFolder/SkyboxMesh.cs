@@ -6,21 +6,9 @@ using game_2.FileManagers;
 
 namespace game_2.Brain.SkyBoxFolder
 {
-    public class SkyboxMesh
+    public class SkyboxMesh : Mesh
     {
-        protected int VBO { get; set; }
-        protected int VAO { get; set; }
-        protected int IBO { get; set; }
-
-        protected float[] Vertices { get; set; }
-        protected int[] Indices { get; set; }
-
-        public Shader shader;
-        public Texture texture;
-
-        protected string texPath;
-
-        public SkyboxMesh() 
+        public SkyboxMesh() : base()
         {
             Vertices = SkyboxVertices.Vertices;
             Indices = SkyboxVertices.Indices;
@@ -29,7 +17,7 @@ namespace game_2.Brain.SkyBoxFolder
             Load();
         }
 
-        private void Load()
+        protected override void Load()
         {
             // Генерация и привязка VAO и VBO
             VAO = GL.GenVertexArray();
@@ -39,12 +27,12 @@ namespace game_2.Brain.SkyBoxFolder
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
             // Привязываем данные вершины к текущему буферу по умолчанию
             // Static Draw, потому что наши данные о вершинах в буфере не меняются
-            GL.BufferData(BufferTarget.ArrayBuffer, Vertices.Length * sizeof(float), Vertices, BufferUsageHint.DynamicDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, Vertices.Length * sizeof(float), Vertices, BufferUsageHint.StaticDraw);
 
             // Element Buffer
             IBO = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, IBO);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, Indices.Length * sizeof(int), Indices, BufferUsageHint.DynamicDraw);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, Indices.Length * sizeof(int), Indices, BufferUsageHint.StaticDraw);
 
             // Шейдеры
             shader = new Shader(
@@ -69,23 +57,9 @@ namespace game_2.Brain.SkyBoxFolder
             GL.Enable(EnableCap.DepthTest);
         }
 
-        public void DrawSkybox(Matrix4 matrix)
+        public override void Draw(Matrix4 matrix)
         {
-            texture.Use(TextureUnit.Texture0);
-            GL.BindVertexArray(VAO);
-            GL.DrawElements(PrimitiveType.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
-            GL.BindVertexArray(0);
-
-            shader.setMatrix(matrix);
-            shader.Use();
-
-        }
-
-        public void Dispose()
-        {
-            GL.DeleteBuffer(VBO);
-            GL.DeleteBuffer(IBO);
-            GL.DeleteVertexArray(VAO);
+            base.Draw(matrix);
         }
     }
 }

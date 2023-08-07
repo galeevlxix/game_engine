@@ -22,6 +22,6 @@ namespace game_2.Storage
             0, 2, 3,
         };
 
-        public static readonly string TexturePath = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Textures\\grass.png";
+        public static readonly string TexturePath = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Textures\\summ_grass8-xt.png";
     }
 }

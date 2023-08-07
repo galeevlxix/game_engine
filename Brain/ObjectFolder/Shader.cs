@@ -111,6 +111,14 @@ namespace game_2.Brain.ObjectFolder
             GL.UniformMatrix4(CameraRotID, true, ref c_rot);
         }
 
+        public void setMatrix(Matrix4 mvp, Matrix4 c_pos, Matrix4 c_rot, Matrix4 p)
+        {
+            GL.UniformMatrix4(MVPID, true, ref mvp);
+            GL.UniformMatrix4(PersProjID, true, ref p);
+            GL.UniformMatrix4(CameraPosID, true, ref c_pos);
+            GL.UniformMatrix4(CameraRotID, true, ref c_rot);
+        }
+
         public void Use()
         {
             GL.UseProgram(Handle);

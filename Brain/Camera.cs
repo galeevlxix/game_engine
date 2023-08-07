@@ -108,7 +108,7 @@ namespace game_2.Brain
 
         }
 
-        public static void OnKeyboard(KeyboardState key)
+        public static void OnKeyboard(KeyboardState key, float dt)
         {
             if (!key.IsAnyKeyDown) return;
 
@@ -125,32 +125,32 @@ namespace game_2.Brain
 
             if (key.IsKeyDown(Keys.W))
             {
-                if (math3d.sqrt(speedX * speedX + speedY * speedY + (speedZ - velocity) * (speedZ - velocity)) <= max_speed)
+                if (speedX * speedX + speedY * speedY + (speedZ - velocity) * (speedZ - velocity) <= max_speed * max_speed)
                     speedZ -= velocity;
             }
             if (key.IsKeyDown(Keys.S))
             {
-                if (math3d.sqrt(speedX * speedX + speedY * speedY + (speedZ + velocity) * (speedZ + velocity)) <= max_speed)
+                if (speedX * speedX + speedY * speedY + (speedZ + velocity) * (speedZ + velocity) <= max_speed * max_speed)
                     speedZ += velocity;
             }
             if (key.IsKeyDown(Keys.A))
             {
-                if (math3d.sqrt((speedX + velocity) * (speedX + velocity) + speedY * speedY + speedZ * speedZ) <= max_speed)
+                if ((speedX + velocity) * (speedX + velocity) + speedY * speedY + speedZ * speedZ <= max_speed * max_speed)
                     speedX += velocity;
             }
             if (key.IsKeyDown(Keys.D))
             {
-                if (math3d.sqrt((speedX - velocity) * (speedX - velocity) + speedY * speedY + speedZ * speedZ) <= max_speed)
+                if ((speedX - velocity) * (speedX - velocity) + speedY * speedY + speedZ * speedZ <= max_speed * max_speed)
                     speedX -= velocity;
             }
             if (key.IsKeyDown(Keys.Space))
             {
-                if (math3d.sqrt(speedX * speedX + (speedY + velocity) * (speedY + velocity) + speedZ * speedZ) <= max_speed)
+                if (speedX * speedX + (speedY + velocity) * (speedY + velocity) + speedZ * speedZ <= max_speed * max_speed)
                     speedY += velocity;
             }
             if (key.IsKeyDown(Keys.LeftShift))
             {
-                if (math3d.sqrt(speedX * speedX + (speedY - velocity) * (speedY - velocity) + speedZ * speedZ) <= max_speed)
+                if (speedX * speedX + (speedY - velocity) * (speedY - velocity) + speedZ * speedZ <= max_speed * max_speed)
                     speedY -= velocity;
             }
         }

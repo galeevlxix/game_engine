@@ -4,9 +4,9 @@ namespace game_2.Brain
 {
     public class Pipeline
     {
-        private vector3f RotateVector;
-        private vector3f ScaleVector;
-        private vector3f PositionVector;
+        public vector3f RotateVector { get; private set; }
+        public vector3f ScaleVector { get; private set; }
+        public vector3f PositionVector { get; private set; }
 
         // Получить значения
 
