@@ -5,24 +5,24 @@ namespace game_2.Brain
 {
     public class ObjectArray
     {
-        private List<GameObj> obj_list;
+        private Dictionary<string, GameObj> obj_list;
 
         private const string ModelFolderPath = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\";
         private const string TextureFolderPath = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Textures\\";
 
         public ObjectArray()
         {
-            obj_list = new List<GameObj>();
+            obj_list = new Dictionary<string, GameObj>();
             Init();
         }
 
         public ObjectArray(GameObj gameObj)
         {
-            obj_list = new List<GameObj>();
-            Add(gameObj);
+            obj_list = new Dictionary<string, GameObj>();
+            Add("default object", gameObj);
         }
 
-        public ObjectArray(List<GameObj> dict)
+        public ObjectArray(Dictionary<string, GameObj> dict)
         {
             obj_list = dict;
         }
@@ -31,23 +31,23 @@ namespace game_2.Brain
         {
             int BoxModel = 1;
             int FloorModel = 2;
+            int TntModel = 3;
+            int TableModel = 4;
+
             int FieldWidth = 2;
 
-            GameObj obj11 = new GameObj(BoxModel);
+            Add("monkey", new GameObj(ModelFolderPath + "obj_files\\monkey\\monkey.obj", TextureFolderPath + "DefTexture.png"));
+            Add("box", new GameObj(BoxModel));
+            Add("man", new GameObj(ModelFolderPath + "obj_files\\warr.obj", TextureFolderPath + "CharTexturesHighRes0_029.png"));
+            Add("tnt1", new GameObj(TntModel));
+            Add("tnt2", new GameObj(TntModel));
+            Add("tnt3", new GameObj(TntModel));
+            Add("tnt4", new GameObj(TntModel));
+            Add("tnt5", new GameObj(TntModel));
+            Add("table", new GameObj(TableModel));
+            Add("steve", new GameObj(ModelFolderPath + "obj_files\\Steve.obj", TextureFolderPath + "Copy of steve.png"));
 
-            GameObj _monkey = new GameObj(
-                ModelFolderPath + "obj_files\\monkey\\monkey.obj", 
-                TextureFolderPath + "DefTexture.png");
-
-            GameObj _man = new GameObj(
-                ModelFolderPath + "obj_files\\warr.obj", 
-                TextureFolderPath + "CharTexturesHighRes0_029.png");
-
-            Add(_monkey);
-            Add(obj11);
-            Add(_man);
-
-            for(int i = -FieldWidth; i <= FieldWidth; i++)
+            for (int i = -FieldWidth; i <= FieldWidth; i++)
             {
                 for (int j = -FieldWidth; j <= FieldWidth; j++)
                 {
@@ -55,21 +55,13 @@ namespace game_2.Brain
                     floorObj.pipeline.SetPosition(i * 6, 0, j * 6);
                     floorObj.pipeline.SetScale(1);
 
-                    Add(floorObj);
+                    string floorname = "grass " + i + " " + j;
+
+                    Add(floorname, floorObj);
                 }
             }
 
-            this[0].pipeline.SetScale(1f);
-            this[0].pipeline.SetPosition(0, 2, 0);
-            this[0].pipeline.SetAngle(0, 0, 0);
-
-            this[1].pipeline.SetScale(1f);
-            this[1].pipeline.SetAngle(0, 0, 0);
-            this[1].pipeline.SetPosition(-6, 1, -6);
-
-            this[2].pipeline.SetScale(2f);
-            this[2].pipeline.SetAngle(0, 0, 0);
-            this[2].pipeline.SetPosition(3.5f, 0, 0);
+            SetProperties();
         }
 
         float cube_speed = 10;
@@ -77,65 +69,103 @@ namespace game_2.Brain
 
         bool cube_moving = true;
 
+        private void SetProperties()
+        {
+            this["monkey"].pipeline.SetScale(1f);
+            this["monkey"].pipeline.SetPosition(0, 2, 0);
+            this["monkey"].pipeline.SetAngle(0, 0, 0);
+
+            this["box"].pipeline.SetScale(1f);
+            this["box"].pipeline.SetAngle(0, 0, 0);
+            this["box"].pipeline.SetPosition(-6, 1, -6);
+
+            this["man"].pipeline.SetScale(2f);
+            this["man"].pipeline.SetAngle(0, 0, 0);
+            this["man"].pipeline.SetPosition(3.5f, 0, 0);
+
+            this["tnt1"].pipeline.SetScale(1f);
+            this["tnt1"].pipeline.SetAngle(0, 0, 0);
+            this["tnt1"].pipeline.SetPosition(-10f, 1, -12);
+
+            this["tnt2"].pipeline.SetScale(1f);
+            this["tnt2"].pipeline.SetAngle(0, 0, 0);
+            this["tnt2"].pipeline.SetPosition(-12f, 1, -10);
+
+            this["tnt3"].pipeline.SetScale(1f);
+            this["tnt3"].pipeline.SetAngle(0, 0, 0);
+            this["tnt3"].pipeline.SetPosition(-10f, 1, -8);
+
+            this["tnt4"].pipeline.SetScale(1f);
+            this["tnt4"].pipeline.SetAngle(0, 0, 0);
+            this["tnt4"].pipeline.SetPosition(-8f, 1, -10);
+
+            this["tnt5"].pipeline.SetScale(1f);
+            this["tnt5"].pipeline.SetAngle(0, 0, 0);
+            this["tnt5"].pipeline.SetPosition(-10f, 3, -10);
+
+            this["table"].pipeline.SetScale(4f);
+            this["table"].pipeline.SetAngle(0, 90, 0);
+            this["table"].pipeline.SetPosition(-19f, 4, 0);
+
+            this["steve"].pipeline.SetScale(0.5f);
+            this["steve"].pipeline.SetAngle(0, -45, 0);
+            this["steve"].pipeline.SetPosition(-8, -0.2f, -8);
+        }
+
         public void OnRender(float deltaTime)
         {
-            this[0].pipeline.Rotate(0, monkey_rotationSpeed, 0, deltaTime);
+            this["monkey"].pipeline.Rotate(0, monkey_rotationSpeed, 0, deltaTime);
 
             if (cube_moving)
-                if (this[1].pipeline.PosZ == -6f && this[1].pipeline.PosX + cube_speed * deltaTime < 6f)
+                if (this["box"].pipeline.PosZ == -6f && this["box"].pipeline.PosX + cube_speed * deltaTime < 6f)
                 {
-                    this[1].pipeline.MoveX(cube_speed, deltaTime);
-                    if (math3d.abs(this[1].pipeline.PosX + cube_speed * deltaTime - 6f) < 0.1f)
-                        this[1].pipeline.SetPositionX(6f);
+                    this["box"].pipeline.MoveX(cube_speed, deltaTime);
+                    if (math3d.abs(this["box"].pipeline.PosX + cube_speed * deltaTime - 6f) < 0.1f)
+                        this["box"].pipeline.SetPositionX(6f);
                 }
-                else if (this[1].pipeline.PosX == 6f && this[1].pipeline.PosZ + cube_speed * deltaTime < 6f)
+                else if (this["box"].pipeline.PosX == 6f && this["box"].pipeline.PosZ + cube_speed * deltaTime < 6f)
                 {
-                    this[1].pipeline.MoveZ(cube_speed, deltaTime);
-                    if (math3d.abs(this[1].pipeline.PosZ + cube_speed * deltaTime - 6f) < 0.1f)
-                        this[1].pipeline.SetPositionZ(6f);
+                    this["box"].pipeline.MoveZ(cube_speed, deltaTime);
+                    if (math3d.abs(this["box"].pipeline.PosZ + cube_speed * deltaTime - 6f) < 0.1f)
+                        this["box"].pipeline.SetPositionZ(6f);
                 }
-                else if (this[1].pipeline.PosZ == 6f && this[1].pipeline.PosX - cube_speed * deltaTime > -6f)
+                else if (this["box"].pipeline.PosZ == 6f && this["box"].pipeline.PosX - cube_speed * deltaTime > -6f)
                 {
-                    this[1].pipeline.MoveX(-cube_speed, deltaTime);
-                    if (math3d.abs(this[1].pipeline.PosX - cube_speed * deltaTime + 6f) < 0.1f)
-                        this[1].pipeline.SetPositionX(-6f);
+                    this["box"].pipeline.MoveX(-cube_speed, deltaTime);
+                    if (math3d.abs(this["box"].pipeline.PosX - cube_speed * deltaTime + 6f) < 0.1f)
+                        this["box"].pipeline.SetPositionX(-6f);
                 }
-                else if (this[1].pipeline.PosX == -6f && this[1].pipeline.PosZ - cube_speed * deltaTime > -6f)
+                else if (this["box"].pipeline.PosX == -6f && this["box"].pipeline.PosZ - cube_speed * deltaTime > -6f)
                 {
-                    this[1].pipeline.MoveZ(-cube_speed, deltaTime);
-                    if (math3d.abs(this[1].pipeline.PosZ - cube_speed * deltaTime + 6f) < 0.1f)
-                        this[1].pipeline.SetPositionZ(-6f);
+                    this["box"].pipeline.MoveZ(-cube_speed, deltaTime);
+                    if (math3d.abs(this["box"].pipeline.PosZ - cube_speed * deltaTime + 6f) < 0.1f)
+                        this["box"].pipeline.SetPositionZ(-6f);
                 }
 
             counter += deltaTime;
-            this[2].pipeline.Expand(math3d.sin((float)counter), deltaTime);
+            this["man"].pipeline.Expand(math3d.sin((float)counter), deltaTime);
         }
 
         double counter = 0;
 
-        public void Add(GameObj gameObj)
+        public void Add(string name, GameObj gameObj)
         {
-            obj_list.Add(gameObj);
+            obj_list.Add(name, gameObj);
         }
 
-        public void Insert(int index, GameObj gameObj)
+        public void Remove(string name)
         {
-            obj_list.Insert(index, gameObj);
-        }
-
-        public void RemoveAt(int i)
-        {
-            obj_list.RemoveAt(i);
-        }
-
-        public void Remove(GameObj gameObj)
-        {
-            obj_list.Remove(gameObj);
+            obj_list[name].OnDelete();
+            obj_list.Remove(name);
         }
 
         public void Clear()
         {
-            obj_list.ForEach(a => a.OnDelete());
+            foreach(GameObj obj in obj_list.Values)
+            {
+                obj.OnDelete();
+            }
+            obj_list.Clear();
         }
 
         public int Count 
@@ -148,67 +178,45 @@ namespace game_2.Brain
 
         public void Draw()
         {
-            for (int i = 0; i < obj_list.Count; i++)
+            foreach(GameObj obj in obj_list.Values)
             {
-                obj_list[i].Draw();
+                obj.Draw(30);
             }
         }
 
         public void Reset()
         {
-            obj_list.ForEach(obj => obj.pipeline.Reset());
+            foreach (GameObj obj in obj_list.Values)
+            {
+                obj.pipeline.Reset();
+            }
         }
 
-        public GameObj this [int index]
+        public GameObj this [string name]
         {
             get
             {
-                return obj_list[index];
+                return obj_list[name];
             }
             set
             {
-                obj_list[index] = value;
+                obj_list[name] = value;
             }
         }
 
-        public void SetAngle(int index, float x, float y, float z)
+        public void SetAngle(string name, float x, float y, float z)
         {
-            obj_list[index].pipeline.SetAngle(x, y, z);
+            obj_list[name].pipeline.SetAngle(x, y, z);
         }
 
-        public void SetPosition(int index, float x, float y, float z)
+        public void SetPosition(string name, float x, float y, float z)
         {
-            obj_list[index].pipeline.SetPosition(x, y, z);
+            obj_list[name].pipeline.SetPosition(x, y, z);
         }
 
-        public void SetScale(int index, float x, float y, float z)
+        public void SetScale(string name, float x, float y, float z)
         {
-            obj_list[index].pipeline.SetScale(x, y, z);
-        }
-
-        public void ShowHitBoxes()
-        {
-            obj_list.ForEach(obj => obj.ShowHitBox());
-        }
-        public void HideHitBoxes()
-        {
-            obj_list.ForEach(obj => obj.HideHitBox());
-        }
-
-        bool hb = false;
-
-        public void ShowOrHideHitBoxes()
-        {
-            if (hb)
-            {
-                HideHitBoxes();
-                hb = false;
-            }
-            else
-            {
-                ShowHitBoxes();
-                hb = true;
-            }
+            obj_list[name].pipeline.SetScale(x, y, z);
         }
     }
 }

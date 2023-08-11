@@ -17,6 +17,7 @@ namespace game_2.Brain
         {
             int handle = GL.GenTexture();   //Создаем
 
+            GL.ActiveTexture(TextureUnit.Texture0);
             GL.BindTexture(TextureTarget.Texture2D, handle);
 
             StbImage.stbi_set_flip_vertically_on_load(1);

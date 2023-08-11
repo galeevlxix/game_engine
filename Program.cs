@@ -1,6 +1,5 @@
 ﻿using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
-using System.Security.Cryptography;
 
 namespace game_2
 {
@@ -11,7 +10,7 @@ namespace game_2
             GameWindowSettings settings = GameWindowSettings.Default;
             NativeWindowSettings windowSettings = NativeWindowSettings.Default;
 
-            windowSettings.WindowState = WindowState.Maximized;
+            windowSettings.WindowState = WindowState.Fullscreen;
             windowSettings.Title = "Game";
 
             settings.IsMultiThreaded = false;

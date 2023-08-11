@@ -114,7 +114,7 @@ namespace game_2.Brain
             GL.Uniform1(_uniformLocations[name], data);
         }
 
-        private void Use()
+        public void Use()
         {
             GL.UseProgram(Handle);
         }

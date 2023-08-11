@@ -12,7 +12,7 @@ namespace game_2.Brain.SkyBoxFolder
         {
             Vertices = SkyboxVertices.Vertices;
             Indices = SkyboxVertices.Indices;
-            texture_file_name = SkyboxVertices.TexturePath;
+            textures = new Texture[] { Texture.Load(SkyboxVertices.TexturePath) };
 
             Load();
         }
@@ -47,8 +47,6 @@ namespace game_2.Brain.SkyBoxFolder
             var texCordLocation = shader.GetAttribLocation("aTexCoord");
             GL.VertexAttribPointer(texCordLocation, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * sizeof(float));
             GL.EnableVertexAttribArray(texCordLocation);
-
-            texture = Texture.Load(texture_file_name);
 
             // Развязываем VAO и VBO
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);

@@ -108,7 +108,7 @@ namespace game_2.Brain
 
         }
 
-        public static void OnKeyboard(KeyboardState key, float dt)
+        public static void OnKeyboard(KeyboardState key)
         {
             if (!key.IsAnyKeyDown) return;
 

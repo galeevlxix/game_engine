@@ -54,36 +54,15 @@ namespace game_2
             Camera.InitCamera();
             Camera.Pos = new vector3f(0, 3, 4);
 
+            fps = new List<double>();
+
             Models = new ObjectArray();
             skybox = new Skybox();
             aim = new Aim();
             loaded = true;
         }
 
-        // Примерно deltaTime = 0.002s
-        // Примерно deltaTime = 0.00002s при IsMultiThreaded = true
-        // Обновление окна
-        protected override void OnUpdateFrame(FrameEventArgs args)
-        {
-            base.OnUpdateFrame(args);
-
-            KeyboardState input = KeyboardState;
-            if (input.IsKeyDown(Keys.Escape))
-            {
-                Close();
-            }
-
-            if (isMouseDown)
-            {
-                mPersProj.ChangeFOV(25);
-            }
-            else
-            {
-                mPersProj.ChangeFOV(50);
-            }
-            Camera.OnMouse(-MouseState.Delta.X, -MouseState.Delta.Y);
-            Camera.OnKeyboard(KeyboardState, (float)args.Time);
-        }
+        List<double> fps;
 
         // Примерно deltaTime = 0.002s
         // Примерно deltaTime = 0,0016s при IsMultiThreaded = true
@@ -91,6 +70,10 @@ namespace game_2
         protected override void OnRenderFrame(FrameEventArgs args)
         {
             base.OnRenderFrame(args);
+
+            fps.Add(1 / args.Time);
+
+            InputCallbacks();
 
             Camera.OnRender((float)args.Time);
 
@@ -106,19 +89,47 @@ namespace game_2
             GLFW.PollEvents();
         }
 
+        private void InputCallbacks()
+        {
+            KeyboardState input = KeyboardState;
+            if (input.IsKeyDown(Keys.Escape))
+            {
+                Close();
+            }
+
+            if (isMouseDown)
+            {
+                mPersProj.ChangeFOV(25);
+            }
+            else
+            {
+                mPersProj.ChangeFOV(50);
+            }
+            Camera.OnMouse(-MouseState.Delta.X, -MouseState.Delta.Y);
+            Camera.OnKeyboard(KeyboardState);
+        }
+
+        protected override void OnKeyDown(KeyboardKeyEventArgs e)
+        {
+            
+        }
+
+        protected override void OnKeyUp(KeyboardKeyEventArgs e)
+        {
+
+        }
+
         // Callbacks
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
             base.OnMouseDown(e);
             if (!isMouseDown && e.Button == MouseButton.Button1) isMouseDown = true;
-            if (e.Button == MouseButton.Button2) Models.ShowHitBoxes();
         }
 
         protected override void OnMouseUp(MouseButtonEventArgs e)
         {
             base.OnMouseUp(e);
             if (isMouseDown && e.Button == MouseButton.Button1) isMouseDown = false;
-            if (e.Button == MouseButton.Button2) Models.HideHitBoxes();
         }
 
         protected override void OnResize(ResizeEventArgs e)
@@ -140,6 +151,9 @@ namespace game_2
             Models.Clear();
             skybox.OnDelete();
             aim.OnDelete();
+
+            Console.WriteLine((int)fps.Average() + " FPS");
+
             base.OnClosed();
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Text.RegularExpressions;
+using game_2.MathFolder;
 using game_2.Storage;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Windowing.Desktop;
@@ -60,8 +61,6 @@ namespace game_2.FileManagers
 
             List<List<float>> normCords = new List<List<float>>();
 
-            int[] vertInd, texInd, normInd;
-
             string line;
 
             while ((line = tr.ReadLine()) != null)
@@ -96,14 +95,9 @@ namespace game_2.FileManagers
                         });
                         break;
                     case "f":
-                        if (vertCords.Count == 0 || textCords.Count == 0 || normCords.Count == 0)
+                        if (vertCords.Count == 0 || textCords.Count == 0)
                         {
                             Console.WriteLine("Wrong model");
-                        }
-
-                        if (normCords.Count == 0)
-                        {
-                            
                         }
 
                         List<string> fString = new List<string>();
@@ -114,9 +108,9 @@ namespace game_2.FileManagers
 
                         if (fString.Count == 3)
                         {
-                            vertInd = new int[3];
-                            texInd = new int[3];
-                            normInd = new int[3];
+                            int[] vertInd = new int[3];
+                            int[] texInd = new int[3];
+                            int[] normInd = new int[3];
                             int _i = 0;
 
                             foreach (string v in fString)
@@ -125,8 +119,23 @@ namespace game_2.FileManagers
 
                                 vertInd[_i] = int.Parse(w[0]) - 1;
                                 texInd[_i] = int.Parse(w[1]) - 1;
-                                normInd[_i] = int.Parse(w[2]) - 1;
+
+                                if (normCords.Count != 0)
+                                    normInd[_i] = int.Parse(w[2]) - 1;
                                 _i++;
+                            }
+
+                            vector3f _newNormal = new vector3f();
+
+                            if(normCords.Count == 0)
+                            {
+                                CalcNormals(
+                                    vertCords[vertInd[0]], 
+                                    vertCords[vertInd[1]], 
+                                    vertCords[vertInd[2]], 
+                                    out vector3f normal);
+
+                                _newNormal = normal;
                             }
 
                             for (int i = 0; i < 3; i++)
@@ -139,28 +148,51 @@ namespace game_2.FileManagers
                                 {
                                     _modelVerts.Add(t);
                                 }
-                                foreach (float n in normCords[normInd[i]])
+                                if (normCords.Count != 0)
                                 {
-                                    _modelVerts.Add(n);
+                                    foreach (float n in normCords[normInd[i]])
+                                    {
+                                        _modelVerts.Add(n);
+                                    }
+                                }
+                                else
+                                {
+                                    _modelVerts.Add(_newNormal.x);
+                                    _modelVerts.Add(_newNormal.y);
+                                    _modelVerts.Add(_newNormal.z);
                                 }
                                 _modelInd.Add(_iter++);
-                            }                            
+                            }
                         }
                         if (fString.Count == 4)
                         {
-                            vertInd = new int[4];
-                            texInd = new int[4];
-                            normInd = new int[4];
+                            int[] vertInd = new int[4];
+                            int[] texInd = new int[4];
+                            int[] normInd = new int[4];
                             int _i = 0;
 
-                            foreach (string v in parts)
+                            foreach (string v in fString)
                             {
                                 string[] w = v.Split('/');
 
                                 vertInd[_i] = int.Parse(w[0]) - 1;
                                 texInd[_i] = int.Parse(w[1]) - 1;
-                                normInd[_i] = int.Parse(w[2]) - 1;
+                                if (normCords.Count != 0)
+                                    normInd[_i] = int.Parse(w[2]) - 1;
                                 _i++;
+                            }
+
+                            vector3f _newNormal = new vector3f();
+
+                            if (normCords.Count == 0)
+                            {
+                                CalcNormals(
+                                    vertCords[vertInd[0]],
+                                    vertCords[vertInd[1]],
+                                    vertCords[vertInd[2]],
+                                    out vector3f normal);
+
+                                _newNormal = normal;
                             }
 
                             for (int i = 0; i < 4; i++)
@@ -173,9 +205,18 @@ namespace game_2.FileManagers
                                 {
                                     _modelVerts.Add(t);
                                 }
-                                foreach (float n in normCords[normInd[i]])
+                                if (normCords.Count != 0)
                                 {
-                                    _modelVerts.Add(n);
+                                    foreach (float n in normCords[normInd[i]])
+                                    {
+                                        _modelVerts.Add(n);
+                                    }
+                                }
+                                else
+                                {
+                                    _modelVerts.Add(_newNormal.x);
+                                    _modelVerts.Add(_newNormal.y);
+                                    _modelVerts.Add(_newNormal.z);
                                 }
                             }
 
@@ -192,6 +233,7 @@ namespace game_2.FileManagers
                             _modelInd.Add(i1);
                             _modelInd.Add(i2);
                         }
+
                         break;
                 }
             }
@@ -200,7 +242,18 @@ namespace game_2.FileManagers
             Indices = _modelInd.ToArray();
         }
 
-        
+        private static void CalcNormals(List<float> vertex1, List<float> vertex2, List<float> vertex3, out vector3f normal)
+        {
+            vector3f v1 = new vector3f(vertex1[0], vertex1[1], vertex1[2]);
+            vector3f v2 = new vector3f(vertex2[0], vertex2[1], vertex2[2]);
+            vector3f v3 = new vector3f(vertex3[0], vertex3[1], vertex3[2]);
+
+            vector3f t1 = v2 - v1;
+            vector3f t2 = v3 - v1;
+
+            normal = vector3f.Cross(t1, t2);
+            normal.Normalize();
+        }
 
         private static void LoadFromFbx(TextReader tr, ref float[] Vertices, ref int[] Indices)
         {

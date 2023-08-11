@@ -15,15 +15,13 @@ namespace game_2.Brain.ObjectFolder
         protected int[] Indices { get; set; }
 
         protected Shader shader;
-        protected Texture texture;
-
-        protected string texture_file_name;
+        protected Texture[] textures;
 
         public Mesh()
         {
             Vertices = Box.Vertices;
             Indices = Box.Indices;
-            texture_file_name = Box.TexturePath;
+            textures = new Texture[] { Texture.Load(Box.TexturePath) };
             
             Load();
         }
@@ -33,8 +31,30 @@ namespace game_2.Brain.ObjectFolder
             ModelLoader.LoadMesh(file_name, out float[] Vertices, out int[] Indices);
             this.Vertices = Vertices;
             this.Indices = Indices;
-            texture_file_name =  tex_file_name;
-            
+            textures = new Texture[] { Texture.Load(tex_file_name) };
+
+            Load();
+        }
+
+        public Mesh(string file_name, string[] tex_file_names)
+        {
+            ModelLoader.LoadMesh(file_name, out float[] Vertices, out int[] Indices);
+            this.Vertices = Vertices;
+            this.Indices = Indices;
+            textures = new Texture[tex_file_names.Length];
+            for (int i = 0; i < tex_file_names.Length; i++)
+            {
+                textures[i] = Texture.Load(tex_file_names[i]);
+                if (i == 0)
+                {
+                    textures[i].Use(TextureUnit.Texture0);
+                }
+                else
+                {
+                    textures[i].Use(TextureUnit.Texture1);
+                }
+            }
+
             Load();
         }
 
@@ -42,8 +62,8 @@ namespace game_2.Brain.ObjectFolder
         {
             this.Vertices = Vertices;
             this.Indices = Indices;
-            texture_file_name = tex_file_name;
-            
+            textures = new Texture[] { Texture.Load(tex_file_name) };
+
             Load();
         }
 
@@ -66,6 +86,7 @@ namespace game_2.Brain.ObjectFolder
 
             // Шейдеры
             shader = new Shader(ShaderLoader.LoadVertexShader(), ShaderLoader.LoadFragmentShader());
+            shader.Use();
 
             // Устанавливаем указатели атрибутов вершины
             var location = shader.GetAttribLocation("aPosition");
@@ -80,8 +101,8 @@ namespace game_2.Brain.ObjectFolder
             GL.VertexAttribPointer(normCordLocation, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 5 * sizeof(float));
             GL.EnableVertexAttribArray(normCordLocation);
 
-            // Текстуры
-            texture = Texture.Load(texture_file_name);
+            shader.setInt("texture0", 0);
+            //shader.setInt("texture1", 1);
 
             // Развязываем VAO и VBO
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
@@ -94,9 +115,17 @@ namespace game_2.Brain.ObjectFolder
 
         public virtual void Draw(Matrix4 matrix)
         {
-            texture.Use(TextureUnit.Texture0);
-            GL.BindVertexArray(VAO);            
+            GL.BindVertexArray(VAO);
+            UseTextures();
             shader.setMatrices(matrix);
+            GL.DrawElements(PrimitiveType.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
+        }
+
+        public virtual void Draw(Matrix4 matrix, Matrix4 cameraPos, Matrix4 cameraRot, Matrix4 PersProj)
+        {
+            GL.BindVertexArray(VAO);
+            UseTextures();
+            shader.setMatrices(matrix, cameraPos, cameraRot, PersProj);
             GL.DrawElements(PrimitiveType.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
         }
 
@@ -104,21 +133,35 @@ namespace game_2.Brain.ObjectFolder
         {
             if (check)
             {
-                texture.Use(TextureUnit.Texture0);
                 GL.BindVertexArray(VAO);
+                UseTextures();
                 shader.setMatrices(matrix);
                 GL.DrawElements(PrimitiveType.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
             }
         }
 
+        protected void UseTextures()
+        {
+            textures[0].Use(TextureUnit.Texture0);
+            //if(textures.Length > 1)
+                //textures[1].Use(TextureUnit.Texture1);
+        }
+
         public void Dispose()
         {
+            shader.Dispose();
+            DisposeTextures();
             GL.DeleteBuffer(VBO);
             GL.DeleteBuffer(IBO);
             GL.DeleteVertexArray(VAO);
+        }
 
-            shader.Dispose();
-            texture.Dispose();
+        private void DisposeTextures()
+        {
+            for (int i = 0; i < textures.Length; i++)
+            {
+                textures[i].Dispose();
+            }
         }
     }
 }

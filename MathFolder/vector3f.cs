@@ -22,6 +22,13 @@ namespace game_2.MathFolder
             z = _z;
         }
 
+        public vector3f(vector3f v)
+        {
+            x = v.x;
+            y = v.y;
+            z = v.z;
+        }
+
         public static vector3f operator +(vector3f l, vector3f r)
         {
             return new vector3f(l.x + r.x, l.y + r.y, l.z + r.z);

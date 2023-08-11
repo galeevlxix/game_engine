@@ -24,6 +24,14 @@ namespace game_2.Brain.ObjectFolder
             {
                 mesh = new Mesh(Floor.Vertices, Floor.Indices, Floor.TexturePath);
             }
+            else if (g == 3)
+            {
+                mesh = new Mesh(TntBlock.Vertices, TntBlock.Indices, TntBlock.TexturePath);
+            }
+            else if (g == 4)
+            {
+                mesh = new Mesh(Table.Vertices, Table.Indices, Table.TexturePath);
+            }
             else
             {
                 mesh = new Mesh();
@@ -38,9 +46,20 @@ namespace game_2.Brain.ObjectFolder
             pipeline = new Pipeline();
         }
 
+        public GameObj(string file_name, string[] tex_file_names)
+        {
+            mesh = new Mesh(file_name, tex_file_names);
+            pipeline = new Pipeline();
+        }
+
         public virtual void Draw()
         {
             mesh.Draw(pipeline.getMVP().ToOpenTK());
+        }
+
+        public virtual void Draw(matrix4f cameraPos, matrix4f cameraRot, matrix4f PersProj)
+        {
+            mesh.Draw(pipeline.getMVP().ToOpenTK(), cameraPos.ToOpenTK(), cameraRot.ToOpenTK(), PersProj.ToOpenTK());
         }
 
         public virtual void Draw(int dist)

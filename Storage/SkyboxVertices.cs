@@ -62,6 +62,6 @@ namespace game_2.Storage
                         16, 19, 18
         };
 
-        public static readonly string TexturePath = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Textures\\sky1.jpeg";
+        public static readonly string TexturePath = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Textures\\skies\\sky1.jpeg";
     }
 }

@@ -15,6 +15,8 @@ void main()
 
     vec4 texel = mix(texture(texture0, texCoord), texture(texture1, texCoord), 0.2);
 
+    if (texel.a < 0.3) discard;
+
     vec3 lightIntensity = ambientLightIntensity + sunLightIntensity * max(dot(vNormal, sunLightDirection), 0.0f);
 
 	outputColor = vec4(texel.rgb * lightIntensity, texel.a);
