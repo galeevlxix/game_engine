@@ -12,6 +12,7 @@
 [9. Нормали](#s10)  
 [10. Извлечение текстур и нормалей из obj](#s11)  
 [11. DeltaTime](#s12)  
+[12. Скайбокс и прицел](#s13)  
 <a name="s1"></a>
 # Первые шаги и треугольник 
 Для реализации графического приложения я использую библиотеку `OpenTK`. Она предоставляет нам большой набор функций, которые мы можем использовать для управления графикой, и упрощает работу с OpenGL. OpenTK можно использовать для игр, научных приложений или других проектов, требующих трехмерной графики, аудио или вычислительной функциональности.  
@@ -2207,3 +2208,277 @@ void main()
 ```
 ## Результат
 ![dt](https://github.com/galeevlxix/game_engine/blob/WorkingWithTheModel/screens/DeltaTimeScene%20(online-video-cutter.com).gif)
+<a name="s13"></a>
+# Скайбокс и прицел
+## FixBugs
+Добавляя в проект скайбокс и прицел (и отдельные шейдеры для них), я столкнулся с проблемой прорисовки объектов. Дело в том, что несколько объектов, отрисовываясь, могут поменяться местами, текстурами, шейдерами или вообще не отрисоваться. Чтобы исправить этот баг, нужно изменить функцию отрисовки объектов, то есть соблюсти порядок вызовов методов в ней.  
+Вот в таком порядке (ну или не совсем) вы должны отрисовывать объект:  
+
+_BindTexture должен быть перед DrawElements:_  
+`ActiveTexture` -> `BindTexture` ->  
+_BindVertexArray должен быть перед DrawElements:_  
+-> `BindVertexArray` ->   
+_UseProgram и передача юниформов перед DrawElements:_  
+-> `UseProgram` -> `UniformMatrix4` ->  
+_DrawElements должен быть в конце:_  
+-> `DrawElements`  
+## Скайбокс
+**Скайбокс** - это такой же объект в форме большого куба, позиция которого всегда равна позиции камеры.
+```c#
+    public class Skybox : GameObj
+    {
+        public Skybox()
+        {
+            mesh = new SkyboxMesh();
+            pipeline = new Pipeline();
+
+            pipeline.SetPosition(Camera.Pos.x, Camera.Pos.y, Camera.Pos.z);
+            pipeline.SetAngle(0, 0, 0);
+            pipeline.SetScale(55);
+        }
+
+        public override void Draw()
+        {
+            pipeline.SetPosition(Camera.Pos.x, Camera.Pos.y, Camera.Pos.z);
+            mesh.Draw(pipeline.getMVP().ToOpenTK());
+        }
+    }
+```
+Для скайбокса создадим для него еще один mesh-потомок от обычного mesh. Mesh скайбокса не имеет нормалей и имеет свои шейдеры, более простые, которые мы создвали ранее.
+```c#
+    public class SkyboxMesh : Mesh
+    {
+        public SkyboxMesh()
+        {
+            Vertices = SkyboxVertices.Vertices;
+            Indices = SkyboxVertices.Indices;
+            texture_file_name = SkyboxVertices.TexturePath;
+
+            Load();
+        }
+
+        protected override void Load()
+        {
+            // Генерация и привязка VAO и VBO
+            VAO = GL.GenVertexArray();
+            GL.BindVertexArray(VAO);
+
+            VBO = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
+            // Привязываем данные вершины к текущему буферу по умолчанию
+            // Static Draw, потому что наши данные о вершинах в буфере не меняются
+            GL.BufferData(BufferTarget.ArrayBuffer, Vertices.Length * sizeof(float), Vertices, BufferUsageHint.StaticDraw);
+
+            // Element Buffer
+            IBO = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, IBO);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, Indices.Length * sizeof(int), Indices, BufferUsageHint.StaticDraw);
+
+            // Шейдеры
+            shader = new Shader(
+                ShaderLoader.LoadShader("C:\\Users\\Lenovo\\source\\repos\\game_2\\Shaders\\Skybox\\SkyboxVetexShader.hlsl"), 
+                ShaderLoader.LoadShader("C:\\Users\\Lenovo\\source\\repos\\game_2\\Shaders\\Skybox\\SkyboxFragShader.hlsl"));
+
+            // Устанавливаем указатели атрибутов вершины
+            var location = shader.GetAttribLocation("aPosition");
+            GL.VertexAttribPointer(location, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
+            GL.EnableVertexAttribArray(location);
+
+            var texCordLocation = shader.GetAttribLocation("aTexCoord");
+            GL.VertexAttribPointer(texCordLocation, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * sizeof(float));
+            GL.EnableVertexAttribArray(texCordLocation);
+
+            texture = Texture.Load(texture_file_name);
+
+            // Развязываем VAO и VBO
+            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+            GL.BindVertexArray(0);
+
+            GL.Enable(EnableCap.DepthTest);
+        }
+
+        public override void Draw(Matrix4 matrix)
+        {
+            base.Draw(matrix);
+        }
+    }
+```
+```hlsl
+#version 330                                           
+layout (location = 0) in vec3 aPosition; 
+layout (location = 1) in vec2 aTexCoord;
+ 
+out vec2 texCoord;
+
+uniform mat4 mvp;
+uniform mat4 campos;
+uniform mat4 camrot;
+uniform mat4 pers;
+
+void main()                                            
+{        
+	texCoord = aTexCoord;
+	gl_Position = vec4(aPosition, 1.0) * mvp * campos * camrot * pers;
+}
+```
+```hlsl
+#version 330
+out vec4 outputColor;
+
+in vec2 texCoord;
+
+uniform sampler2D texture0;
+
+void main() 
+{ 
+	vec4 tex = texture(texture0, texCoord);
+	vec3 light = vec3(0.8, 0.8, 0.8);
+	outputColor = vec4(tex.rgb * light, tex.a);
+}
+```
+В векторе `light` мы можем настроить яркость скайбокса. 
+```c#
+    public static class SkyboxVertices
+    {
+        public static readonly float[] Vertices = new float[]
+        {           //cords                 //textures    
+                    -1.0f,  1.0f,  1.0f,     1.0f,  2f / 3f,        //ближний!
+                     1.0f,  1.0f,  1.0f,     0.75f, 2f / 3f,  
+                    -1.0f, -1.0f,  1.0f,     1.0f,  1f / 3f, 
+                     1.0f, -1.0f,  1.0f,     0.75f, 1f / 3f,
+
+                     1.0f,  1.0f,  1.0f,     0.75f, 2f / 3f,       //правый!
+                     1.0f,  1.0f, -1.0f,     0.5f,  2f / 3f,
+                     1.0f, -1.0f,  1.0f,     0.75f, 1f / 3f, 
+                     1.0f, -1.0f, -1.0f,     0.5f,  1f / 3f,
+
+                     1.0f,  1.0f, -1.0f,     0.5f,  2f / 3f,        //дальний!
+                    -1.0f,  1.0f, -1.0f,     0.25f, 2f / 3f, 
+                     1.0f, -1.0f, -1.0f,     0.5f,  1f / 3f, 
+                    -1.0f, -1.0f, -1.0f,     0.25f, 1f / 3f,
+
+                    -1.0f,  1.0f, -1.0f,     0.25f, 2f / 3f,       //левый!
+                    -1.0f,  1.0f,  1.0f,     0.0f,  2f / 3f, 
+                    -1.0f, -1.0f, -1.0f,     0.25f, 1f / 3f, 
+                    -1.0f, -1.0f,  1.0f,     0.0f,  1f / 3f, 
+
+                    -1.0f,  1.0f, -1.0f,     0.25f, 2f / 3f,       //верхний!
+                     1.0f,  1.0f, -1.0f,     0.5f,  2f / 3f,
+                    -1.0f,  1.0f,  1.0f,     0.25f, 1.0f,
+                     1.0f,  1.0f,  1.0f,     0.5f,  1.0f,   
+
+                    -1.0f, -1.0f,  1.0f,     0.25f, 0.0f,            //нижний!
+                     1.0f, -1.0f,  1.0f,     0.5f,  0.0f,  
+                    -1.0f, -1.0f, -1.0f,     0.25f, 1f / 3f, 
+                     1.0f, -1.0f, -1.0f,     0.5f,  1f / 3f, 
+        };
+
+        public static readonly int[] Indices = new int[]
+        {
+                        9, 11, 8,
+                        8, 11, 10,
+
+                        1, 3, 0,
+                        0, 3, 2,
+
+                        5, 7, 4,
+                        4, 7, 6,
+
+                        13, 15, 12,
+                        12, 15, 14,
+
+                        22, 20, 23,
+                        23, 20, 21,
+
+                        17, 19, 16,
+                        16, 19, 18
+        };
+
+        public static readonly string TexturePath = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Textures\\sky1.jpeg";
+    }
+```
+## Прицел
+**Прицел** - это тоже обычный 2D объект, который просто всегда находится в центре экрана. То есть перемещение и вращение камеры на него не влияют.
+```с#
+    public class Aim : GameObj
+    {
+        public Aim()
+        {
+            mesh = new AimMesh();
+            pipeline = new Pipeline();
+
+            pipeline.SetPosition(0, 0, -1);
+            pipeline.SetScale(0.02f);
+        }
+    }
+```
+Шейдеры и функция загрузки Mesh прицела такие же, как у скайбокса, потому что ему не нужны нормали. Но проекция перспетивы для прицела другая: прицел не должен никогда пропадать за текстурами других объектов.  
+В `Draw` вместо матриц камеры мы передаем в шейдеры единичные матрицы.
+```c#
+    public class AimMesh : SkyboxMesh
+    {
+        public AimMesh()
+        {
+            Vertices = AimVertices.Vertices;
+            Indices = AimVertices.Indices;
+            texture_file_name =  AimVertices.TexturePath ;
+            pers_proj = pers_mat();
+
+            Load();
+        }
+
+        public override void Draw(Matrix4 matrix)
+        {
+	    texture.Use(TextureUnit.Texture0);
+            GL.BindVertexArray(VAO);
+            shader.setMatrices(matrix, Matrix4.Identity, Matrix4.Identity, pers_proj);
+            GL.DrawElements(PrimitiveType.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
+        }
+
+        private Matrix4 pers_proj;
+
+        private Matrix4 pers_mat()
+        {
+            float FOV = 50;
+            float width = 1920;
+            float height = 1080;
+            float zNear = 1f;
+            float zFar = 200;
+
+            matrix4f pers = new matrix4f();
+            pers.InitPersProjTransform(FOV, width, height, zNear, zFar);
+
+            return pers.ToOpenTK();
+        }
+    }
+```
+```c#
+    public static class AimVertices
+    {
+        public static readonly float[] Vertices = new float[]
+        {   //cords             //textures
+            -0.1f,  0.5f, 0,    0, 1,   
+             0.1f,  0.5f, 0,    1, 1,
+             0.1f, -0.5f, 0,    1, 0,
+            -0.1f, -0.5f, 0,    0, 0,
+
+             0.5f,  0.1f, 0,    0, 1,
+             0.5f, -0.1f, 0,    1, 1,
+            -0.5f, -0.1f, 0,    1, 0,
+            -0.5f,  0.1f, 0,    0, 0,
+        };
+
+        public static readonly int[] Indices = new int[]
+        {
+            0, 1, 3,
+            1, 2, 3,
+
+            4, 5, 7,
+            5, 6, 7
+        };
+
+        public static readonly string TexturePath = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Textures\\ain.png";
+    }
+```
+## Результат
+![skb](https://github.com/galeevlxix/game_engine/blob/WorkingWithTheModel/screens/skybox.gif)
