@@ -2,8 +2,6 @@
 using System.Text.RegularExpressions;
 using game_2.MathFolder;
 using game_2.Storage;
-using OpenTK.Graphics.OpenGL;
-using OpenTK.Windowing.Desktop;
 
 namespace game_2.FileManagers
 {

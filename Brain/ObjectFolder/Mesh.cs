@@ -1,4 +1,4 @@
-﻿using OpenTK.Graphics.OpenGL;
+﻿using OpenTK.Graphics.OpenGL4;
 using game_2.Storage;
 using game_2.FileManagers;
 using OpenTK.Mathematics;
@@ -15,13 +15,13 @@ namespace game_2.Brain.ObjectFolder
         protected int[] Indices { get; set; }
 
         protected Shader shader;
-        protected Texture[] textures;
+        protected Texture texture;
 
         public Mesh()
         {
             Vertices = Box.Vertices;
             Indices = Box.Indices;
-            textures = new Texture[] { Texture.Load(Box.TexturePath) };
+            texture = Texture.Load(Box.TexturePath);
             
             Load();
         }
@@ -31,29 +31,7 @@ namespace game_2.Brain.ObjectFolder
             ModelLoader.LoadMesh(file_name, out float[] Vertices, out int[] Indices);
             this.Vertices = Vertices;
             this.Indices = Indices;
-            textures = new Texture[] { Texture.Load(tex_file_name) };
-
-            Load();
-        }
-
-        public Mesh(string file_name, string[] tex_file_names)
-        {
-            ModelLoader.LoadMesh(file_name, out float[] Vertices, out int[] Indices);
-            this.Vertices = Vertices;
-            this.Indices = Indices;
-            textures = new Texture[tex_file_names.Length];
-            for (int i = 0; i < tex_file_names.Length; i++)
-            {
-                textures[i] = Texture.Load(tex_file_names[i]);
-                if (i == 0)
-                {
-                    textures[i].Use(TextureUnit.Texture0);
-                }
-                else
-                {
-                    textures[i].Use(TextureUnit.Texture1);
-                }
-            }
+            texture = Texture.Load(tex_file_name);
 
             Load();
         }
@@ -62,7 +40,7 @@ namespace game_2.Brain.ObjectFolder
         {
             this.Vertices = Vertices;
             this.Indices = Indices;
-            textures = new Texture[] { Texture.Load(tex_file_name) };
+            texture = Texture.Load(tex_file_name);
 
             Load();
         }
@@ -111,14 +89,12 @@ namespace game_2.Brain.ObjectFolder
             GL.Enable(EnableCap.DepthTest);
         }
 
-        public bool ShowHitBox = false;
-
         public virtual void Draw(Matrix4 matrix)
         {
             GL.BindVertexArray(VAO);
             UseTextures();
             shader.setMatrices(matrix);
-            GL.DrawElements(PrimitiveType.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
+            GL.DrawElements(BeginMode.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
         }
 
         public virtual void Draw(Matrix4 matrix, Matrix4 cameraPos, Matrix4 cameraRot, Matrix4 PersProj)
@@ -126,7 +102,7 @@ namespace game_2.Brain.ObjectFolder
             GL.BindVertexArray(VAO);
             UseTextures();
             shader.setMatrices(matrix, cameraPos, cameraRot, PersProj);
-            GL.DrawElements(PrimitiveType.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
+            GL.DrawElements(BeginMode.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
         }
 
         public virtual void Draw(Matrix4 matrix, bool check)
@@ -136,32 +112,19 @@ namespace game_2.Brain.ObjectFolder
                 GL.BindVertexArray(VAO);
                 UseTextures();
                 shader.setMatrices(matrix);
-                GL.DrawElements(PrimitiveType.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
+                GL.DrawElements(BeginMode.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
             }
         }
 
-        protected void UseTextures()
-        {
-            textures[0].Use(TextureUnit.Texture0);
-            //if(textures.Length > 1)
-                //textures[1].Use(TextureUnit.Texture1);
-        }
+        protected void UseTextures() => texture.Use();
 
         public void Dispose()
         {
             shader.Dispose();
-            DisposeTextures();
+            texture.Dispose();
             GL.DeleteBuffer(VBO);
             GL.DeleteBuffer(IBO);
             GL.DeleteVertexArray(VAO);
-        }
-
-        private void DisposeTextures()
-        {
-            for (int i = 0; i < textures.Length; i++)
-            {
-                textures[i].Dispose();
-            }
         }
     }
 }

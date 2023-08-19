@@ -11,7 +11,7 @@ void main()
 { 
     vec3 ambientLightIntensity = vec3(0.1, 0.1, 0.1);
     vec3 sunLightIntensity = vec3(0.8, 0.8, 0.8);
-    vec3 sunLightDirection = normalize(vec3(20, 20, 10.0));
+    vec3 sunLightDirection = normalize(vec3(0, 20, 10.0));
 
     vec4 texel = mix(texture(texture0, texCoord), texture(texture1, texCoord), 0.2);
 

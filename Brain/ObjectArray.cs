@@ -1,4 +1,5 @@
-﻿using game_2.Brain.ObjectFolder;
+﻿using game_2.Brain.AssimpFolder;
+using game_2.Brain.ObjectFolder;
 using game_2.MathFolder;
 
 namespace game_2.Brain
@@ -34,7 +35,7 @@ namespace game_2.Brain
             int TntModel = 3;
             int TableModel = 4;
 
-            int FieldWidth = 2;
+            int FieldWidth = 5;
 
             Add("monkey", new GameObj(ModelFolderPath + "obj_files\\monkey\\monkey.obj", TextureFolderPath + "DefTexture.png"));
             Add("box", new GameObj(BoxModel));
@@ -46,6 +47,8 @@ namespace game_2.Brain
             Add("tnt5", new GameObj(TntModel));
             Add("table", new GameObj(TableModel));
             Add("steve", new GameObj(ModelFolderPath + "obj_files\\Steve.obj", TextureFolderPath + "Copy of steve.png"));
+            Add("pikagirl", new GameObj("C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\obj_files\\pika-girl\\WithPika.obj", "C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\obj_files\\pika-girl\\PikaGirl_C.png"));
+            Add("a_pikagirl", new AssimpObject("C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\obj_files\\pika-girl\\WithPika.obj"));
 
             for (int i = -FieldWidth; i <= FieldWidth; i++)
             {
@@ -110,6 +113,14 @@ namespace game_2.Brain
             this["steve"].pipeline.SetScale(0.5f);
             this["steve"].pipeline.SetAngle(0, -45, 0);
             this["steve"].pipeline.SetPosition(-8, -0.2f, -8);
+
+            this["pikagirl"].pipeline.SetScale(0.5f);
+            this["pikagirl"].pipeline.SetPosition(12, 3.7f, 13);
+            this["pikagirl"].pipeline.SetAngle(0, 90, 0);
+
+            this["a_pikagirl"].pipeline.SetScale(0.5f);
+            this["a_pikagirl"].pipeline.SetPosition(12, 3.7f, 6);
+            this["a_pikagirl"].pipeline.SetAngle(0, 90, 0);
         }
 
         public void OnRender(float deltaTime)
@@ -143,6 +154,8 @@ namespace game_2.Brain
                 }
 
             counter += deltaTime;
+            if (counter >= 2 * Math.PI) 
+                counter = 0;
             this["man"].pipeline.Expand(math3d.sin((float)counter), deltaTime);
         }
 
@@ -180,7 +193,7 @@ namespace game_2.Brain
         {
             foreach(GameObj obj in obj_list.Values)
             {
-                obj.Draw(30);
+                obj.Draw();
             }
         }
 

@@ -46,36 +46,11 @@ namespace game_2.Brain.ObjectFolder
             pipeline = new Pipeline();
         }
 
-        public GameObj(string file_name, string[] tex_file_names)
-        {
-            mesh = new Mesh(file_name, tex_file_names);
-            pipeline = new Pipeline();
-        }
+        public virtual void Draw() => mesh.Draw(pipeline.getMVP().ToOpenTK());
 
-        public virtual void Draw()
-        {
-            mesh.Draw(pipeline.getMVP().ToOpenTK());
-        }
+        public virtual void Draw(matrix4f cameraPos, matrix4f cameraRot, matrix4f PersProj) => mesh.Draw(pipeline.getMVP().ToOpenTK(), cameraPos.ToOpenTK(), cameraRot.ToOpenTK(), PersProj.ToOpenTK());
 
-        public virtual void Draw(matrix4f cameraPos, matrix4f cameraRot, matrix4f PersProj)
-        {
-            mesh.Draw(pipeline.getMVP().ToOpenTK(), cameraPos.ToOpenTK(), cameraRot.ToOpenTK(), PersProj.ToOpenTK());
-        }
-
-        public virtual void Draw(int dist)
-        {
-            mesh.Draw(pipeline.getMVP().ToOpenTK(), Check_Distance(dist));
-        }
-
-        public void ShowHitBox()
-        {
-            mesh.ShowHitBox = true;
-        }
-
-        public void HideHitBox()
-        {
-            mesh.ShowHitBox = false;
-        }
+        public virtual void Draw(int dist) => mesh.Draw(pipeline.getMVP().ToOpenTK(), Check_Distance(dist));
 
         public bool Check_Distance(float d)
         {
@@ -90,9 +65,6 @@ namespace game_2.Brain.ObjectFolder
             return false;
         }
 
-        public void OnDelete()
-        {
-            mesh.Dispose();
-        }
+        public virtual void OnDelete() => mesh.Dispose();
     }
 }

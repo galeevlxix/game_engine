@@ -1,7 +1,7 @@
 ﻿using game_2.Brain.SkyBoxFolder;
 using game_2.Storage;
 using OpenTK.Mathematics;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 using game_2.MathFolder;
 
 namespace game_2.Brain.AimFolder
@@ -12,7 +12,7 @@ namespace game_2.Brain.AimFolder
         {
             Vertices = AimVertices.Vertices;
             Indices = AimVertices.Indices;
-            textures = new Texture[] { Texture.Load(AimVertices.TexturePath) };
+            texture = Texture.Load(AimVertices.TexturePath);
             pers_proj = pers_mat();
 
             Load();

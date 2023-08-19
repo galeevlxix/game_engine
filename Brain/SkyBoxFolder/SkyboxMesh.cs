@@ -1,4 +1,4 @@
-﻿using OpenTK.Graphics.OpenGL;
+﻿using OpenTK.Graphics.OpenGL4;
 using game_2.Brain.ObjectFolder;
 using OpenTK.Mathematics;
 using game_2.Storage;
@@ -12,7 +12,7 @@ namespace game_2.Brain.SkyBoxFolder
         {
             Vertices = SkyboxVertices.Vertices;
             Indices = SkyboxVertices.Indices;
-            textures = new Texture[] { Texture.Load(SkyboxVertices.TexturePath) };
+            texture = Texture.Load(SkyboxVertices.TexturePath);
 
             Load();
         }

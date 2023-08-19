@@ -1,4 +1,4 @@
-﻿using OpenTK.Graphics.OpenGL;
+﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 
 namespace game_2.Brain
@@ -114,10 +114,7 @@ namespace game_2.Brain
             GL.Uniform1(_uniformLocations[name], data);
         }
 
-        public void Use()
-        {
-            GL.UseProgram(Handle);
-        }
+        public void Use() => GL.UseProgram(Handle);
 
         private bool disposedValue = false;
 

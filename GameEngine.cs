@@ -1,4 +1,4 @@
-﻿using OpenTK.Graphics.OpenGL;
+﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
@@ -73,12 +73,12 @@ namespace game_2
 
             fps.Add(1 / args.Time);
 
-            InputCallbacks();
+            InputCallbacks(args.Time);
 
             Camera.OnRender((float)args.Time);
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-                       
+
             Models.OnRender((float)args.Time);
             Models.Draw();
 
@@ -89,7 +89,7 @@ namespace game_2
             GLFW.PollEvents();
         }
 
-        private void InputCallbacks()
+        private void InputCallbacks(double Time)
         {
             KeyboardState input = KeyboardState;
             if (input.IsKeyDown(Keys.Escape))
@@ -106,7 +106,7 @@ namespace game_2
                 mPersProj.ChangeFOV(50);
             }
             Camera.OnMouse(-MouseState.Delta.X, -MouseState.Delta.Y);
-            Camera.OnKeyboard(KeyboardState);
+            Camera.OnKeyboard(KeyboardState, (float)Time);
         }
 
         protected override void OnKeyDown(KeyboardKeyEventArgs e)

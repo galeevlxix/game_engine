@@ -1,6 +1,5 @@
 ﻿using game_2.MathFolder;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-using System.Diagnostics;
 
 namespace game_2.Brain
 {
@@ -25,8 +24,8 @@ namespace game_2.Brain
         private static float max_normal_speed = 10;
         private static float max_fast_speed = 15;
 
-        private static float normal_velocity = 0.1f;
-        private static float fast_velocity = 0.2f;
+        private static float normal_velocity = 60f;
+        private static float fast_velocity = 90f;
 
         private static float speedX;
         private static float speedY;
@@ -105,10 +104,9 @@ namespace game_2.Brain
             speedZ = 0.00f;
             angularX = 0;
             angularY = 0;
-
         }
 
-        public static void OnKeyboard(KeyboardState key)
+        public static void OnKeyboard(KeyboardState key, float deltaTime)
         {
             if (!key.IsAnyKeyDown) return;
 
@@ -125,33 +123,33 @@ namespace game_2.Brain
 
             if (key.IsKeyDown(Keys.W))
             {
-                if (speedX * speedX + speedY * speedY + (speedZ - velocity) * (speedZ - velocity) <= max_speed * max_speed)
-                    speedZ -= velocity;
+                if (speedX * speedX + speedY * speedY + (speedZ - velocity * deltaTime) * (speedZ - velocity * deltaTime) <= max_speed * max_speed)
+                    speedZ -= velocity * deltaTime;
             }
             if (key.IsKeyDown(Keys.S))
             {
-                if (speedX * speedX + speedY * speedY + (speedZ + velocity) * (speedZ + velocity) <= max_speed * max_speed)
-                    speedZ += velocity;
+                if (speedX * speedX + speedY * speedY + (speedZ + velocity * deltaTime) * (speedZ + velocity * deltaTime) <= max_speed * max_speed)
+                    speedZ += velocity * deltaTime;
             }
             if (key.IsKeyDown(Keys.A))
             {
-                if ((speedX + velocity) * (speedX + velocity) + speedY * speedY + speedZ * speedZ <= max_speed * max_speed)
-                    speedX += velocity;
+                if ((speedX + velocity * deltaTime) * (speedX + velocity * deltaTime) + speedY * speedY + speedZ * speedZ <= max_speed * max_speed)
+                    speedX += velocity * deltaTime;
             }
             if (key.IsKeyDown(Keys.D))
             {
-                if ((speedX - velocity) * (speedX - velocity) + speedY * speedY + speedZ * speedZ <= max_speed * max_speed)
-                    speedX -= velocity;
+                if ((speedX - velocity * deltaTime) * (speedX - velocity * deltaTime) + speedY * speedY + speedZ * speedZ <= max_speed * max_speed)
+                    speedX -= velocity * deltaTime;
             }
             if (key.IsKeyDown(Keys.Space))
             {
-                if (speedX * speedX + (speedY + velocity) * (speedY + velocity) + speedZ * speedZ <= max_speed * max_speed)
-                    speedY += velocity;
+                if (speedX * speedX + (speedY + velocity * deltaTime) * (speedY + velocity * deltaTime) + speedZ * speedZ <= max_speed * max_speed)
+                    speedY += velocity * deltaTime;
             }
             if (key.IsKeyDown(Keys.LeftShift))
             {
-                if (speedX * speedX + (speedY - velocity) * (speedY - velocity) + speedZ * speedZ <= max_speed * max_speed)
-                    speedY -= velocity;
+                if (speedX * speedX + (speedY - velocity * deltaTime) * (speedY - velocity * deltaTime) + speedZ * speedZ <= max_speed * max_speed)
+                    speedY -= velocity * deltaTime;
             }
         }
 
