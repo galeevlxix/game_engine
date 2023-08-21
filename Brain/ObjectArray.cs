@@ -39,7 +39,8 @@ namespace game_2.Brain
 
             Add("monkey", new GameObj(ModelFolderPath + "obj_files\\monkey\\monkey.obj", TextureFolderPath + "DefTexture.png"));
             Add("box", new GameObj(BoxModel));
-            Add("man", new GameObj(ModelFolderPath + "obj_files\\warr.obj", TextureFolderPath + "CharTexturesHighRes0_029.png"));
+            Add("man", new AssimpObject(ModelFolderPath + "obj_files\\warr\\warr.obj"));
+            Add("man2", new GameObj(ModelFolderPath + "obj_files\\warr\\warr.obj", ModelFolderPath + "obj_files\\warr\\CharTexturesHighRes0_029.png"));
             Add("tnt1", new GameObj(TntModel));
             Add("tnt2", new GameObj(TntModel));
             Add("tnt3", new GameObj(TntModel));
@@ -47,8 +48,10 @@ namespace game_2.Brain
             Add("tnt5", new GameObj(TntModel));
             Add("table", new GameObj(TableModel));
             Add("steve", new GameObj(ModelFolderPath + "obj_files\\Steve.obj", TextureFolderPath + "Copy of steve.png"));
-            Add("pikagirl", new GameObj("C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\obj_files\\pika-girl\\WithPika.obj", "C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\obj_files\\pika-girl\\PikaGirl_C.png"));
-            Add("a_pikagirl", new AssimpObject("C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\obj_files\\pika-girl\\WithPika.obj"));
+            Add("pikagirl", new GameObj(ModelFolderPath + "obj_files\\pika-girl\\WithPika.obj", ModelFolderPath + "obj_files\\pika-girl\\PikaGirl_C.png"));
+            Add("a_pikagirl", new AssimpObject(ModelFolderPath + "obj_files\\pika-girl\\WithPika.obj"));
+
+            Add("mococo", new AssimpObject(ModelFolderPath + "fbx_files\\Mococo\\Mococo_pose.fbx"));
 
             for (int i = -FieldWidth; i <= FieldWidth; i++)
             {
@@ -84,7 +87,11 @@ namespace game_2.Brain
 
             this["man"].pipeline.SetScale(2f);
             this["man"].pipeline.SetAngle(0, 0, 0);
-            this["man"].pipeline.SetPosition(3.5f, 0, 0);
+            this["man"].pipeline.SetPosition(3.5f, 0, -15);
+
+            this["man2"].pipeline.SetScale(2f);
+            this["man2"].pipeline.SetAngle(0, 0, 0);
+            this["man2"].pipeline.SetPosition(0f, 0, -15);
 
             this["tnt1"].pipeline.SetScale(1f);
             this["tnt1"].pipeline.SetAngle(0, 0, 0);
@@ -121,6 +128,10 @@ namespace game_2.Brain
             this["a_pikagirl"].pipeline.SetScale(0.5f);
             this["a_pikagirl"].pipeline.SetPosition(12, 3.7f, 6);
             this["a_pikagirl"].pipeline.SetAngle(0, 90, 0);
+
+            this["mococo"].pipeline.SetScale(0.4f);
+            this["mococo"].pipeline.SetPosition(12, 0, -6);
+            this["mococo"].pipeline.SetAngle(0, -90, 0);
         }
 
         public void OnRender(float deltaTime)
@@ -156,7 +167,7 @@ namespace game_2.Brain
             counter += deltaTime;
             if (counter >= 2 * Math.PI) 
                 counter = 0;
-            this["man"].pipeline.Expand(math3d.sin((float)counter), deltaTime);
+            //this["man"].pipeline.Expand(math3d.sin((float)counter), deltaTime);
         }
 
         double counter = 0;

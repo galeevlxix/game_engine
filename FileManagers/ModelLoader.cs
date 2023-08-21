@@ -59,7 +59,7 @@ namespace game_2.FileManagers
 
             List<List<float>> normCords = new List<List<float>>();
 
-            string line;
+            string? line;
 
             while ((line = tr.ReadLine()) != null)
             {
