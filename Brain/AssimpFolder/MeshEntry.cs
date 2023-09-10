@@ -41,26 +41,5 @@ namespace game_2.Brain.AssimpFolder
         }
 
         public void Dispose() => VAO.Dispose();
-
-        public void PrintTexturesMap()
-        {
-            Console.WriteLine("Meshes Maps Contains...");
-            _Print("DiffusePath", _Paths._DiffusePath);
-            _Print("SpecularPath", _Paths._SpecularPath);
-            _Print("NormalPath", _Paths._NormalPath);
-            _Print("HeightMap", _Paths._HeightPath);
-            _Print("MetallicPath", _Paths._MetallicPath);
-            _Print("RoughnnesPath", _Paths._RoughnnesPath);
-            _Print("LightMap", _Paths._LightMap);
-            _Print("EmissivePath", _Paths._EmissivePath);
-            _Print("AmbientOcclusionPath", _Paths._AmbientOcclusionPath);
-            Console.WriteLine("\n -------------------------------------------------------------- \n");
-        }
-
-        private void _Print(string TypeTexture, string pathTex)
-        {
-            if (pathTex != string.Empty)
-                Console.WriteLine($"{TypeTexture} : {pathTex}");
-        }
     }
 }

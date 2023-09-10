@@ -5,12 +5,11 @@ layout (location = 1) in vec2 aTexCoord;
 out vec2 texCoord;
 
 uniform mat4 mvp;
-uniform mat4 campos;
 uniform mat4 camrot;
 uniform mat4 pers;
 
 void main()                                            
 {        
 	texCoord = aTexCoord;
-	gl_Position = vec4(aPosition, 1.0) * mvp * campos * camrot * pers;
+	gl_Position = vec4(aPosition, 1.0) * mvp * camrot * pers;
 }

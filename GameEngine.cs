@@ -4,9 +4,10 @@ using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using game_2.Brain;
 using OpenTK.Mathematics;
-using game_2.MathFolder;
 using game_2.Brain.SkyBoxFolder;
 using game_2.Brain.AimFolder;
+using game_2.Brain.InfoPanelFolder;
+using System;
 
 namespace game_2
 {
@@ -21,7 +22,7 @@ namespace game_2
         private int WindowsHeight;
 
         Skybox skybox;
-
+        InfoPanel info;
         Aim aim;
 
         private readonly Color4 BackGroundColor;
@@ -51,18 +52,35 @@ namespace game_2
 
             ///////////////параметры игры
 
+            Console.WriteLine("Загрузка камеры...");
             Camera.InitCamera();
-            Camera.Pos = new vector3f(0, 3, 4);
+            Camera.SetCameraPosition(0, 3, 4);
 
-            fps = new List<double>();
+            Console.WriteLine();
 
-            Models = new ObjectArray();
-            skybox = new Skybox();
+            fps_out_list = new List<double>();
+
+            Console.WriteLine("Загрузка шейдеров...");
+            CentralizedShaders.Load();
+
+            Console.WriteLine("Загрузка прицела...");
             aim = new Aim();
+
+            Console.WriteLine("Загрузка шрифта...");
+            info = new InfoPanel(InfoPanel.FontType.FullSet);
+
+            Console.WriteLine("Загрузка моделей...");
+            Models = new ObjectArray();
+
+            Console.WriteLine("Загрузка скайбокса...");
+            skybox = new Skybox();
+
+            Console.WriteLine("Успешное завершение\n");
             loaded = true;
         }
 
-        List<double> fps;
+        List<double> fps_out_list;
+        double fps_out = 0;
 
         // Примерно deltaTime = 0.002s
         // Примерно deltaTime = 0,0016s при IsMultiThreaded = true
@@ -71,7 +89,13 @@ namespace game_2
         {
             base.OnRenderFrame(args);
 
-            fps.Add(1 / args.Time);
+            fps_out_list.Add(1 / args.Time);
+
+            if(fps_out_list.Count % 100 == 0)
+            {
+                fps_out = fps_out_list.Average();
+                fps_out_list.Clear();
+            }
 
             InputCallbacks(args.Time);
 
@@ -80,10 +104,22 @@ namespace game_2
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             Models.OnRender((float)args.Time);
+
+            CentralizedShaders.ObjectShader.Use();
             Models.Draw();
 
+            CentralizedShaders.SkyBoxShader.Use();
             skybox.Draw();
+
+            CentralizedShaders.ScreenShader.Use();
             aim.Draw();
+            info.PutLineAndDraw(
+                "x: " + Math.Round(Camera.Pos.x)   + "\n" +
+                "y: " + Math.Round(Camera.Pos.y)   + "\n" +
+                "z: " + Math.Round(Camera.Pos.z)   + "\n" +
+                "FPS: " + Math.Round(fps_out)      + "\n" +
+                DateTime.Now
+                );
 
             SwapBuffers();
             GLFW.PollEvents();
@@ -151,8 +187,9 @@ namespace game_2
             Models.Clear();
             skybox.OnDelete();
             aim.OnDelete();
+            info.OnClear();
 
-            Console.WriteLine((int)fps.Average() + " FPS");
+            CentralizedShaders.Dispose();
 
             base.OnClosed();
         }

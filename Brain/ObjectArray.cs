@@ -35,7 +35,7 @@ namespace game_2.Brain
             int TntModel = 3;
             int TableModel = 4;
 
-            int FieldWidth = 5;
+            int FieldWidth = 3;
 
             Add("monkey", new GameObj(ModelFolderPath + "obj_files\\monkey\\monkey.obj", TextureFolderPath + "DefTexture.png"));
             Add("box", new GameObj(BoxModel));
@@ -46,7 +46,6 @@ namespace game_2.Brain
             Add("tnt3", new GameObj(TntModel));
             Add("tnt4", new GameObj(TntModel));
             Add("tnt5", new GameObj(TntModel));
-            Add("table", new GameObj(TableModel));
             Add("steve", new GameObj(ModelFolderPath + "obj_files\\Steve.obj", TextureFolderPath + "Copy of steve.png"));
             Add("pikagirl", new GameObj(ModelFolderPath + "obj_files\\pika-girl\\WithPika.obj", ModelFolderPath + "obj_files\\pika-girl\\PikaGirl_C.png"));
             Add("a_pikagirl", new AssimpObject(ModelFolderPath + "obj_files\\pika-girl\\WithPika.obj"));
@@ -112,10 +111,6 @@ namespace game_2.Brain
             this["tnt5"].pipeline.SetScale(1f);
             this["tnt5"].pipeline.SetAngle(0, 0, 0);
             this["tnt5"].pipeline.SetPosition(-10f, 3, -10);
-
-            this["table"].pipeline.SetScale(4f);
-            this["table"].pipeline.SetAngle(0, 90, 0);
-            this["table"].pipeline.SetPosition(-19f, 4, 0);
 
             this["steve"].pipeline.SetScale(0.5f);
             this["steve"].pipeline.SetAngle(0, -45, 0);

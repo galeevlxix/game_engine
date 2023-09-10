@@ -16,14 +16,15 @@ namespace game_2.Brain
             textureUnit = _unit;
         }
 
-        public static Texture Load(string file_name, PixelInternalFormat pixel_format = PixelInternalFormat.Rgba, TextureUnit textureUnit = TextureUnit.Texture0)
+        public static Texture Load(string file_name, PixelInternalFormat pixel_format = PixelInternalFormat.Rgba, TextureUnit textureUnit = TextureUnit.Texture0, bool FlipVerticaly = true)
         {
             int handle = GL.GenTexture();   //Создаем
 
             GL.ActiveTexture(textureUnit);
             GL.BindTexture(TextureTarget.Texture2D, handle);
 
-            StbImage.stbi_set_flip_vertically_on_load(1);
+            if (FlipVerticaly)
+                StbImage.stbi_set_flip_vertically_on_load(1);
 
             using (Stream stream = File.OpenRead(file_name))
             {

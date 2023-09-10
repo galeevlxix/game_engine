@@ -3,6 +3,7 @@ using game_2.Storage;
 using OpenTK.Mathematics;
 using OpenTK.Graphics.OpenGL4;
 using game_2.MathFolder;
+using game_2.FileManagers;
 
 namespace game_2.Brain.AimFolder
 {
@@ -22,13 +23,13 @@ namespace game_2.Brain.AimFolder
         {
             GL.BindVertexArray(VAO);
             UseTextures();
-            shader.setMatrices(matrix, Matrix4.Identity, Matrix4.Identity, pers_proj);
+            CentralizedShaders.ScreenShader.setMatrices(matrix, pers_proj);
             GL.DrawElements(PrimitiveType.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
         }
 
-        private Matrix4 pers_proj;
+        protected Matrix4 pers_proj;
 
-        private Matrix4 pers_mat()
+        protected Matrix4 pers_mat()
         {
             float FOV = 50;
             float width = 1920;
@@ -40,6 +41,11 @@ namespace game_2.Brain.AimFolder
             pers.InitPersProjTransform(FOV, width, height, zNear, zFar);
 
             return pers.ToOpenTK();
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
         }
     }
 }

@@ -9,8 +9,18 @@ namespace game_2.Brain.AimFolder
             mesh = new AimMesh();
             pipeline = new Pipeline();
 
-            pipeline.SetPosition(0, 0, -1);
+            pipeline.SetPosition(0f, 0f, -1f);
             pipeline.SetScale(0.02f);
+        }
+
+        public override void Draw()
+        {
+            base.Draw();
+        }
+
+        public override void OnDelete()
+        {
+            base.OnDelete();
         }
     }
 }

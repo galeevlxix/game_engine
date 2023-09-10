@@ -2,7 +2,6 @@
 using game_2.Brain.ObjectFolder;
 using OpenTK.Mathematics;
 using game_2.Storage;
-using game_2.FileManagers;
 
 namespace game_2.Brain.SkyBoxFolder
 {
@@ -34,17 +33,12 @@ namespace game_2.Brain.SkyBoxFolder
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, IBO);
             GL.BufferData(BufferTarget.ElementArrayBuffer, Indices.Length * sizeof(int), Indices, BufferUsageHint.StaticDraw);
 
-            // Шейдеры
-            shader = new Shader(
-                ShaderLoader.LoadShader("C:\\Users\\Lenovo\\source\\repos\\game_2\\Shaders\\Skybox\\SkyboxVetexShader.hlsl"), 
-                ShaderLoader.LoadShader("C:\\Users\\Lenovo\\source\\repos\\game_2\\Shaders\\Skybox\\SkyboxFragShader.hlsl"));
-
             // Устанавливаем указатели атрибутов вершины
-            var location = shader.GetAttribLocation("aPosition");
+            var location = CentralizedShaders.SkyBoxShader.GetAttribLocation("aPosition");
             GL.VertexAttribPointer(location, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
             GL.EnableVertexAttribArray(location);
 
-            var texCordLocation = shader.GetAttribLocation("aTexCoord");
+            var texCordLocation = CentralizedShaders.SkyBoxShader.GetAttribLocation("aTexCoord");
             GL.VertexAttribPointer(texCordLocation, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * sizeof(float));
             GL.EnableVertexAttribArray(texCordLocation);
 
@@ -57,7 +51,10 @@ namespace game_2.Brain.SkyBoxFolder
 
         public override void Draw(Matrix4 matrix)
         {
-            base.Draw(matrix);
+            GL.BindVertexArray(VAO);
+            UseTextures();
+            CentralizedShaders.SkyBoxShader.setMatrices(matrix, Camera.CameraRotation.ToOpenTK(), mPersProj.PersProjMatrix.ToOpenTK());
+            GL.DrawElements(BeginMode.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
         }
     }
 }

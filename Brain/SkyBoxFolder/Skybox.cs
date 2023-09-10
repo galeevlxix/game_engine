@@ -16,7 +16,6 @@ namespace game_2.Brain.SkyBoxFolder
 
         public override void Draw()
         {
-            pipeline.SetPosition(Camera.Pos.x, Camera.Pos.y, Camera.Pos.z);
             mesh.Draw(pipeline.getMVP().ToOpenTK());
         }
     }

@@ -14,7 +14,6 @@ namespace game_2.Brain.ObjectFolder
         protected float[] Vertices { get; set; }
         protected int[] Indices { get; set; }
 
-        protected Shader shader;
         protected Texture texture;
 
         public Mesh()
@@ -22,7 +21,7 @@ namespace game_2.Brain.ObjectFolder
             Vertices = Box.Vertices;
             Indices = Box.Indices;
             texture = Texture.Load(Box.TexturePath);
-            
+
             Load();
         }
 
@@ -62,25 +61,18 @@ namespace game_2.Brain.ObjectFolder
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, IBO);
             GL.BufferData(BufferTarget.ElementArrayBuffer, Indices.Length * sizeof(int), Indices, BufferUsageHint.StaticDraw);
 
-            // Шейдеры
-            shader = new Shader(ShaderLoader.LoadVertexShader(), ShaderLoader.LoadFragmentShader());
-            shader.Use();
-
             // Устанавливаем указатели атрибутов вершины
-            var location = shader.GetAttribLocation("aPosition");
+            int location = CentralizedShaders.ObjectShader.GetAttribLocation("aPosition");
             GL.VertexAttribPointer(location, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 0);
             GL.EnableVertexAttribArray(location);
 
-            var texCordLocation = shader.GetAttribLocation("aTexCoord");
+            int texCordLocation = CentralizedShaders.ObjectShader.GetAttribLocation("aTexCoord");
             GL.VertexAttribPointer(texCordLocation, 2, VertexAttribPointerType.Float, false, 8 * sizeof(float), 3 * sizeof(float));
             GL.EnableVertexAttribArray(texCordLocation);
 
-            var normCordLocation = shader.GetAttribLocation("aNormal");
+            int normCordLocation = CentralizedShaders.ObjectShader.GetAttribLocation("aNormal");
             GL.VertexAttribPointer(normCordLocation, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 5 * sizeof(float));
             GL.EnableVertexAttribArray(normCordLocation);
-
-            shader.setInt("texture0", 0);
-            //shader.setInt("texture1", 1);
 
             // Развязываем VAO и VBO
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
@@ -91,17 +83,17 @@ namespace game_2.Brain.ObjectFolder
 
         public virtual void Draw(Matrix4 matrix)
         {
+            CentralizedShaders.ObjectShader.setMatrices(matrix);
             GL.BindVertexArray(VAO);
             UseTextures();
-            shader.setMatrices(matrix);
             GL.DrawElements(BeginMode.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
         }
 
         public virtual void Draw(Matrix4 matrix, Matrix4 cameraPos, Matrix4 cameraRot, Matrix4 PersProj)
         {
+            CentralizedShaders.ObjectShader.setMatrices(matrix, cameraPos, cameraRot, PersProj);
             GL.BindVertexArray(VAO);
             UseTextures();
-            shader.setMatrices(matrix, cameraPos, cameraRot, PersProj);
             GL.DrawElements(BeginMode.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
         }
 
@@ -109,18 +101,17 @@ namespace game_2.Brain.ObjectFolder
         {
             if (check)
             {
-                GL.BindVertexArray(VAO);
                 UseTextures();
-                shader.setMatrices(matrix);
+                GL.BindVertexArray(VAO);
+                CentralizedShaders.ObjectShader.setMatrices(matrix);
                 GL.DrawElements(BeginMode.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
             }
         }
 
         protected void UseTextures() => texture.Use();
 
-        public void Dispose()
+        public virtual void Dispose()
         {
-            shader.Dispose();
             texture.Dispose();
             GL.DeleteBuffer(VBO);
             GL.DeleteBuffer(IBO);

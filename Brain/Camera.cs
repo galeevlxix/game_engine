@@ -5,9 +5,15 @@ namespace game_2.Brain
 {
     public static class Camera
     {
-        public static vector3f Pos { get; set; }
+        public static vector3f Pos { get; private set; }
         public static vector3f Target { get; private set; }
         public static vector3f Up { get; private set; }
+
+        public static void SetCameraPosition(float x, float y, float z)
+        {
+            Pos.y = y; Pos.x = x; Pos.z = z;
+        }
+
         private static vector3f Left;
 
         private static float angle_h;  //горизонтальный поворот
@@ -110,7 +116,7 @@ namespace game_2.Brain
         {
             if (!key.IsAnyKeyDown) return;
 
-            if (key.IsKeyDown(Keys.LeftControl))
+            if (key.IsKeyDown(Keys.RightControl) || key.IsKeyDown(Keys.LeftControl))
             {
                 velocity = fast_velocity;
                 max_speed = max_fast_speed;

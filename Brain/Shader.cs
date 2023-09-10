@@ -90,7 +90,7 @@ namespace game_2.Brain
             Matrix4 p = mPersProj.PersProjMatrix.ToOpenTK();
             Matrix4 c_pos = Camera.CameraTranslation.ToOpenTK();
             Matrix4 c_rot = Camera.CameraRotation.ToOpenTK();
-            
+
             setMatrices(m, c_pos, c_rot, p);
         }
 
@@ -102,15 +102,26 @@ namespace game_2.Brain
             setMatrix("camrot", c_rot);
         }
 
+        public void setMatrices(Matrix4 mvp, Matrix4 c_rot, Matrix4 p)
+        {
+            setMatrix("mvp", mvp);
+            setMatrix("pers", p);
+            setMatrix("camrot", c_rot);
+        }
+
+        public void setMatrices(Matrix4 mvp, Matrix4 p)
+        {
+            setMatrix("mvp", mvp);
+            setMatrix("pers", p);
+        }
+
         public void setMatrix(string name, Matrix4 data)
         {
-            Use();
             GL.UniformMatrix4(_uniformLocations[name], true, ref data);
         }
 
         public void setInt(string name, int data)
         {
-            Use();
             GL.Uniform1(_uniformLocations[name], data);
         }
 

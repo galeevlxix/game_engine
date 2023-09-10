@@ -8,7 +8,6 @@ namespace game_2.Brain.AssimpFolder
     {
         private AssimpMesh assimpModel;
         private List<MeshEntry> meshes;
-        private Shader shader;
         private Dictionary<string, Texture> TextureMap = new Dictionary<string, Texture>();
 
         public AssimpObject(string modelPath)
@@ -16,8 +15,6 @@ namespace game_2.Brain.AssimpFolder
             assimpModel = new AssimpMesh(modelPath, false);
             meshes = new List<MeshEntry>(assimpModel.meshes);
             pipeline = new Pipeline();
-
-            shader = new Shader(ShaderLoader.LoadVertexShader(), ShaderLoader.LoadFragmentShader());
 
             foreach(MeshEntry m in meshes)
             {
@@ -37,7 +34,7 @@ namespace game_2.Brain.AssimpFolder
 
         public override void Draw()
         {
-            shader.setMatrices(pipeline.getMVP().ToOpenTK());
+            CentralizedShaders.ObjectShader.setMatrices(pipeline.getMVP().ToOpenTK());
 
             foreach (var item in meshes)
             {
@@ -48,6 +45,11 @@ namespace game_2.Brain.AssimpFolder
 
         private void LoadTextures(string tex_path, PixelInternalFormat pixelFormat, TextureUnit unit)
         {
+            if (unit == TextureUnit.Texture1 && tex_path != "")
+            {
+
+            }
+
             if (!TextureMap.ContainsKey(tex_path))
             {
                 if (tex_path != string.Empty)
@@ -65,8 +67,6 @@ namespace game_2.Brain.AssimpFolder
 
             foreach (var index in TextureMap.Keys)
                 TextureMap[index].Dispose();
-
-            shader.Dispose();
         }
     }
 }
