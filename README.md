@@ -13,6 +13,9 @@
 [10. Извлечение текстур и нормалей из obj](#s11)  
 [11. DeltaTime](#s12)  
 [12. Скайбокс и прицел](#s13)  
+[13. Загрузка моделей через Assimp](#s14)  
+
+
 <a name="s1"></a>
 # Первые шаги и треугольник 
 Для реализации графического приложения я использую библиотеку `OpenTK`. Она предоставляет нам большой набор функций, которые мы можем использовать для управления графикой, и упрощает работу с OpenGL. OpenTK можно использовать для игр, научных приложений или других проектов, требующих трехмерной графики, аудио или вычислительной функциональности.  
@@ -2482,3 +2485,294 @@ void main()
 ```
 ## Результат
 ![skb](https://github.com/galeevlxix/game_engine/blob/WorkingWithTheModel/screens/skybox.gif)
+<a name="s14"></a>
+# Загрузка моделей через Assimp
+До сих пор мы загружали 3D-объекты "вручную", строчка за строчкой читая файлы моделей. Для каждого поддерживаемого формата мы делали собственный загрузчик. Однако это не очень оптимально, потому что, если мы захотим добавить объект нового формата, нам надо будет написать новый загрузчик для него. Также, загружая объекты не с одной, а с несколькими текстурами, нам нужно разбивать модель на мини-модели, каждой из которых присваивать нужную текстуру. 
+
+*Разработка своего загрузчика может занять довольно много времени. Если вы хотите, что бы была возможность загружать модели из различных источников, то потребуется изучить каждый формат и написать для каждого свой загрузчик. Некоторые форматы простые, но от некоторых идет пар из ушей, и на них уйдет масса времени, причем это не является целью 3D программирования. (c)OGLDev*
+
+Теперь новый метод загрузки моделей - это использование внешней библиотеки для разбора и загрузки моделей из файла.
+
+## Vertex
+Вершина будет представлять из себя структуру, состоящую из позиции, нормали, текстуры и тд. 
+```c#
+    public struct Vertex
+    {
+        public Vector3 Pos;
+        public Vector3 Normal;
+        public Vector2 Tex;
+        public Vector3 Tangent;
+        public Vector3 Bitangent;
+    }
+```
+##  MeshEntry
+Создадим класс мини-моделей, на которые наша модель будет разбираться. Она будет хранить в себе VBO, VAO и IBO, а также пути к текстурам. В конструкторе класса объект будет инициализироваться, а в функции рендера вырисовываться.
+```c#
+    public class MeshEntry : IDisposable
+    {
+        private int _IndicesCount;
+        public ModelTexturePaths _Paths;
+
+        private VertexArrayObject VAO;
+        private BufferObject<Vertex> VBO;
+        private BufferObject<int> IBO;
+
+        public unsafe MeshEntry(List<Vertex> Vertices, List<int> Indices, ModelTexturePaths Paths)
+        {
+            _IndicesCount = Indices.Count;
+            _Paths = Paths;
+
+            VAO = new VertexArrayObject();
+            VBO = new BufferObject<Vertex>(Vertices.ToArray(), BufferTarget.ArrayBuffer);
+            VAO.LinkBufferObject(ref VBO);
+
+            VAO.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, sizeof(Vertex), IntPtr.Zero);
+            VAO.VertexAttributePointer(2, 3, VertexAttribPointerType.Float, sizeof(Vertex), Marshal.OffsetOf(typeof(Vertex), "Normal"));
+            VAO.VertexAttributePointer(1, 2, VertexAttribPointerType.Float, sizeof(Vertex), Marshal.OffsetOf(typeof(Vertex), "Tex"));
+            VAO.VertexAttributePointer(3, 3, VertexAttribPointerType.Float, sizeof(Vertex), Marshal.OffsetOf(typeof(Vertex), "Tangent"));
+            VAO.VertexAttributePointer(4, 3, VertexAttribPointerType.Float, sizeof(Vertex), Marshal.OffsetOf(typeof(Vertex), "Bitangent"));
+
+            IBO = new BufferObject<int>(Indices.ToArray(), BufferTarget.ElementArrayBuffer);
+            VAO.LinkBufferObject(ref IBO);
+
+            Vertices.Clear();
+            Indices.Clear();
+        }
+        
+        public void Render()
+        {
+            VAO.Bind();
+            GL.DrawElements(PrimitiveType.Triangles, _IndicesCount, DrawElementsType.UnsignedInt, 0);
+        }
+
+        public void Dispose() => VAO.Dispose();
+    }
+```
+## Assimp Mesh
+После того как сцена (т.е. наш объект) импортировался, рекурсивно инициализируются узлы объекта (от родителя). Каждый из узлов представляет из себя `Mesh`.
+```c#
+    public class AssimpMesh : IDisposable
+    {
+        private Scene scene;
+        public List<MeshEntry> meshes { get; }
+        public MeshEntry FirstMesh => meshes[0];
+        public string PathModel;
+
+        public AssimpMesh(string pathModel, bool flipuvs)
+        {
+            if (!File.Exists(pathModel)) 
+                throw new Exception("error: file not exists " +  pathModel);
+
+            PathModel = Path.GetDirectoryName(pathModel);
+
+            scene = new Scene();
+            meshes = new List<MeshEntry>();
+
+            using(var importer = new AssimpContext())
+            {
+                if (flipuvs)
+                    scene = importer.ImportFile(
+                        pathModel,
+                        PostProcessSteps.Triangulate |
+                        PostProcessSteps.GenerateSmoothNormals |
+                        PostProcessSteps.FlipUVs |
+                        PostProcessSteps.CalculateTangentSpace);
+                else
+                    scene = importer.ImportFile(
+                        pathModel,
+                        PostProcessSteps.Triangulate |
+                        PostProcessSteps.GenerateSmoothNormals |
+                        PostProcessSteps.CalculateTangentSpace);
+            }
+
+            ProcessNodes(scene.RootNode);
+        }
+
+        private void ProcessNodes(Node node)
+        {
+            for (int i = 0; i < node.MeshCount; i++)
+            {
+                ProcessMesh(scene.Meshes[node.MeshIndices[i]]);
+            }
+
+            for (int i = 0; i < node.ChildCount; i++)
+            {
+                ProcessNodes(node.Children[i]);
+            }
+        }
+
+        private void ProcessMesh(Mesh mesh)
+        {
+            var vertices = new List<Vertex>();
+            var indices = new List<int>();
+
+            for (int i = 0; i < mesh.VertexCount; i++)
+            {
+                var packed = new Vertex();
+
+                packed.Pos = new Vector3(mesh.Vertices[i].X, mesh.Vertices[i].Y, mesh.Vertices[i].Z);
+                packed.Normal = new Vector3(mesh.Normals[i].X, mesh.Normals[i].Y, mesh.Normals[i].Z);
+                if (mesh.HasTextureCoords(0))
+                {
+                    packed.Tex = new Vector2(mesh.TextureCoordinateChannels[0][i].X, mesh.TextureCoordinateChannels[0][i].Y);
+                }
+                else
+                {
+                    packed.Tex = new Vector2(0.0f, 0.0f);
+                }
+                packed.Tangent = new Vector3(mesh.Tangents[i].X, mesh.Tangents[i].Y, mesh.Tangents[i].Z);
+                packed.Bitangent = new Vector3(mesh.BiTangents[i].X, mesh.BiTangents[i].Y, mesh.BiTangents[i].Z);
+
+                vertices.Add(packed);
+            }
+
+            for (int i = 0; i < mesh.FaceCount; i++)
+            {
+                Face face = mesh.Faces[i];
+                for (int j = 0; j < face.IndexCount; j++)
+                {
+                    indices.Add((ushort)face.Indices[j]);
+                }
+            }
+
+            ModelTexturePaths texturesPaths = new ModelTexturePaths();
+
+            if (mesh.MaterialIndex >= 0)
+            {
+                // Texturas
+                Material material = scene.Materials[mesh.MaterialIndex];
+                texturesPaths = ProcessTextures(material.GetAllMaterialTextures());
+            }
+
+            meshes.Add(new MeshEntry(vertices, indices, texturesPaths));
+        }
+
+        private ModelTexturePaths ProcessTextures(TextureSlot[] slot)
+        {
+            ModelTexturePaths texturesPath = new ModelTexturePaths();
+
+            foreach (var item in slot)
+            {
+                if (item.FilePath != null)
+                {
+                    if (item.TextureType == TextureType.Diffuse)
+                    {
+                        texturesPath._DiffusePath = new string(Path.Combine(PathModel, item.FilePath));
+                    }
+                    else if (item.TextureType == TextureType.Specular)
+                    {
+                        texturesPath._SpecularPath = new string(Path.Combine(PathModel, item.FilePath));
+                    }
+                    else if (item.TextureType == TextureType.Normals)
+                    {
+                        texturesPath._NormalPath = new string(Path.Combine(PathModel, item.FilePath));
+                    }
+                    else if (item.TextureType == TextureType.Height)
+                    {
+                        texturesPath._HeightPath = new string(Path.Combine(PathModel, item.FilePath));
+                    }
+                    else if (item.TextureType == TextureType.Metalness)
+                    {
+                        texturesPath._MetallicPath = new string(Path.Combine(PathModel, item.FilePath));
+                    }
+                    else if (item.TextureType == TextureType.Roughness)
+                    {
+                        texturesPath._RoughnnesPath = new string(Path.Combine(PathModel, item.FilePath));
+                    }
+                    else if (item.TextureType == TextureType.Lightmap)
+                    {
+                        texturesPath._LightMap = new string(Path.Combine(PathModel, item.FilePath));
+                    }
+                    else if (item.TextureType == TextureType.Emissive)
+                    {
+                        texturesPath._EmissivePath = new string(Path.Combine(PathModel, item.FilePath));
+                    }
+                    else if (item.TextureType == TextureType.AmbientOcclusion)
+                    {
+                        texturesPath._AmbientOcclusionPath = new string(Path.Combine(PathModel, item.FilePath));
+                    }
+                }
+            }
+
+            return texturesPath;
+        }
+
+        public void Dispose()
+        {
+            scene.Clear();
+        }
+    }
+```
+## Assimp Object
+```c#
+    public class AssimpObject : GameObj
+    {
+        private AssimpMesh assimpModel;
+        private List<MeshEntry> meshes;
+        private Shader shader;
+        private Dictionary<string, Texture> TextureMap = new Dictionary<string, Texture>();
+
+        public AssimpObject(string modelPath)
+        {
+            assimpModel = new AssimpMesh(modelPath, false);
+            meshes = new List<MeshEntry>(assimpModel.meshes);
+            pipeline = new Pipeline();
+
+            shader = new Shader(ShaderLoader.LoadVertexShader(), ShaderLoader.LoadFragmentShader());
+
+            foreach(MeshEntry m in meshes)
+            {
+                LoadTextures(m._Paths._DiffusePath, 		PixelInternalFormat.Rgba, 	TextureUnit.Texture0);
+                LoadTextures(m._Paths._NormalPath, 		PixelInternalFormat.Rgba, 	TextureUnit.Texture1);
+                LoadTextures(m._Paths._LightMap, 		PixelInternalFormat.Rgba, 	TextureUnit.Texture2);
+                LoadTextures(m._Paths._EmissivePath, 		PixelInternalFormat.SrgbAlpha, 	TextureUnit.Texture3);
+                LoadTextures(m._Paths._SpecularPath, 		PixelInternalFormat.Rgba, 	TextureUnit.Texture4);
+                LoadTextures(m._Paths._HeightPath, 		PixelInternalFormat.Rgba, 	TextureUnit.Texture5);
+                LoadTextures(m._Paths._MetallicPath, 		PixelInternalFormat.Rgba, 	TextureUnit.Texture6);
+                LoadTextures(m._Paths._RoughnnesPath, 		PixelInternalFormat.Rgba, 	TextureUnit.Texture7);
+                LoadTextures(m._Paths._AmbientOcclusionPath, 	PixelInternalFormat.Rgba, 	TextureUnit.Texture8);
+            }
+
+            GL.Enable(EnableCap.DepthTest);
+        }
+
+        public override void Draw()
+        {
+            shader.setMatrices(pipeline.getMVP().ToOpenTK());
+
+            foreach (var item in meshes)
+            {
+                TextureMap[item._Paths._DiffusePath].Use();
+                item.Render();
+            }
+        }
+
+        private void LoadTextures(string tex_path, PixelInternalFormat pixelFormat, TextureUnit unit)
+        {
+            if (!TextureMap.ContainsKey(tex_path))
+            {
+                if (tex_path != string.Empty)
+                {
+                    Texture _texture_map = Texture.Load(tex_path, pixelFormat, unit);
+                    TextureMap.Add(tex_path, _texture_map);
+                }
+            }
+        }
+
+        public override void OnDelete()
+        {
+            for (int i = 0; i < meshes.Count; i++)
+                meshes[i].Dispose();
+
+            foreach (var index in TextureMap.Keys)
+                TextureMap[index].Dispose();
+
+            shader.Dispose();
+        }
+    }
+```
+## Результат: 
+До библиотеки Assimp мы могли загрузить только одну текстуру на модель, в результате чего некоторые области модели выглядили нелепо, потому что тектура находилась не на своем месте.
+
+Результат:
+![warr](https://github.com/galeevlxix/game_engine/blob/WorkingWithTheModel/screens/warr_man.png)
