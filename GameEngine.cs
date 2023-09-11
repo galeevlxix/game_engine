@@ -67,7 +67,7 @@ namespace game_2
             aim = new Aim();
 
             Console.WriteLine("Загрузка шрифта...");
-            info = new InfoPanel(InfoPanel.FontType.FullSet);
+            info = new InfoPanel(InfoPanel.FontType.EnglishWithNumbersAndPunctuation);
 
             Console.WriteLine("Загрузка моделей...");
             Models = new ObjectArray();
@@ -118,8 +118,7 @@ namespace game_2
                 "y: " + Math.Round(Camera.Pos.y)   + "\n" +
                 "z: " + Math.Round(Camera.Pos.z)   + "\n" +
                 "FPS: " + Math.Round(fps_out)      + "\n" +
-                DateTime.Now
-                );
+                DateTime.Now );
 
             SwapBuffers();
             GLFW.PollEvents();

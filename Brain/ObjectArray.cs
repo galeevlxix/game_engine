@@ -40,14 +40,12 @@ namespace game_2.Brain
             Add("monkey", new GameObj(ModelFolderPath + "obj_files\\monkey\\monkey.obj", TextureFolderPath + "DefTexture.png"));
             Add("box", new GameObj(BoxModel));
             Add("man", new AssimpObject(ModelFolderPath + "obj_files\\warr\\warr.obj"));
-            Add("man2", new GameObj(ModelFolderPath + "obj_files\\warr\\warr.obj", ModelFolderPath + "obj_files\\warr\\CharTexturesHighRes0_029.png"));
             Add("tnt1", new GameObj(TntModel));
             Add("tnt2", new GameObj(TntModel));
             Add("tnt3", new GameObj(TntModel));
             Add("tnt4", new GameObj(TntModel));
             Add("tnt5", new GameObj(TntModel));
             Add("steve", new GameObj(ModelFolderPath + "obj_files\\Steve.obj", TextureFolderPath + "Copy of steve.png"));
-            Add("pikagirl", new GameObj(ModelFolderPath + "obj_files\\pika-girl\\WithPika.obj", ModelFolderPath + "obj_files\\pika-girl\\PikaGirl_C.png"));
             Add("a_pikagirl", new AssimpObject(ModelFolderPath + "obj_files\\pika-girl\\WithPika.obj"));
 
             Add("mococo", new AssimpObject(ModelFolderPath + "fbx_files\\Mococo\\Mococo_pose.fbx"));
@@ -88,10 +86,6 @@ namespace game_2.Brain
             this["man"].pipeline.SetAngle(0, 0, 0);
             this["man"].pipeline.SetPosition(3.5f, 0, -15);
 
-            this["man2"].pipeline.SetScale(2f);
-            this["man2"].pipeline.SetAngle(0, 0, 0);
-            this["man2"].pipeline.SetPosition(0f, 0, -15);
-
             this["tnt1"].pipeline.SetScale(1f);
             this["tnt1"].pipeline.SetAngle(0, 0, 0);
             this["tnt1"].pipeline.SetPosition(-10f, 1, -12);
@@ -115,10 +109,6 @@ namespace game_2.Brain
             this["steve"].pipeline.SetScale(0.5f);
             this["steve"].pipeline.SetAngle(0, -45, 0);
             this["steve"].pipeline.SetPosition(-8, -0.2f, -8);
-
-            this["pikagirl"].pipeline.SetScale(0.5f);
-            this["pikagirl"].pipeline.SetPosition(12, 3.7f, 13);
-            this["pikagirl"].pipeline.SetAngle(0, 90, 0);
 
             this["a_pikagirl"].pipeline.SetScale(0.5f);
             this["a_pikagirl"].pipeline.SetPosition(12, 3.7f, 6);

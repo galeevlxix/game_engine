@@ -1,11 +1,8 @@
 ﻿using game_2.Brain.ObjectFolder;
-using OpenTK.Graphics.OpenGL4;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 
 namespace game_2.Brain.InfoPanelFolder
 {
-    public class InfoPanel 
+    public class InfoPanel
     {
         private List<GameObj> _symbols;
         private char[] _arrChar;
@@ -29,10 +26,26 @@ namespace game_2.Brain.InfoPanelFolder
             for (int i = 0; i < (int)type; i++)
             {
                 _symbols.Add(new Symbol(i));
+
+                if (i == 25)
+                {
+                    Console.WriteLine("     + английские символы");
+                }
+                else if (i == 35)
+                {
+                    Console.WriteLine("     + цифры");
+                }
+                else if (i == 66)
+                {
+                    Console.WriteLine("     + знаки пунктуации");
+                }
+                else if (i == 99)
+                {
+                    Console.WriteLine("     + русские символы");
+                }
             }
         }
 
-        [Description("Только пунктуация включает пробелы")]
         public void PutLineAndDraw(string line)
         {
             line = line.ToLower();
@@ -122,11 +135,11 @@ namespace game_2.Brain.InfoPanelFolder
                     return 27;
                 case '2':
                     return 28;
-                case '3': 
+                case '3':
                     return 29;
-                case '4': 
+                case '4':
                     return 30;
-                case '5': 
+                case '5':
                     return 31;
                 case '6':
                     return 32;
@@ -184,6 +197,20 @@ namespace game_2.Brain.InfoPanelFolder
                     return 59;
                 case ' ':
                     return 60;
+                case '"':
+                    return 61;
+                case '`':
+                    return 62;
+                case '~':
+                    return 63;
+                case '<':
+                    return 64;
+                case '>':
+                    return 65;
+                case 'π':
+                    return 66;
+                case '@':
+                    return 67;
                 case 'а':
                     return 94;
                 case 'б':
@@ -250,20 +277,6 @@ namespace game_2.Brain.InfoPanelFolder
                     return 92;
                 case 'я':
                     return 93;
-                case '"':
-                    return 61;
-                case '`':
-                    return 62;
-                case '~':
-                    return 63;
-                case '<':
-                    return 64;
-                case '>':
-                    return 65;
-                case 'π':
-                    return 66;
-                case '@':
-                    return 67;
                 default:
                     return 60;
                 case '\n':
