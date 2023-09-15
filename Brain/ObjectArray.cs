@@ -145,7 +145,7 @@ namespace game_2.Brain
             counter += deltaTime;
             if (counter >= 2 * Math.PI) 
                 counter = 0;
-            //this["man"].pipeline.Expand(math3d.sin((float)counter), deltaTime);
+            this["man"].pipeline.Expand(math3d.sin((float)counter), deltaTime);
         }
 
         double counter = 0;

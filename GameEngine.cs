@@ -29,6 +29,9 @@ namespace game_2
 
         LightingTechnique lightConfig;
 
+        BaseLight baseLight;
+        DirectionalLight directionalLight;
+
         private readonly Color4 BackGroundColor;
 
         public GameEngine(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings) : base(gameWindowSettings, nativeWindowSettings) 
@@ -76,23 +79,27 @@ namespace game_2
             Console.WriteLine("Загрузка скайбокса...");
             skybox = new Skybox();
 
-            Console.WriteLine("Загрузка шрифта...");
-            info = new InfoPanel(InfoPanel.FontType.EnglishWithNumbers);
+            //Console.WriteLine("Загрузка шрифта...");
+            //info = new InfoPanel(InfoPanel.FontType.EnglishWithNumbers);
 
-            lightConfig = new LightingTechnique();
-
-            BaseLight baseLight = new BaseLight();
-            baseLight.Color = new vector3f(1, 1, 1);
-            baseLight.AmbientIntensity = 0.3f;
-
-            CentralizedShaders.ObjectShader.Use();
-            lightConfig.SetBaseLight(baseLight);
-
+            Console.WriteLine("Загрузка света...");
             monochrome = new MonochromeObject(new vector3f(1, 1, 1), new vector3f(1, 1, 1));
             monochrome.pipeline.SetScale(0.5f);
             monochrome.pipeline.SetPosition(0, 4, 5);
 
+            lightConfig = new LightingTechnique();
 
+            baseLight = new BaseLight();
+            baseLight.Color = vector3f.One;
+            baseLight.AmbientIntensity = 0.2f;
+            
+            lightConfig.SetBaseLight(baseLight);
+
+            directionalLight = new DirectionalLight();
+            directionalLight.BaseLight.Color = vector3f.One;
+            directionalLight.BaseLight.DiffuseIntensity = 0.6f;
+            directionalLight.Direction = new vector3f(1, -0.7f, -1);
+            lightConfig.SetDirectionalLight(directionalLight);
 
             Console.WriteLine("Успешное завершение\n");
             loaded = true;
@@ -104,6 +111,7 @@ namespace game_2
         // Примерно deltaTime = 0.002s
         // Примерно deltaTime = 0,0016s при IsMultiThreaded = true
         // Рендер окна
+
         protected override void OnRenderFrame(FrameEventArgs args)
         {
             base.OnRenderFrame(args);
@@ -134,7 +142,7 @@ namespace game_2
 
             CentralizedShaders.ScreenShader.Use();
             aim.Draw();
-            info.PutLineAndDraw( Math.Round(fps_out) + "fps" );
+            //info.PutLineAndDraw( Math.Round(fps_out) + "fps" );
 
             CentralizedShaders.MonochromeShader.Use();
             monochrome.Draw();
@@ -195,7 +203,7 @@ namespace game_2
             Models.Clear();
             skybox.OnDelete();
             aim.OnDelete();
-            info.OnClear();
+            //info.OnClear();
 
             CentralizedShaders.Dispose();
 

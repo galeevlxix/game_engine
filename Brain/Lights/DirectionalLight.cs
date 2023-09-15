@@ -17,6 +17,12 @@ namespace game_2.Brain.Lights
             this.BaseLight = BaseLight;
             this.Direction = Direction;
         }
+
+        public DirectionalLight()
+        {
+            BaseLight = new BaseLight();
+            Direction = vector3f.Zero;
+        }
     }
 
     public struct DirectionalLightLocations

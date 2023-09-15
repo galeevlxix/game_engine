@@ -51,5 +51,23 @@ void main()
 
     if (texel.a < 0.3) discard;
 
-	outputColor = texel * vec4(gBaseLight.Color, 1.0) * gBaseLight.AmbientIntensity;
+    vec4 AmbientColor = vec4(gBaseLight.Color, 1.0) * gBaseLight.AmbientIntensity;
+
+    float DiffuseFactor = dot(Normal0, -gDirectionalLight.Direction);
+
+    vec4 DiffuseColor;
+
+    if (DiffuseFactor > 0)
+    {
+        DiffuseColor = 
+            vec4(gDirectionalLight.Base.Color, 1.0) * 
+            gDirectionalLight.Base.DiffuseIntensity *
+            DiffuseFactor;
+    }
+    else
+    {
+        DiffuseColor = vec4(0, 0, 0, 0);
+    }
+
+	outputColor = texel * (AmbientColor + DiffuseColor);
 }             
