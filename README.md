@@ -14,7 +14,7 @@
 [11. DeltaTime](#s12)  
 [12. Скайбокс и прицел](#s13)  
 [13. Загрузка моделей через Assimp](#s14)  
-
+[14. Информационная панель](#s15)
 
 <a name="s1"></a>
 # Первые шаги и треугольник 
@@ -2776,3 +2776,428 @@ void main()
 
 Результат:
 ![warr](https://github.com/galeevlxix/game_engine/blob/WorkingWithTheModel/screens/warr_man.png)
+
+<a name="s15"></a>
+# Информационная панель
+Кто помнит, в minecraft при нажатии на клавишу `f3` открывается экран отладки, в котором можно увидеть координаты игрока, FPS и тд. Мы с вами уже сделали прицел, который статично находится посередине экрана. Так почему бы не сделать вывод какой-то информации на экран, которая постоянно будет перед нашими глазами так же, как и прицел.
+## Шрифт
+Для начала подготовим картинку с нашим шрифтом, которую мы будем разбивать на символы. Не обращайте внимание на то, что некоторые буквы не в алфавитном порядке. Это для нас не так важно. А что важно, так это то, что сначала идут английские символы, потом цифры, пунктуация и русские символы. Такой порядок нужен при инициализации экрана отладки. То есть, если нам не будут нужны русские символы, то мы просто остановимся на пунктуации.  
+
+### `font.png`:
+![font](https://github.com/galeevlxix/game_engine/blob/WorkingWithTheModel/screens/font.png)
+
+## Класс InfoPanel
+Этот класс будет содержать и регулировать символы на экране. При инициализации мы объявляем необходимое количество символов. `FontType.English` означает, что необходимо только 26 английских символов, `FontType.EnglishWithNumbers` - еще 10 цифр и тд. Все символы инициализируются, как игровые объекты, и хранятся для быстрой отрисовки в `_symbols`.  
+
+`English`: *Только английские буквы (первые 26 символов)*  
+`EnglishWithNumbers`: *English + цифры от 0 до 9 (первые 36 символов)*  
+`EnglishWithNumbersAndPunctuation`: *EnglishWithNumbers + знаки пунктуации, включая пробел (первые 67 символов)*  
+`FullSet`: *Все 100 символов, EnglishWithNumbersAndPunctuation + русские символы*  
+
+В функции `PutLineAndDraw(string line)` входящая строка разбивается на символы, и для каждого символа функция `GetSymbolNumber(char c)` возвращает свой номер в соответствии с его положением в `font.png`. Этот номер нам нужен, чтобы найти нужный символ в массиве `_symbols` и отрисовать его. Отступы между выводимыми символами равны `step_x` и `step_y`.
+
+```c#
+    public class InfoPanel 
+    {
+        private List<GameObj> _symbols;
+        private char[] _arrChar;
+
+        private float step_x = 0.045f;
+        private float step_y = 0.08f;
+
+        public enum FontType : int
+        {
+            English = 26,
+            EnglishWithNumbers = 36,
+            EnglishWithNumbersAndPunctuation = 67,
+            FullSet = 100
+        }
+
+        public InfoPanel(FontType type)
+        {
+            _symbols = new List<GameObj>();
+            SymbolArrayOfVertices.LoadTexture("C:\\Users\\Lenovo\\source\\repos\\game_2\\Textures\\font.png");
+
+            for (int i = 0; i < (int)type; i++)
+            {
+                _symbols.Add(new Symbol(i));
+            }
+        }
+
+        public void PutLineAndDraw(string line)
+        {
+            line = line.ToLower();
+            _arrChar = line.ToCharArray();
+
+            int line_num = 0, symbol_num = 0;
+
+            for (int i = 0; i < _arrChar.Length; i++)
+            {
+                int symbol = GetSymbolNumber(_arrChar[i]) - 1;
+
+                if (symbol == 100)
+                {
+                    symbol_num = 0;
+                    line_num++;
+                    continue;
+                }
+                else if (symbol >= _symbols.Count)
+                {
+                    Console.WriteLine("Символ \'" + _arrChar[i] + "\' не инициализирован в коллекции.");
+                }
+                _symbols[symbol].pipeline.SetPosition(-0.8f + symbol_num * step_x, 0.43f - line_num * step_y, -1);
+                _symbols[symbol].Draw();
+                symbol_num++;
+            }
+        }
+
+        private int GetSymbolNumber(char c)
+        {
+            switch (c)
+            {
+                case 'a':
+                    return 1;
+                case 'b':
+                    return 2;
+                case 'c':
+                    return 3;
+                case 'd':
+                    return 4;
+                case 'e':
+                    return 5;
+                case 'f':
+                    return 6;
+                case 'g':
+                    return 7;
+                case 'h':
+                    return 8;
+                case 'i':
+                    return 9;
+                case 'k':
+                    return 10;
+                case 'j':
+                    return 26;
+                case 'l':
+                    return 11;
+                case 'm':
+                    return 12;
+                case 'n':
+                    return 13;
+                case 'o':
+                    return 14;
+                case 'p':
+                    return 15;
+                case 'q':
+                    return 16;
+                case 'r':
+                    return 17;
+                case 's':
+                    return 18;
+                case 't':
+                    return 19;
+                case 'u':
+                    return 20;
+                case 'v':
+                    return 21;
+                case 'w':
+                    return 22;
+                case 'x':
+                    return 23;
+                case 'y':
+                    return 24;
+                case 'z':
+                    return 25;
+                case '0':
+                    return 36;
+                case '1':
+                    return 27;
+                case '2':
+                    return 28;
+                case '3': 
+                    return 29;
+                case '4': 
+                    return 30;
+                case '5': 
+                    return 31;
+                case '6':
+                    return 32;
+                case '7':
+                    return 33;
+                case '8':
+                    return 34;
+                case '9':
+                    return 35;
+                case ',':
+                    return 51;
+                case '.':
+                    return 37;
+                case '+':
+                    return 38;
+                case '-':
+                    return 39;
+                case '*':
+                    return 40;
+                case '/':
+                    return 41;
+                case '=':
+                    return 42;
+                case '(':
+                    return 43;
+                case ')':
+                    return 44;
+                case '[':
+                    return 45;
+                case ']':
+                    return 46;
+                case '?':
+                    return 47;
+                case '!':
+                    return 48;
+                case ';':
+                    return 49;
+                case ':':
+                    return 50;
+                case '#':
+                    return 52;
+                case '$':
+                    return 53;
+                case '%':
+                    return 54;
+                case '^':
+                    return 55;
+                case '&':
+                    return 56;
+                case '_':
+                    return 57;
+                case '\'':
+                    return 58;
+                case '\\':
+                    return 59;
+                case ' ':
+                    return 60;
+                case '"':
+                    return 61;
+                case '`':
+                    return 62;
+                case '~':
+                    return 63;
+                case '<':
+                    return 64;
+                case '>':
+                    return 65;
+                case 'π':
+                    return 66;
+                case '@':
+                    return 67;
+                case 'а':
+                    return 94;
+                case 'б':
+                    return 95;
+                case 'в':
+                    return 96;
+                case 'г':
+                    return 97;
+                case 'д':
+                    return 98;
+                case 'е':
+                    return 99;
+                case 'ё':
+                    return 100;
+                case 'ж':
+                    return 68;
+                case 'з':
+                    return 69;
+                case 'и':
+                    return 70;
+                case 'й':
+                    return 71;
+                case 'к':
+                    return 72;
+                case 'л':
+                    return 73;
+                case 'м':
+                    return 74;
+                case 'н':
+                    return 75;
+                case 'о':
+                    return 76;
+                case 'п':
+                    return 77;
+                case 'р':
+                    return 78;
+                case 'с':
+                    return 79;
+                case 'т':
+                    return 80;
+                case 'у':
+                    return 81;
+                case 'ф':
+                    return 82;
+                case 'х':
+                    return 83;
+                case 'ц':
+                    return 84;
+                case 'ч':
+                    return 85;
+                case 'ш':
+                    return 86;
+                case 'щ':
+                    return 87;
+                case 'ъ':
+                    return 88;
+                case 'ы':
+                    return 89;
+                case 'ь':
+                    return 90;
+                case 'э':
+                    return 91;
+                case 'ю':
+                    return 92;
+                case 'я':
+                    return 93;
+
+                default:
+                    return 60;
+                case '\n':
+                    return 101;
+            }
+        }
+
+        public void OnClear()
+        {
+            for (int i = _symbols.Count - 1; i >= 0; i--)
+            {
+                _symbols[i].OnDelete();
+            }
+            _symbols.Clear();
+        }
+    }
+```
+
+## Класс Symbol
+При инициализации символа мы вводим его порядковый номер в массиве `_symbols` класса `InfoPanel`. По этому номеру мы получаем местоположение текстуры символа в `font.png` (столбец и строка).
+```c#
+    public class Symbol : Aim
+    {
+        public Symbol(int sym_number) 
+        {
+            mesh = new SymbolMesh(sym_number % 10, 9 - sym_number / 10);
+            pipeline = new Pipeline();
+
+            pipeline.SetScale(0.05f);
+        }
+
+        public override void OnDelete()
+        {
+            base.OnDelete();
+        }
+    }
+```
+
+## Класс SymbolMesh
+По полученным столбцу и строке мы для нашего символа получаем нужный кусочек текстуры `font.png`. 
+```c#
+    public class SymbolMesh : AimMesh
+    {
+        public SymbolMesh(int col, int raw)
+        {
+            SymbolArrayOfVertices.GetVertices(col, raw, out float[] vertices, out int[] indices);
+            Vertices = vertices;
+            Indices = indices;
+            texture = SymbolArrayOfVertices.texture;
+            pers_proj = pers_mat();
+
+            Load();
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+        }
+    }
+```
+
+## Класс SymbolArrayOfVertices
+В этом классе мы получаем VAO для нашего символа с помощью функции `GetVertices`. Так как изображение содержит 10 на 10 символов, то и `stepScale` равен 1/10.
+```c#
+    public static class SymbolArrayOfVertices
+    {
+        private static float[] cords = new float[]
+        {
+            //cords
+            -1, -1,  0,
+            -1,  1,  0,
+             1,  1,  0,
+             1, -1,  0
+        };
+
+        private static float stepScale = 0.1f;
+
+        private static int[] inds 
+        {
+            get
+            {
+                return new int[]
+                {
+                    0, 1, 3,
+                    1, 2, 3
+                };
+            }
+        }
+
+        public static void GetVertices(int col, int row, out float[] vertices, out int[] indices)
+        {
+            vertices = new float[20];
+
+            indices = inds;
+
+            float[] textures = new float[]
+            {
+                stepScale * col,                stepScale * row,
+                stepScale * col,                stepScale * row + stepScale,
+                stepScale * col + stepScale,    stepScale * row + stepScale,
+                stepScale * col + stepScale,    stepScale * row,
+            };
+
+            for (int i = 0; i < 4; i++)
+            {
+                vertices[i * 5] =     cords[i * 3];
+                vertices[i * 5 + 1] = cords[i * 3 + 1];
+                vertices[i * 5 + 2] = cords[i * 3 + 2];
+
+                vertices[i * 5 + 3] = textures[i * 2];
+                vertices[i * 5 + 4] = textures[i * 2 + 1];
+            }
+        }
+
+        public static Texture texture { get; private set; }
+
+        public static void LoadTexture(string path)
+        {
+            texture = Texture.Load(
+                path,
+                PixelInternalFormat.Rgba,
+                TextureUnit.Texture0,
+                false);
+        }
+    }
+```
+
+## Вывод строки
+В функции `OnLoad()` мы объявляем наш экран отладки на все 100 символов.
+```c#
+            Console.WriteLine("Загрузка шрифта...");
+            info = new InfoPanel(InfoPanel.FontType.FullSet);
+```
+В функции рендера загружаем в панель нашу строку. Пусть это будут положение камеры, средний FPS и текущее время.
+```c#
+            info.PutLineAndDraw(
+                "x: " + Math.Round(Camera.Pos.x)   + "\n" +
+                "y: " + Math.Round(Camera.Pos.y)   + "\n" +
+                "z: " + Math.Round(Camera.Pos.z)   + "\n" +
+                "FPS: " + Math.Round(fps_out)      + "\n" +
+                DateTime.Now );
+```
+
+## Результат
+![ip](https://github.com/galeevlxix/game_engine/blob/WorkingWithTheModel/screens/info_panel.gif)
