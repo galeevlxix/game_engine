@@ -42,8 +42,8 @@ namespace game_2.FileManagers
                 return;
             }
 
-            Vertices = Box.Vertices;
-            Indices = Box.Indices;
+            Vertices = BoxVertices.Vertices;
+            Indices = BoxVertices.Indices;
             Console.WriteLine("Unknown file format");
         }
 
@@ -248,6 +248,15 @@ namespace game_2.FileManagers
 
             vector3f t1 = v2 - v1;
             vector3f t2 = v3 - v1;
+
+            normal = vector3f.Cross(t1, t2);
+            normal.Normalize();
+        }
+
+        public static void CalcNormals(vector3f vertex1, vector3f vertex2, vector3f vertex3, out vector3f normal)
+        {
+            vector3f t1 = vertex2 - vertex1;
+            vector3f t2 = vertex3 - vertex1;
 
             normal = vector3f.Cross(t1, t2);
             normal.Normalize();

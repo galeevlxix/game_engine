@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace game_2.Storage
 {
-    public static class TntBlock
+    public static class TntBlockVertices
     {
         public static readonly float[] Vertices = new float[]
         {            //cords                 //textures    

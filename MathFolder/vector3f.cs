@@ -148,5 +148,9 @@ namespace game_2.MathFolder
             }
         }
 
+        public string ToStr()
+        {
+            return "x: " + x + "; y: " + y + "; z: " + z;
+        }
     }
 }

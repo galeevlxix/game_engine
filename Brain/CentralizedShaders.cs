@@ -12,11 +12,11 @@ namespace game_2.Brain
         public static Shader ObjectShader;
         public static Shader SkyBoxShader;
         public static Shader ScreenShader;
-
+        public static Shader MonochromeShader;
         public static void Load()
         {
             ObjectShader = new Shader(
-                ShaderLoader.LoadVertexShader(), 
+                ShaderLoader.LoadVertexShader(),
                 ShaderLoader.LoadFragmentShader());
             SkyBoxShader = new Shader(
                 ShaderLoader.LoadShader("C:\\Users\\Lenovo\\source\\repos\\game_2\\Shaders\\Skybox\\SkyboxVetexShader.hlsl"),
@@ -24,6 +24,9 @@ namespace game_2.Brain
             ScreenShader = new Shader(
                 ShaderLoader.LoadShader("C:\\Users\\Lenovo\\source\\repos\\game_2\\Shaders\\ScreenStatic\\ScreenStaticVertexShader.hlsl"),
                 ShaderLoader.LoadShader("C:\\Users\\Lenovo\\source\\repos\\game_2\\Shaders\\ScreenStatic\\ScreenStaticFragmentShader.hlsl"));
+            MonochromeShader = new Shader(
+                ShaderLoader.LoadShader("C:\\Users\\Lenovo\\source\\repos\\game_2\\Shaders\\MonochromeObject\\MonoVertexShader.hlsl"),
+                ShaderLoader.LoadShader("C:\\Users\\Lenovo\\source\\repos\\game_2\\Shaders\\MonochromeObject\\MonoFragmentShader.hlsl"));
         }
 
         public static void Dispose()
@@ -31,6 +34,7 @@ namespace game_2.Brain
             ObjectShader.Dispose();
             SkyBoxShader.Dispose();
             ScreenShader.Dispose();
+            MonochromeShader.Dispose();
         }
     }
 }

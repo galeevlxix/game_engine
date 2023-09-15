@@ -1,17 +1,16 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using game_2.Brain.ObjectFolder;
 using OpenTK.Mathematics;
-using game_2.Storage;
 
-namespace game_2.Brain.SkyBoxFolder
+namespace game_2.Brain.MonochromeObjectFolder
 {
-    public class SkyboxMesh : Mesh
+    public class MonochromeObjectMesh : Mesh
     {
-        public SkyboxMesh()
+        public MonochromeObjectMesh()
         {
-            Vertices = SkyboxVertices.Vertices;
-            Indices = SkyboxVertices.Indices;
-            texture = Texture.Load(SkyboxVertices.TexturePath);
+            Storage.SphereVertices.InitSegments(30);
+            Vertices = Storage.SphereVertices.GetVertices();
+            Indices = Storage.SphereVertices.GetIndices();
 
             Load();
         }
@@ -34,13 +33,9 @@ namespace game_2.Brain.SkyBoxFolder
             GL.BufferData(BufferTarget.ElementArrayBuffer, Indices.Length * sizeof(int), Indices, BufferUsageHint.StaticDraw);
 
             // Устанавливаем указатели атрибутов вершины
-            var location = CentralizedShaders.SkyBoxShader.GetAttribLocation("aPosition");
-            GL.VertexAttribPointer(location, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
+            int location = CentralizedShaders.MonochromeShader.GetAttribLocation("aPosition");
+            GL.VertexAttribPointer(location, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
             GL.EnableVertexAttribArray(location);
-
-            var texCordLocation = CentralizedShaders.SkyBoxShader.GetAttribLocation("aTexCoord");
-            GL.VertexAttribPointer(texCordLocation, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * sizeof(float));
-            GL.EnableVertexAttribArray(texCordLocation);
 
             // Развязываем VAO и VBO
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
@@ -49,10 +44,16 @@ namespace game_2.Brain.SkyBoxFolder
 
         public override void Draw(Matrix4 matrix)
         {
+            CentralizedShaders.MonochromeShader.setMatrices(matrix);
             GL.BindVertexArray(VAO);
-            UseTextures();
-            CentralizedShaders.SkyBoxShader.setMatrices(matrix, Camera.CameraRotation.ToOpenTK(), mPersProj.PersProjMatrix.ToOpenTK());
             GL.DrawElements(BeginMode.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
+        }
+
+        public override void Dispose()
+        {
+            GL.DeleteBuffer(VBO);
+            GL.DeleteBuffer(IBO);
+            GL.DeleteVertexArray(VAO);
         }
     }
 }

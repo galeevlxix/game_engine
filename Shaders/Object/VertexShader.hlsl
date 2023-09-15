@@ -17,6 +17,6 @@ void main()
 {        
 	texCoord = aTexCoord;
 	gl_Position = vec4(aPosition, 1.0) * mvp * campos * camrot * pers;
-	Normal0 = (vec4(aNormal, 0.0) * mvp).xyz;
+	Normal0 = normalize((vec4(aNormal, 0.0) * mvp).xyz);
 	Tangent0 = (vec4(aTangent, 0.0) * mvp).xyz;
 }

@@ -1,6 +1,6 @@
 ﻿namespace game_2.Storage
 {
-    public static class Table
+    public static class TableVertices
     {
         public static readonly float[] Vertices = new float[]
         {            //cords                 //textures    

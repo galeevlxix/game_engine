@@ -18,19 +18,19 @@ namespace game_2.Brain.ObjectFolder
         {
             if (g == 1)
             {
-                mesh = new Mesh(Box.Vertices, Box.Indices, Box.TexturePath);
+                mesh = new Mesh(BoxVertices.Vertices, BoxVertices.Indices, BoxVertices.TexturePath);
             }
             else if (g == 2)
             {
-                mesh = new Mesh(Floor.Vertices, Floor.Indices, Floor.TexturePath);
+                mesh = new Mesh(FloorVertices.Vertices, FloorVertices.Indices, FloorVertices.TexturePath);
             }
             else if (g == 3)
             {
-                mesh = new Mesh(TntBlock.Vertices, TntBlock.Indices, TntBlock.TexturePath);
+                mesh = new Mesh(TntBlockVertices.Vertices, TntBlockVertices.Indices, TntBlockVertices.TexturePath);
             }
             else if (g == 4)
             {
-                mesh = new Mesh(Table.Vertices, Table.Indices, Table.TexturePath);
+                mesh = new Mesh(TableVertices.Vertices, TableVertices.Indices, TableVertices.TexturePath);
             }
             else
             {

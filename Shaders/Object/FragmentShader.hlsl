@@ -5,20 +5,51 @@ in vec2 texCoord;
 in vec3 Normal0;
 in vec3 Tangent0;
 
-uniform sampler2D texture0;
-uniform sampler2D texture1;                                                                                      
+struct BaseLight
+{
+    vec3 Color;
+    float AmbientIntensity;
+    float DiffuseIntensity;
+};
+
+struct DirectionalLight
+{
+    vec3 Direction;
+    BaseLight Base;
+};
+
+struct Attenuation 
+{
+    float Constant;
+    float Linear;
+    float Exp;
+};
+
+struct PointLight
+{
+    BaseLight Base;
+    vec3 Position;
+    Attenuation Atten;
+};
+
+struct SpotLight
+{
+    PointLight Base;
+    vec3 Direction;
+    float Cuttoff;
+};
+
+uniform sampler2D gDiffuseMap;
+uniform sampler2D gNormalMap;
+
+uniform BaseLight gBaseLight;
+uniform DirectionalLight gDirectionalLight;
 
 void main() 
 { 
-    vec3 ambientLightIntensity = vec3(0.1, 0.1, 0.1);
-    vec3 sunLightIntensity = vec3(0.8, 0.8, 0.8);
-    vec3 sunLightDirection = normalize(vec3(10, 20, 10.0));
-
-    vec4 texel = mix(texture(texture0, texCoord), texture(texture1, texCoord), 0.2);
+    vec4 texel = texture(gDiffuseMap, texCoord);
 
     if (texel.a < 0.3) discard;
 
-    vec3 lightIntensity = ambientLightIntensity + sunLightIntensity * max(dot(Normal0, sunLightDirection), 0.0f);
-
-	outputColor = vec4(texel.rgb * lightIntensity, texel.a);
+	outputColor = texel * vec4(gBaseLight.Color, 1.0) * gBaseLight.AmbientIntensity;
 }             

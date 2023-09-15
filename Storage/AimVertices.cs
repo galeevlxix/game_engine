@@ -22,6 +22,6 @@ namespace game_2.Storage
             1, 2, 3,
         };
 
-        public static readonly string TexturePath = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Textures\\scope-png-background-image.png";
+        public static readonly string TexturePath = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Textures\\cross2.png";
     }
 }

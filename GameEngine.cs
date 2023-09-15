@@ -7,7 +7,9 @@ using OpenTK.Mathematics;
 using game_2.Brain.SkyBoxFolder;
 using game_2.Brain.AimFolder;
 using game_2.Brain.InfoPanelFolder;
-using System;
+using game_2.Brain.Lights;
+using game_2.Brain.MonochromeObjectFolder;
+using game_2.MathFolder;
 
 namespace game_2
 {
@@ -16,14 +18,16 @@ namespace game_2
         private bool isMouseDown;
         private bool loaded = false;
 
-        private ObjectArray Models;
-
         private int WindowsWidth;
         private int WindowsHeight;
 
-        Skybox skybox;
-        InfoPanel info;
-        Aim aim;
+        private ObjectArray Models;
+        private Skybox skybox;
+        private InfoPanel info;
+        private Aim aim;
+        private MonochromeObject monochrome;
+
+        LightingTechnique lightConfig;
 
         private readonly Color4 BackGroundColor;
 
@@ -39,7 +43,7 @@ namespace game_2
             GL.LoadBindings(binding);
             if (GLFW.Init())
             {
-                Console.WriteLine("Успешная инициализация!");
+                Console.WriteLine("Успешная инициализация GLFW!");
             }
         }
 
@@ -48,6 +52,8 @@ namespace game_2
         {
             base.OnLoad();
             GL.ClearColor(BackGroundColor);
+            GL.Enable(EnableCap.DepthTest);
+
             base.CursorGrabbed = true;
 
             ///////////////параметры игры
@@ -55,8 +61,6 @@ namespace game_2
             Console.WriteLine("Загрузка камеры...");
             Camera.InitCamera();
             Camera.SetCameraPosition(0, 3, 4);
-
-            Console.WriteLine();
 
             fps_out_list = new List<double>();
 
@@ -66,14 +70,29 @@ namespace game_2
             Console.WriteLine("Загрузка прицела...");
             aim = new Aim();
 
-            Console.WriteLine("Загрузка шрифта...");
-            info = new InfoPanel(InfoPanel.FontType.EnglishWithNumbersAndPunctuation);
-
             Console.WriteLine("Загрузка моделей...");
             Models = new ObjectArray();
 
             Console.WriteLine("Загрузка скайбокса...");
             skybox = new Skybox();
+
+            Console.WriteLine("Загрузка шрифта...");
+            info = new InfoPanel(InfoPanel.FontType.EnglishWithNumbers);
+
+            lightConfig = new LightingTechnique();
+
+            BaseLight baseLight = new BaseLight();
+            baseLight.Color = new vector3f(1, 1, 1);
+            baseLight.AmbientIntensity = 0.3f;
+
+            CentralizedShaders.ObjectShader.Use();
+            lightConfig.SetBaseLight(baseLight);
+
+            monochrome = new MonochromeObject(new vector3f(1, 1, 1), new vector3f(1, 1, 1));
+            monochrome.pipeline.SetScale(0.5f);
+            monochrome.pipeline.SetPosition(0, 4, 5);
+
+
 
             Console.WriteLine("Успешное завершение\n");
             loaded = true;
@@ -89,17 +108,19 @@ namespace game_2
         {
             base.OnRenderFrame(args);
 
+            // расчет среднего FPS
             fps_out_list.Add(1 / args.Time);
-
-            if(fps_out_list.Count % 100 == 0)
+            if (fps_out_list.Count % 100 == 0)
             {
                 fps_out = fps_out_list.Average();
                 fps_out_list.Clear();
             }
 
+            // управление камерой
             InputCallbacks(args.Time);
-
             Camera.OnRender((float)args.Time);
+
+            GL.Uniform3(CentralizedShaders.ObjectShader.GetUniformLocation("cTarget"), Camera.Target.x, Camera.Target.y, Camera.Target.z);
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
@@ -113,12 +134,10 @@ namespace game_2
 
             CentralizedShaders.ScreenShader.Use();
             aim.Draw();
-            info.PutLineAndDraw(
-                "x: " + Math.Round(Camera.Pos.x)   + "\n" +
-                "y: " + Math.Round(Camera.Pos.y)   + "\n" +
-                "z: " + Math.Round(Camera.Pos.z)   + "\n" +
-                "FPS: " + Math.Round(fps_out)      + "\n" +
-                DateTime.Now );
+            info.PutLineAndDraw( Math.Round(fps_out) + "fps" );
+
+            CentralizedShaders.MonochromeShader.Use();
+            monochrome.Draw();
 
             SwapBuffers();
             GLFW.PollEvents();
@@ -142,16 +161,6 @@ namespace game_2
             }
             Camera.OnMouse(-MouseState.Delta.X, -MouseState.Delta.Y);
             Camera.OnKeyboard(KeyboardState, (float)Time);
-        }
-
-        protected override void OnKeyDown(KeyboardKeyEventArgs e)
-        {
-            
-        }
-
-        protected override void OnKeyUp(KeyboardKeyEventArgs e)
-        {
-
         }
 
         // Callbacks

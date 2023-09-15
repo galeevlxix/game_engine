@@ -22,5 +22,20 @@ namespace game_2.MathFolder
             x = 0;
             y = 0;
         }
+
+        public static vector2f Zero
+        {
+            get
+            {
+                return new vector2f(0, 0);
+            }
+        }
+        public static vector2f One
+        {
+            get
+            {
+                return new vector2f(1, 1);
+            }
+        }
     }
 }

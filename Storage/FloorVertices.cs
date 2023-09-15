@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace game_2.Storage
 {
-    public class Floor
+    public class FloorVertices
     {
         public static readonly float[] Vertices = new float[]
         {   //cords     //textures  //normals

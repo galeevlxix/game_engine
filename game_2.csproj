@@ -15,6 +15,7 @@
     <PackageReference Include="OpenTK.Windowing.Common" Version="4.1.0" />
     <PackageReference Include="OpenTK.Windowing.Desktop" Version="4.1.0" />
     <PackageReference Include="StbImageSharp" Version="2.27.13" />
+    <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>

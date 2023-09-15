@@ -1,6 +1,6 @@
 ﻿namespace game_2.Storage
 {
-    public static class Triangles
+    public static class TrianglesVertices
     {
         public static readonly float[] Vertices =
         {

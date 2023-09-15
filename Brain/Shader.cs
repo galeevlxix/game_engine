@@ -1,4 +1,5 @@
-﻿using OpenTK.Graphics.OpenGL4;
+﻿using game_2.MathFolder;
+using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 
 namespace game_2.Brain
@@ -125,6 +126,16 @@ namespace game_2.Brain
             GL.Uniform1(_uniformLocations[name], data);
         }
 
+        public void setFloat(string name, float data)
+        {
+            GL.Uniform1(_uniformLocations[name], data);
+        }
+        
+        public void setVector3(string name, vector3f data)
+        {
+            GL.Uniform3(_uniformLocations[name], data.x, data.y, data.z);
+        }
+
         public void Use() => GL.UseProgram(Handle);
 
         private bool disposedValue = false;
@@ -157,6 +168,11 @@ namespace game_2.Brain
         public int GetAttribLocation(string attribName)
         {
             return GL.GetAttribLocation(Handle, attribName);
+        }
+
+        public int GetUniformLocation(string uniformName)
+        {
+            return GL.GetUniformLocation(Handle, uniformName);
         }
     }
 }

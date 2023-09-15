@@ -18,9 +18,9 @@ namespace game_2.Brain.ObjectFolder
 
         public Mesh()
         {
-            Vertices = Box.Vertices;
-            Indices = Box.Indices;
-            texture = Texture.Load(Box.TexturePath);
+            Vertices = BoxVertices.Vertices;
+            Indices = BoxVertices.Indices;
+            texture = Texture.Load(BoxVertices.TexturePath);
 
             Load();
         }
@@ -77,8 +77,6 @@ namespace game_2.Brain.ObjectFolder
             // Развязываем VAO и VBO
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
             GL.BindVertexArray(0);
-
-            GL.Enable(EnableCap.DepthTest);
         }
 
         public virtual void Draw(Matrix4 matrix)
