@@ -3,7 +3,7 @@ out vec4 outputColor;
 
 in vec2 texCoord;
 in vec3 Normal0;
-in vec3 Tangent0;
+in vec3 WorldPos0;
 
 struct BaseLight
 {
@@ -40,10 +40,13 @@ struct SpotLight
 };
 
 uniform sampler2D gDiffuseMap;
-uniform sampler2D gNormalMap;
 
 uniform BaseLight gBaseLight;
 uniform DirectionalLight gDirectionalLight;
+
+uniform vec3 gCameraPos;
+uniform float gMatSpecularIntensity;
+uniform float gMatSpecularPower;
 
 void main() 
 { 
@@ -55,7 +58,8 @@ void main()
 
     float DiffuseFactor = dot(Normal0, -gDirectionalLight.Direction);
 
-    vec4 DiffuseColor;
+    vec4 DiffuseColor = vec4(0, 0, 0, 0);
+    vec4 SpecularColor = vec4(0, 0, 0, 0);
 
     if (DiffuseFactor > 0)
     {
@@ -63,11 +67,19 @@ void main()
             vec4(gDirectionalLight.Base.Color, 1.0) * 
             gDirectionalLight.Base.DiffuseIntensity *
             DiffuseFactor;
-    }
-    else
-    {
-        DiffuseColor = vec4(0, 0, 0, 0);
+
+        vec3 VertexToEye = normalize(gCameraPos - WorldPos0);
+        vec3 LightReflect = normalize(reflect(gDirectionalLight.Direction, Normal0));
+        float SpecularFactor = dot(VertexToEye, LightReflect);
+        SpecularFactor = pow(SpecularFactor, gMatSpecularPower);
+
+        if (SpecularFactor > 0) {
+            SpecularColor = 
+                vec4(gDirectionalLight.Base.Color, 1.0f) * 
+                gMatSpecularIntensity *
+                SpecularFactor;
+        }
     }
 
-	outputColor = texel * (AmbientColor + DiffuseColor);
+	outputColor = texel * (AmbientColor + DiffuseColor + SpecularColor);
 }             

@@ -85,20 +85,19 @@ namespace game_2
             Console.WriteLine("Загрузка света...");
             monochrome = new MonochromeObject(new vector3f(1, 1, 1), new vector3f(1, 1, 1));
             monochrome.pipeline.SetScale(0.5f);
-            monochrome.pipeline.SetPosition(0, 4, 5);
+            monochrome.pipeline.SetPosition(-3, 2, 0);
 
             lightConfig = new LightingTechnique();
 
             baseLight = new BaseLight();
             baseLight.Color = vector3f.One;
-            baseLight.AmbientIntensity = 0.2f;
-            
+            baseLight.AmbientIntensity = 0.2f;            
             lightConfig.SetBaseLight(baseLight);
 
             directionalLight = new DirectionalLight();
-            directionalLight.BaseLight.Color = vector3f.One;
+            directionalLight.BaseLight.Color = new vector3f(0.602f, 0.102f, 0.153f);
             directionalLight.BaseLight.DiffuseIntensity = 0.6f;
-            directionalLight.Direction = new vector3f(1, -0.7f, -1);
+            directionalLight.Direction = new vector3f(-1, -0.2f, 0);
             lightConfig.SetDirectionalLight(directionalLight);
 
             Console.WriteLine("Успешное завершение\n");
@@ -108,10 +107,11 @@ namespace game_2
         List<double> fps_out_list;
         double fps_out = 0;
 
+        float counter = 0;
+
         // Примерно deltaTime = 0.002s
         // Примерно deltaTime = 0,0016s при IsMultiThreaded = true
         // Рендер окна
-
         protected override void OnRenderFrame(FrameEventArgs args)
         {
             base.OnRenderFrame(args);
@@ -145,7 +145,20 @@ namespace game_2
             //info.PutLineAndDraw( Math.Round(fps_out) + "fps" );
 
             CentralizedShaders.MonochromeShader.Use();
+
+            float dt = (float)args.Time * 2;
+
+            counter += dt;
+            if (counter >= 2 * math3d.PI)
+            {
+                counter = 0;
+            }
+
+            monochrome.pipeline.MoveX(math3d.sin(counter) * 3, dt);
+            monochrome.pipeline.MoveZ(-math3d.cos(counter) * 3, dt);
             monochrome.Draw();
+
+            lightConfig.SetSpecular(Camera.Pos, 4, 64);
 
             SwapBuffers();
             GLFW.PollEvents();
@@ -182,6 +195,7 @@ namespace game_2
         {
             base.OnMouseUp(e);
             if (isMouseDown && e.Button == MouseButton.Button1) isMouseDown = false;
+            
         }
 
         protected override void OnResize(ResizeEventArgs e)

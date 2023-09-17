@@ -1,17 +1,23 @@
 ﻿using game_2.MathFolder;
 using OpenTK.Graphics.OpenGL4;
+using System.Drawing;
 
 namespace game_2.Brain.Lights
 {
     public class LightingTechnique
     {
-        BaseLightLocations _baseLightLocations;
-        DirectionalLightLocations _directionalLightLocations;
+        private BaseLightLocations _baseLightLocations;
+        private DirectionalLightLocations _directionalLightLocations;
+
+        int _cameraPositionLocation;
+        int _matSpecularIntensityLocation;
+        int _matSpecularPowerLocation;
 
         public LightingTechnique()
         {
             _baseLightLocations = new BaseLightLocations();
             Init();
+            SetDefaultValues();
         }
 
         private void Init()
@@ -25,8 +31,34 @@ namespace game_2.Brain.Lights
             _directionalLightLocations.BaseLightLocations.AmbientIntensity = CentralizedShaders.ObjectShader.GetUniformLocation("gDirectionalLight.Base.AmbientIntensity");
             _directionalLightLocations.BaseLightLocations.DiffuseIntensity = CentralizedShaders.ObjectShader.GetUniformLocation("gDirectionalLight.Base.DiffuseIntensity");
             _directionalLightLocations.Direction = CentralizedShaders.ObjectShader.GetUniformLocation("gDirectionalLight.Direction");
+
+            //specular
+            _cameraPositionLocation = CentralizedShaders.ObjectShader.GetUniformLocation("gCameraPos");
+            _matSpecularIntensityLocation = CentralizedShaders.ObjectShader.GetUniformLocation("gMatSpecularIntensity");
+            _matSpecularPowerLocation = CentralizedShaders.ObjectShader.GetUniformLocation("gMatSpecularPower");
         }
 
+        private void SetDefaultValues()
+        {
+            Use();
+
+            //baseLight
+            GL.Uniform3(_baseLightLocations.Color, 0, 0, 0);
+            GL.Uniform1(_baseLightLocations.AmbientIntensity, 0);
+
+            //dirLight
+            GL.Uniform3(_directionalLightLocations.BaseLightLocations.Color, 0, 0, 0);
+            GL.Uniform1(_directionalLightLocations.BaseLightLocations.AmbientIntensity, 0);
+            GL.Uniform1(_directionalLightLocations.BaseLightLocations.DiffuseIntensity, 0);
+            GL.Uniform3(_directionalLightLocations.Direction, 0, 0, 0);
+
+            //specular
+            GL.Uniform3(_cameraPositionLocation, 0, 0, 0);
+            GL.Uniform1(_matSpecularIntensityLocation, 0);
+            GL.Uniform1(_matSpecularPowerLocation, 0);
+        }
+
+        //baseLight
         public void SetBaseLight(BaseLight baseLight)
         {
             Use();
@@ -41,6 +73,7 @@ namespace game_2.Brain.Lights
             GL.Uniform1(_baseLightLocations.AmbientIntensity, AmbientIntensity);
         }
 
+        //directionalLight
         public void SetDirectionalLight(DirectionalLight directionalLight)
         {
             Use();
@@ -73,6 +106,33 @@ namespace game_2.Brain.Lights
                 Direction.x,
                 Direction.y,
                 Direction.z);
+        }
+
+        //specular
+        public void SetSpecular(vector3f Position, float SpecularIntensity, float SpecularPower)
+        {
+            Use();
+            GL.Uniform3(_cameraPositionLocation, Position.x, Position.x, Position.z);
+            GL.Uniform1(_matSpecularIntensityLocation, SpecularIntensity);
+            GL.Uniform1(_matSpecularPowerLocation, SpecularPower);
+        }
+
+        public void SetCameraPosition(vector3f Position)
+        {
+            Use();
+            GL.Uniform3(_cameraPositionLocation, Position.x, Position.x, Position.z);
+        }
+
+        public void SetMatSpecularIntensity(float SpecularIntensity)
+        {
+            Use();
+            GL.Uniform1(_matSpecularIntensityLocation, SpecularIntensity);
+        }
+
+        public void SetMatSpecularPower(float SpecularPower)
+        {
+            Use();
+            GL.Uniform1(_matSpecularPowerLocation, SpecularPower);
         }
 
         private void Use() => CentralizedShaders.ObjectShader.Use();

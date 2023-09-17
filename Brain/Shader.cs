@@ -95,24 +95,24 @@ namespace game_2.Brain
             setMatrices(m, c_pos, c_rot, p);
         }
 
-        public void setMatrices(Matrix4 mvp, Matrix4 c_pos, Matrix4 c_rot, Matrix4 p)
+        public void setMatrices(Matrix4 world, Matrix4 c_pos, Matrix4 c_rot, Matrix4 p)
         {
-            setMatrix("mvp", mvp);
+            setMatrix("world", world);
             setMatrix("pers", p);
             setMatrix("campos", c_pos);
             setMatrix("camrot", c_rot);
         }
 
-        public void setMatrices(Matrix4 mvp, Matrix4 c_rot, Matrix4 p)
+        public void setMatrices(Matrix4 world, Matrix4 c_rot, Matrix4 p)
         {
-            setMatrix("mvp", mvp);
+            setMatrix("world", world);
             setMatrix("pers", p);
             setMatrix("camrot", c_rot);
         }
 
-        public void setMatrices(Matrix4 mvp, Matrix4 p)
+        public void setMatrices(Matrix4 world, Matrix4 p)
         {
-            setMatrix("mvp", mvp);
+            setMatrix("world", world);
             setMatrix("pers", p);
         }
 
