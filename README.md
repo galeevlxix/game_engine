@@ -14,7 +14,8 @@
 [11. DeltaTime](#s12)  
 [12. Скайбокс и прицел](#s13)  
 [13. Загрузка моделей через Assimp](#s14)  
-[14. Информационная панель](#s15)
+[14. Информационная панель](#s15)  
+[15. Свет: окружающее освещение, рассеянное освещение, отраженный свет](#s16)
 
 <a name="s1"></a>
 # Первые шаги и треугольник 
@@ -3201,3 +3202,382 @@ void main()
 
 ## Результат
 ![ip](https://github.com/galeevlxix/game_engine/blob/WorkingWithTheModel/screens/info_panel.gif)
+
+<a name="s16"></a>
+# Свет: окружающий, рассеянный, отраженный
+## Окружающий свет
+### Структура BaseLight
+```c#
+﻿using game_2.MathFolder;
+
+namespace game_2.Brain.Lights
+{
+    public struct BaseLight
+    {
+        public vector3f Color;
+        public float AmbientIntensity;
+        public float DiffuseIntensity;
+
+        public BaseLight(vector3f Color, float AmbientIntensity, float DiffuseIntensity)
+        {
+            this.Color = Color;
+            this.AmbientIntensity = AmbientIntensity;
+            this.DiffuseIntensity = DiffuseIntensity;
+        }
+
+        public BaseLight()
+        {
+            Color = vector3f.Zero;
+            AmbientIntensity = 0f;
+            DiffuseIntensity = 0f;
+        }
+    }
+
+    public struct BaseLightLocations
+    {
+        public int Color;
+        public int AmbientIntensity;
+        public int DiffuseIntensity;
+    }
+}
+```
+### Класс LightingTechnique
+```c#
+public class LightingTechnique
+    {
+        BaseLightLocations _baseLightLocations;
+
+        public LightingTechnique()
+        {
+            _baseLightLocations = new BaseLightLocations();
+            Init();
+        }
+
+        private void Init()
+        {
+            //baseLight
+            _baseLightLocations.Color = CentralizedShaders.ObjectShader.GetUniformLocation("gBaseLight.Color");
+            _baseLightLocations.AmbientIntensity = CentralizedShaders.ObjectShader.GetUniformLocation("gBaseLight.AmbientIntensity");
+        }
+
+        public void SetBaseLight(BaseLight baseLight)
+        {
+            GL.Uniform3(_baseLightLocations.Color, baseLight.Color.x, baseLight.Color.y, baseLight.Color.z);
+            GL.Uniform1(_baseLightLocations.AmbientIntensity, baseLight.AmbientIntensity);
+        }
+
+        public void SetBaseLight(vector3f Color, float AmbientIntensity)
+        {
+            GL.Uniform3(_baseLightLocations.Color, Color.x, Color.y, Color.z);
+            GL.Uniform1(_baseLightLocations.AmbientIntensity, AmbientIntensity);
+        }
+    }
+```
+### Изменения во фрагментном шейдере
+```hlsl
+#version 330
+out vec4 outputColor;
+
+in vec2 texCoord;
+in vec3 Normal0;
+in vec3 Tangent0;
+
+struct BaseLight
+{
+    vec3 Color;
+    float AmbientIntensity;
+    float DiffuseIntensity;
+};
+
+uniform sampler2D gDiffuseMap;
+uniform BaseLight gBaseLight;
+
+void main() 
+{ 
+    vec4 texel = texture(gDiffuseMap, texCoord);
+
+    if (texel.a < 0.3) discard;
+
+	outputColor = texel * vec4(gBaseLight.Color, 1.0) * gBaseLight.AmbientIntensity;
+}
+```
+### Включение в движке
+```c#
+	protected override void OnLoad() {
+		. . .
+            lightConfig = new LightingTechnique();
+
+            BaseLight baseLight = new BaseLight();
+            baseLight.Color = new vector3f(1, 1, 1);
+            baseLight.AmbientIntensity = 0.3f;
+
+            CentralizedShaders.ObjectShader.Use();
+            lightConfig.SetBaseLight(baseLight);
+		. . .
+	}
+```
+## Рассеянный свет
+### Структура DirectionalLight
+```c#
+﻿using game_2.MathFolder;
+
+namespace game_2.Brain.Lights
+{
+    public struct DirectionalLight
+    {
+        public vector3f Direction;
+        public BaseLight BaseLight;
+        public DirectionalLight(vector3f Color, float AmbientIntensity, float DiffuseIntensity, vector3f Direction)
+        {
+            this.BaseLight = new BaseLight(Color, AmbientIntensity, DiffuseIntensity);
+            this.Direction = Direction;
+        }
+
+        public DirectionalLight(BaseLight BaseLight, vector3f Direction)
+        {
+            this.BaseLight = BaseLight;
+            this.Direction = Direction;
+        }
+
+        public DirectionalLight()
+        {
+            BaseLight = new BaseLight();
+            Direction = vector3f.Zero;
+        }
+    }
+
+    public struct DirectionalLightLocations
+    {
+        public BaseLightLocations BaseLightLocations;
+        public int Direction;
+    }
+}
+```
+### Изменения в классе LightingTechnique
+```c#
+        private void Init()
+        {
+		. . .            
+            //dirLight
+            _directionalLightLocations.BaseLightLocations.Color = CentralizedShaders.ObjectShader.GetUniformLocation("gDirectionalLight.Base.Color");
+            _directionalLightLocations.BaseLightLocations.AmbientIntensity = CentralizedShaders.ObjectShader.GetUniformLocation("gDirectionalLight.Base.AmbientIntensity");
+            _directionalLightLocations.BaseLightLocations.DiffuseIntensity = CentralizedShaders.ObjectShader.GetUniformLocation("gDirectionalLight.Base.DiffuseIntensity");
+            _directionalLightLocations.Direction = CentralizedShaders.ObjectShader.GetUniformLocation("gDirectionalLight.Direction");
+		. . .
+        }
+```
+```c#
+	. . .
+        public void SetDirectionalLight(DirectionalLight directionalLight)
+        {
+            Use();
+            GL.Uniform3(_directionalLightLocations.BaseLightLocations.Color, 
+                directionalLight.BaseLight.Color.x, 
+                directionalLight.BaseLight.Color.y, 
+                directionalLight.BaseLight.Color.z);
+            GL.Uniform1(_directionalLightLocations.BaseLightLocations.AmbientIntensity, 
+                directionalLight.BaseLight.AmbientIntensity);
+            GL.Uniform1(_directionalLightLocations.BaseLightLocations.DiffuseIntensity,
+                directionalLight.BaseLight.DiffuseIntensity);
+            GL.Uniform3(_directionalLightLocations.Direction,
+                directionalLight.Direction.x,
+                directionalLight.Direction.y,
+                directionalLight.Direction.z);
+        }
+
+        public void SetDirectionalLight(vector3f Color, float AmbientIntensity, float DiffuseIntensity ,vector3f Direction)
+        {
+            Use();
+            GL.Uniform3(_directionalLightLocations.BaseLightLocations.Color,
+                Color.x,
+                Color.y,
+                Color.z);
+            GL.Uniform1(_directionalLightLocations.BaseLightLocations.AmbientIntensity,
+                AmbientIntensity);
+            GL.Uniform1(_directionalLightLocations.BaseLightLocations.DiffuseIntensity,
+                DiffuseIntensity);
+            GL.Uniform3(_directionalLightLocations.Direction,
+                Direction.x,
+                Direction.y,
+                Direction.z);
+        }
+
+        private void Use() => CentralizedShaders.ObjectShader.Use();
+	. . .
+```
+### Изменения во фрагментном шейдере
+```hlsl
+. . .
+struct DirectionalLight
+{
+    vec3 Direction;
+    BaseLight Base;
+};
+uniform DirectionalLight gDirectionalLight;
+. . .
+```
+```hlsl
+. . .
+void main() 
+{ 
+    vec4 texel = texture(gDiffuseMap, texCoord);
+
+    if (texel.a < 0.3) discard;
+
+    vec4 AmbientColor = vec4(gBaseLight.Color, 1.0) * gBaseLight.AmbientIntensity;
+
+    float DiffuseFactor = dot(Normal0, -gDirectionalLight.Direction);
+
+    vec4 DiffuseColor;
+
+    if (DiffuseFactor > 0)
+    {
+        DiffuseColor = 
+            vec4(gDirectionalLight.Base.Color, 1.0) * 
+            gDirectionalLight.Base.DiffuseIntensity *
+            DiffuseFactor;
+    }
+    else
+    {
+        DiffuseColor = vec4(0, 0, 0, 0);
+    }
+
+	outputColor = texel * (AmbientColor + DiffuseColor);
+}
+. . .
+```
+### Включение в движке
+```c#
+        // Загрузка окна
+        protected override void OnLoad()
+        {
+		. . .
+            directionalLight = new DirectionalLight();
+            directionalLight.BaseLight.Color = vector3f.One;
+            directionalLight.BaseLight.DiffuseIntensity = 0.6f;
+            directionalLight.Direction = new vector3f(1, -0.7f, -1);
+            lightConfig.SetDirectionalLight(directionalLight);
+ 		. . .
+        }
+```
+## Отраженный свет
+### Изменения в классе LightingTechnique
+```c#
+    public class LightingTechnique
+    {
+	. . .
+        int _cameraPositionLocation;
+        int _matSpecularIntensityLocation;
+        int _matSpecularPowerLocation;
+	. . .
+```
+```c#
+        private void Init()
+        {
+		. . .
+            //specular
+            _cameraPositionLocation = CentralizedShaders.ObjectShader.GetUniformLocation("gCameraPos");
+            _matSpecularIntensityLocation = CentralizedShaders.ObjectShader.GetUniformLocation("gMatSpecularIntensity");
+            _matSpecularPowerLocation = CentralizedShaders.ObjectShader.GetUniformLocation("gMatSpecularPower");
+        }
+```
+```c#
+	. . .
+        //specular
+        public void SetSpecular(vector3f Position, float SpecularIntensity, float SpecularPower)
+        {
+            Use();
+            GL.Uniform3(_cameraPositionLocation, Position.x, Position.x, Position.z);
+            GL.Uniform1(_matSpecularIntensityLocation, SpecularIntensity);
+            GL.Uniform1(_matSpecularPowerLocation, SpecularPower);
+        }
+
+        public void SetCameraPosition(vector3f Position)
+        {
+            Use();
+            GL.Uniform3(_cameraPositionLocation, Position.x, Position.x, Position.z);
+        }
+
+        public void SetMatSpecularIntensity(float SpecularIntensity)
+        {
+            Use();
+            GL.Uniform1(_matSpecularIntensityLocation, SpecularIntensity);
+        }
+
+        public void SetMatSpecularPower(float SpecularPower)
+        {
+            Use();
+            GL.Uniform1(_matSpecularPowerLocation, SpecularPower);
+        }
+	. . .
+```
+### 
+```hlsl
+. . .
+out vec3 WorldPos0;
+. . .
+void main()                                            
+{        
+	. . .
+	WorldPos0 = (vec4(aPosition, 1.0) * world).xyz;
+}
+```
+### Изменения во фрагментном шейдере
+```hlsl
+...
+in vec3 WorldPos0;
+uniform vec3 gCameraPos;
+uniform float gMatSpecularIntensity;
+uniform float gMatSpecularPower;
+...
+```
+```hlsl
+void main() 
+{ 
+    vec4 texel = texture(gDiffuseMap, texCoord);
+
+    if (texel.a < 0.3) discard;
+
+    vec4 AmbientColor = vec4(gBaseLight.Color, 1.0) * gBaseLight.AmbientIntensity;
+
+    float DiffuseFactor = dot(Normal0, -gDirectionalLight.Direction);
+
+    vec4 DiffuseColor = vec4(0, 0, 0, 0);
+    vec4 SpecularColor = vec4(0, 0, 0, 0);
+
+    if (DiffuseFactor > 0)
+    {
+        DiffuseColor = 
+            vec4(gDirectionalLight.Base.Color, 1.0) * 
+            gDirectionalLight.Base.DiffuseIntensity *
+            DiffuseFactor;
+
+        vec3 VertexToEye = normalize(gCameraPos - WorldPos0);
+        vec3 LightReflect = normalize(reflect(gDirectionalLight.Direction, Normal0));
+        float SpecularFactor = dot(VertexToEye, LightReflect);
+        SpecularFactor = pow(SpecularFactor, gMatSpecularPower);
+
+        if (SpecularFactor > 0) {
+            SpecularColor = 
+                vec4(gDirectionalLight.Base.Color, 1.0f) * 
+                gMatSpecularIntensity *
+                SpecularFactor;
+        }
+    }
+    outputColor = texel * (AmbientColor + DiffuseColor + SpecularColor);
+}
+```
+### Включение в движке
+```c#
+        // Рендер окна
+        protected override void OnRenderFrame(FrameEventArgs args)
+        {
+		. . .
+            lightConfig.SetSpecular(Camera.Pos, 4, 64);
+		. . .
+	}
+```
+## Результаты 
+![difli](https://github.com/galeevlxix/game_engine/blob/Light/screens/diflights.jpg)  
+
+![spec](https://github.com/galeevlxix/game_engine/blob/Light/screens/specularlight.jpg)
