@@ -7,20 +7,6 @@ namespace game_2.Brain.Lights
         public vector3f Color;
         public float AmbientIntensity;
         public float DiffuseIntensity;
-
-        public BaseLight(vector3f Color, float AmbientIntensity, float DiffuseIntensity)
-        {
-            this.Color = Color;
-            this.AmbientIntensity = AmbientIntensity;
-            this.DiffuseIntensity = DiffuseIntensity;
-        }
-
-        public BaseLight()
-        {
-            Color = vector3f.Zero;
-            AmbientIntensity = 0f;
-            DiffuseIntensity = 0f;
-        }
     }
 
     public struct BaseLightLocations

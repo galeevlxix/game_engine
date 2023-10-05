@@ -11,6 +11,7 @@ namespace game_2
             NativeWindowSettings windowSettings = NativeWindowSettings.Default;
 
             windowSettings.WindowState = WindowState.Maximized;
+
             windowSettings.Title = "Game";
 
             settings.IsMultiThreaded = false;

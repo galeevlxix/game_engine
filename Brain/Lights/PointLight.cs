@@ -7,20 +7,6 @@ namespace game_2.Brain.Lights
         public vector3f Position;
         public BaseLight BaseLight;
         public Attenuation Attenuation;
-
-        public PointLight(vector3f Color, float AmbientIntensity, float DiffuseIntensity, vector3f Position, float Constant, float Linear, float Exp)
-        {
-            this.BaseLight = new BaseLight(Color, AmbientIntensity, DiffuseIntensity);
-            this.Position = Position;
-            this.Attenuation = new Attenuation(Constant, Linear, Exp);
-        }
-
-        public PointLight (BaseLight BaseLight, vector3f Position, Attenuation Attenuation)
-        {
-            this.BaseLight = BaseLight;
-            this.Position = Position;
-            this.Attenuation = Attenuation;
-        }
     }
 
     public struct Attenuation
@@ -28,13 +14,6 @@ namespace game_2.Brain.Lights
         public float Constant;
         public float Linear;
         public float Exp;
-
-        public Attenuation(float Constant, float Linear, float Exp)
-        {
-            this.Constant = Constant;
-            this.Linear = Linear;
-            this.Exp = Exp;
-        }
     }
 
     public struct AttenuationLocations

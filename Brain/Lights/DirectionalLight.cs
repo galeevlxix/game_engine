@@ -6,28 +6,11 @@ namespace game_2.Brain.Lights
     {
         public vector3f Direction;
         public BaseLight BaseLight;
-        public DirectionalLight(vector3f Color, float AmbientIntensity, float DiffuseIntensity, vector3f Direction)
-        {
-            this.BaseLight = new BaseLight(Color, AmbientIntensity, DiffuseIntensity);
-            this.Direction = Direction;
-        }
-
-        public DirectionalLight(BaseLight BaseLight, vector3f Direction)
-        {
-            this.BaseLight = BaseLight;
-            this.Direction = Direction;
-        }
-
-        public DirectionalLight()
-        {
-            BaseLight = new BaseLight();
-            Direction = vector3f.Zero;
-        }
     }
 
     public struct DirectionalLightLocations
     {
-        public BaseLightLocations BaseLightLocations;
+        public BaseLightLocations BaseLight;
         public int Direction;
     }
 }
