@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace game_2.Storage
+﻿namespace game_2.Storage
 {
     public static class AimVertices
     {

@@ -240,7 +240,7 @@ namespace game_2.FileManagers
             Indices = _modelInd.ToArray();
         }
 
-        private static void CalcNormals(List<float> vertex1, List<float> vertex2, List<float> vertex3, out vector3f normal)
+        public static void CalcNormals(List<float> vertex1, List<float> vertex2, List<float> vertex3, out vector3f normal)
         {
             vector3f v1 = new vector3f(vertex1[0], vertex1[1], vertex1[2]);
             vector3f v2 = new vector3f(vertex2[0], vertex2[1], vertex2[2]);

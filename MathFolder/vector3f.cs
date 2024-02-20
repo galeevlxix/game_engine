@@ -150,7 +150,7 @@ namespace game_2.MathFolder
 
         public string ToStr()
         {
-            return "x: " + x + "; y: " + y + "; z: " + z;
+            return "x: " + x.ToString("0.0") + "; y: " + y.ToString("0.0") + "; z: " + z.ToString("0.0");
         }
     }
 }

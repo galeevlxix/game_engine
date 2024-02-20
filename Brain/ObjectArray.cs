@@ -1,7 +1,6 @@
 ﻿using game_2.Brain.AssimpFolder;
 using game_2.Brain.ObjectFolder;
 using game_2.MathFolder;
-using System.Reflection;
 
 namespace game_2.Brain
 {
@@ -32,11 +31,7 @@ namespace game_2.Brain
         private void Init()
         {
             int BoxModel = 1;
-            int FloorModel = 2;
             int TntModel = 3;
-            int TableModel = 4;
-
-            int FieldWidth = 2;
 
             Add("monkey", new GameObj(ModelFolderPath + "obj_files\\monkey\\monkey.obj", TextureFolderPath + "DefTexture.png"));
             Add("box", new GameObj(BoxModel));
@@ -51,8 +46,7 @@ namespace game_2.Brain
             Add("mococo", new AssimpObject(ModelFolderPath + "fbx_files\\Mococo\\Mococo_pose.fbx"));
             Add("ball", new AssimpObject(ModelFolderPath + "obj_files\\Ball\\uploads_files_2222080_ball_obj.obj"));
 
-            Add("field", new FieldFolder.FieldObject(100, FieldFolder.FieldObject.FieldType.Crooked, 4));
-            Add("grass", new FieldFolder.FieldObject(5, FieldFolder.FieldObject.FieldType.Flat, 2, TextureFolderPath + "grass.png"));
+            Add("dust", new AssimpObject(ModelFolderPath + "obj_files\\de_dust\\source\\new_de_dust2.obj"));
 
             SetProperties();
         }
@@ -69,7 +63,7 @@ namespace game_2.Brain
 
             this["man"].pipeline.SetScale(5f);
             this["man"].pipeline.SetAngle(0, 0, 0);
-            this["man"].pipeline.SetPosition(3.5f, 0, -15);
+            this["man"].pipeline.SetPosition(-3.5f, 0, -15);
 
             this["tnt1"].pipeline.SetScale(1f);
             this["tnt1"].pipeline.SetAngle(0, 0, 0);
@@ -103,14 +97,13 @@ namespace game_2.Brain
             this["mococo"].pipeline.SetPosition(12, 0, -6);
             this["mococo"].pipeline.SetAngle(0, -90, 0);
 
-            this["field"].pipeline.SetPosition(0, -10, 0);
-            this["field"].pipeline.SetScale(2);
-
             this["ball"].pipeline.SetPosition(-7, 3, 7);
             this["ball"].pipeline.SetScale(10);
             this["ball"].pipeline.SetAngle(0, 90, 0);
 
-            this["grass"].pipeline.SetScale(8);
+            this["dust"].pipeline.SetScale(0.05f);
+            this["dust"].pipeline.SetAngle(90, 0, 0);
+            this["dust"].pipeline.SetPosition(-20, 0, 0);
         }
 
         float cube_speed = 10;
@@ -150,20 +143,7 @@ namespace game_2.Brain
                         this["box"].pipeline.SetPositionZ(-6f);
                 }
 
-/*            ball_position_speed += (float)deltaTime * 2;
-
-            if (ball_position_speed >= 2 * Math.PI)
-            {
-                ball_position_speed = 0;
-            }*/
-
             this["ball"].pipeline.Rotate(0, 0, ball_rotation_speed, deltaTime);
-            /*this["ball"].pipeline.SetPositionY(math3d.abs(math3d.sin(ball_position_speed) * 5) + 1f);
-            this["ball"].pipeline.SetPositionZ(math3d.cos(ball_position_speed) * 5 + 7);
-            counter += deltaTime;*/
-            /*if (counter >= 2 * Math.PI) 
-                counter = 0;*/
-            //this["man"].pipeline.Expand(math3d.sin((float)counter), deltaTime);
         }
 
         double counter = 0;

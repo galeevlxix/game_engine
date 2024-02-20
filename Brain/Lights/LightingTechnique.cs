@@ -1,10 +1,12 @@
-﻿using game_2.MathFolder;
+﻿using game_2.Brain.Lights.LightStructures;
+using game_2.MathFolder;
 using OpenTK.Graphics.OpenGL4;
 
 namespace game_2.Brain.Lights
 {
     public class LightingTechnique
     {
+        private BaseLightLocations _baseLightLocations;
         private DirectionalLightLocations _directionalLightLocations;
 
         int _cameraPositionLocation;
@@ -28,10 +30,13 @@ namespace game_2.Brain.Lights
 
         private void Init()
         {
+            //baseLight
+            _baseLightLocations.Color = CentralizedShaders.ObjectShader.GetUniformLocation("gBaseLight.Color");
+            _baseLightLocations.Intensity = CentralizedShaders.ObjectShader.GetUniformLocation("gBaseLight.Intensity");
+
             //dirLight
             _directionalLightLocations.BaseLight.Color = CentralizedShaders.ObjectShader.GetUniformLocation("gDirectionalLight.Base.Color");
-            _directionalLightLocations.BaseLight.AmbientIntensity = CentralizedShaders.ObjectShader.GetUniformLocation("gDirectionalLight.Base.AmbientIntensity");
-            _directionalLightLocations.BaseLight.DiffuseIntensity = CentralizedShaders.ObjectShader.GetUniformLocation("gDirectionalLight.Base.DiffuseIntensity");
+            _directionalLightLocations.BaseLight.Intensity = CentralizedShaders.ObjectShader.GetUniformLocation("gDirectionalLight.Base.Intensity");
             _directionalLightLocations.Direction = CentralizedShaders.ObjectShader.GetUniformLocation("gDirectionalLight.Direction");
 
             //specular
@@ -39,13 +44,12 @@ namespace game_2.Brain.Lights
             _matSpecularIntensityLocation = CentralizedShaders.ObjectShader.GetUniformLocation("gMatSpecularIntensity");
             _matSpecularPowerLocation = CentralizedShaders.ObjectShader.GetUniformLocation("gMatSpecularPower");
 
-            //pointlights
+            //pointLights
             _numPointLightsLocation = CentralizedShaders.ObjectShader.GetUniformLocation("gNumPointLights");
             for (int i = 0; i < MAX_POINT_LIGHTS; i++)
             {
                 _pointLightLocations[i].BaseLightLocations.Color = CentralizedShaders.ObjectShader.GetUniformLocation("gPointLights[" + i + "].Base.Color");
-                _pointLightLocations[i].BaseLightLocations.AmbientIntensity = CentralizedShaders.ObjectShader.GetUniformLocation("gPointLights[" + i + "].Base.AmbientIntensity");
-                _pointLightLocations[i].BaseLightLocations.DiffuseIntensity = CentralizedShaders.ObjectShader.GetUniformLocation("gPointLights[" + i + "].Base.DiffuseIntensity");
+                _pointLightLocations[i].BaseLightLocations.Intensity = CentralizedShaders.ObjectShader.GetUniformLocation("gPointLights[" + i + "].Base.Intensity");
                 _pointLightLocations[i].Position = CentralizedShaders.ObjectShader.GetUniformLocation("gPointLights[" + i +"].Position");
                 _pointLightLocations[i].Attenuation.Exp = CentralizedShaders.ObjectShader.GetUniformLocation("gPointLights[" + i + "].Atten.Exp");
                 _pointLightLocations[i].Attenuation.Linear = CentralizedShaders.ObjectShader.GetUniformLocation("gPointLights[" + i + "].Atten.Linear");
@@ -58,25 +62,28 @@ namespace game_2.Brain.Lights
             for (int i = 0; i < MAX_SPOT_LIGHTS; i++)
             {
                 _spotlightLocations[i].PointLightLocations.BaseLightLocations.Color = CentralizedShaders.ObjectShader.GetUniformLocation("gSpotLights[" + i + "].Base.Base.Color");
-                _spotlightLocations[i].PointLightLocations.BaseLightLocations.AmbientIntensity = CentralizedShaders.ObjectShader.GetUniformLocation("gSpotLights[" + i + "].Base.Base.AmbientIntensity");
-                _spotlightLocations[i].PointLightLocations.BaseLightLocations.DiffuseIntensity = CentralizedShaders.ObjectShader.GetUniformLocation("gSpotLights[" + i + "].Base.Base.DiffuseIntensity");
+                _spotlightLocations[i].PointLightLocations.BaseLightLocations.Intensity = CentralizedShaders.ObjectShader.GetUniformLocation("gSpotLights[" + i + "].Base.Base.Intensity");
                 _spotlightLocations[i].PointLightLocations.Position = CentralizedShaders.ObjectShader.GetUniformLocation("gSpotLights[" + i + "].Base.Position");
                 _spotlightLocations[i].PointLightLocations.Attenuation.Exp = CentralizedShaders.ObjectShader.GetUniformLocation("gSpotLights[" + i + "].Base.Atten.Exp");
                 _spotlightLocations[i].PointLightLocations.Attenuation.Constant = CentralizedShaders.ObjectShader.GetUniformLocation("gSpotLights[" + i + "].Base.Atten.Constant");
                 _spotlightLocations[i].PointLightLocations.Attenuation.Linear = CentralizedShaders.ObjectShader.GetUniformLocation("gSpotLights[" + i + "].Base.Atten.Linear");
                 _spotlightLocations[i].Direction = CentralizedShaders.ObjectShader.GetUniformLocation("gSpotLights[" + i + "].Direction");
-                _spotlightLocations[i].Cutoff = CentralizedShaders.ObjectShader.GetUniformLocation("gSpotLights[" + i + "].Cutoff");
+                _spotlightLocations[i].Cutoff1 = CentralizedShaders.ObjectShader.GetUniformLocation("gSpotLights[" + i + "].Cutoff1");
+                _spotlightLocations[i].Cutoff2 = CentralizedShaders.ObjectShader.GetUniformLocation("gSpotLights[" + i + "].Cutoff2");
             }
         }
 
-        private void SetDefaultValues()
+        //set null values to attributes
+        private void SetDefaultValues() 
         {
             Use();
+            //baseLight
+            GL.Uniform3(_baseLightLocations.Color, 0, 0, 0);
+            GL.Uniform1(_baseLightLocations.Intensity, 0);
 
             //dirLight
             GL.Uniform3(_directionalLightLocations.BaseLight.Color, 0, 0, 0);
-            GL.Uniform1(_directionalLightLocations.BaseLight.AmbientIntensity, 0);
-            GL.Uniform1(_directionalLightLocations.BaseLight.DiffuseIntensity, 0);
+            GL.Uniform1(_directionalLightLocations.BaseLight.Intensity, 0);
             GL.Uniform3(_directionalLightLocations.Direction, 0, 0, 0);
 
             //specular
@@ -90,8 +97,7 @@ namespace game_2.Brain.Lights
             for (int i = 0; i < MAX_POINT_LIGHTS; i++)
             {
                 GL.Uniform3(_pointLightLocations[i].BaseLightLocations.Color, 0, 0, 0);
-                GL.Uniform1(_pointLightLocations[i].BaseLightLocations.AmbientIntensity, 0);
-                GL.Uniform1(_pointLightLocations[i].BaseLightLocations.DiffuseIntensity, 0);
+                GL.Uniform1(_pointLightLocations[i].BaseLightLocations.Intensity, 0);
                 GL.Uniform3(_pointLightLocations[i].Position, 0, 0, 0);
                 GL.Uniform1(_pointLightLocations[i].Attenuation.Exp, 0);
                 GL.Uniform1(_pointLightLocations[i].Attenuation.Linear, 0);
@@ -103,15 +109,34 @@ namespace game_2.Brain.Lights
             for (int i = 0; i < MAX_SPOT_LIGHTS; i++)
             {
                 GL.Uniform3(_spotlightLocations[i].PointLightLocations.BaseLightLocations.Color, 0, 0, 0);
-                GL.Uniform1(_spotlightLocations[i].PointLightLocations.BaseLightLocations.AmbientIntensity, 0);
-                GL.Uniform1(_spotlightLocations[i].PointLightLocations.BaseLightLocations.DiffuseIntensity, 0);
+                GL.Uniform1(_spotlightLocations[i].PointLightLocations.BaseLightLocations.Intensity, 0);
                 GL.Uniform3(_spotlightLocations[i].PointLightLocations.Position, 0, 0, 0);
                 GL.Uniform1(_spotlightLocations[i].PointLightLocations.Attenuation.Exp, 0);
                 GL.Uniform1(_spotlightLocations[i].PointLightLocations.Attenuation.Constant, 0);
                 GL.Uniform1(_spotlightLocations[i].PointLightLocations.Attenuation.Linear, 0);
                 GL.Uniform3(_spotlightLocations[i].Direction, 0, 0, 0);
-                GL.Uniform1(_spotlightLocations[i].Cutoff, 0);
+                GL.Uniform1(_spotlightLocations[i].Cutoff1, 0);
+                GL.Uniform1(_spotlightLocations[i].Cutoff2, 0);
             }
+        }
+
+        //baseLight
+        public void SetBaseLight(BaseLight baseLight)
+        {
+            Use();
+            GL.Uniform3(_baseLightLocations.Color, baseLight.Color.x, baseLight.Color.y, baseLight.Color.z);
+            GL.Uniform1(_baseLightLocations.Intensity, baseLight.Intensity);
+        }
+
+        public void SetBaseLightColor(vector3f color)
+        {
+            Use();
+            GL.Uniform3(_baseLightLocations.Color, color.x, color.y, color.z);
+        }
+
+        public void SetBaseLightIntensity(float intensity)
+        {
+            GL.Uniform1(_baseLightLocations.Intensity, intensity);
         }
 
         //directionalLight
@@ -122,14 +147,36 @@ namespace game_2.Brain.Lights
                 directionalLight.BaseLight.Color.x, 
                 directionalLight.BaseLight.Color.y, 
                 directionalLight.BaseLight.Color.z);
-            GL.Uniform1(_directionalLightLocations.BaseLight.AmbientIntensity, 
-                directionalLight.BaseLight.AmbientIntensity);
-            GL.Uniform1(_directionalLightLocations.BaseLight.DiffuseIntensity,
-                directionalLight.BaseLight.DiffuseIntensity);
+            GL.Uniform1(_directionalLightLocations.BaseLight.Intensity, 
+                directionalLight.BaseLight.Intensity);
             GL.Uniform3(_directionalLightLocations.Direction,
                 directionalLight.Direction.x,
                 directionalLight.Direction.y,
                 directionalLight.Direction.z);
+        }
+
+        public void SetDirectionalLightColor(vector3f color)
+        {
+            Use();
+            GL.Uniform3(_directionalLightLocations.BaseLight.Color, color.x, color.y, color.z);
+        }
+
+        public void SetDirectionalLightIntensity(float intensity)
+        {
+            Use();
+            GL.Uniform1(_directionalLightLocations.BaseLight.Intensity, intensity);
+        }
+
+        public void SetDirectionalLightDirection(vector3f direction)
+        {
+            Use();
+            GL.Uniform3(_directionalLightLocations.Direction, direction.x, direction.y, direction.z);
+        }
+
+        public void SetDirectionalLightDirection(float x, float y, float z)
+        {
+            Use();
+            GL.Uniform3(_directionalLightLocations.Direction, x, y, z);
         }
 
         //specular
@@ -144,7 +191,7 @@ namespace game_2.Brain.Lights
         public void SetCameraPosition(vector3f Position)
         {
             Use();
-            GL.Uniform3(_cameraPositionLocation, Position.x, Position.x, Position.z);
+            GL.Uniform3(_cameraPositionLocation, Position.x, Position.y, Position.z);
         }
 
         public void SetMatSpecularIntensity(float SpecularIntensity)
@@ -174,11 +221,8 @@ namespace game_2.Brain.Lights
                     pointLights[i].BaseLight.Color.y, 
                     pointLights[i].BaseLight.Color.z);
                 GL.Uniform1(
-                    _pointLightLocations[i].BaseLightLocations.AmbientIntensity, 
-                    pointLights[i].BaseLight.AmbientIntensity);
-                GL.Uniform1(
-                    _pointLightLocations[i].BaseLightLocations.DiffuseIntensity, 
-                    pointLights[i].BaseLight.DiffuseIntensity);
+                    _pointLightLocations[i].BaseLightLocations.Intensity, 
+                    pointLights[i].BaseLight.Intensity);
                 GL.Uniform3(
                     _pointLightLocations[i].Position, 
                     pointLights[i].Position.x, 
@@ -196,6 +240,7 @@ namespace game_2.Brain.Lights
             }
         }
 
+        //spotlights
         public void SetSpotLights(Spotlight[] spotLights)
         {
             Use();
@@ -209,11 +254,8 @@ namespace game_2.Brain.Lights
                     spotLights[i].PointLight.BaseLight.Color.y, 
                     spotLights[i].PointLight.BaseLight.Color.z);
                 GL.Uniform1(
-                    _spotlightLocations[i].PointLightLocations.BaseLightLocations.AmbientIntensity,
-                    spotLights[i].PointLight.BaseLight.AmbientIntensity);
-                GL.Uniform1(
-                    _spotlightLocations[i].PointLightLocations.BaseLightLocations.DiffuseIntensity,
-                    spotLights[i].PointLight.BaseLight.DiffuseIntensity);
+                    _spotlightLocations[i].PointLightLocations.BaseLightLocations.Intensity,
+                    spotLights[i].PointLight.BaseLight.Intensity);
                 GL.Uniform3(
                     _spotlightLocations[i].PointLightLocations.Position,
                     spotLights[i].PointLight.Position.x,
@@ -234,8 +276,11 @@ namespace game_2.Brain.Lights
                     spotLights[i].Direction.y,
                     spotLights[i].Direction.z);
                 GL.Uniform1(
-                    _spotlightLocations[i].Cutoff,
-                    spotLights[i].Cutoff);
+                    _spotlightLocations[i].Cutoff1,
+                    spotLights[i].Cutoff1);
+                GL.Uniform1(
+                _spotlightLocations[i].Cutoff2,
+                spotLights[i].Cutoff2);
             }
         }
 

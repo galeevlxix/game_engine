@@ -15,6 +15,7 @@ namespace game_2.Brain.ObjectFolder
         protected int[] Indices { get; set; }
 
         protected Texture texture;
+        protected Material material;
 
         public Mesh()
         {

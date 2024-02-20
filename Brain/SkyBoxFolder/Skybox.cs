@@ -11,7 +11,7 @@ namespace game_2.Brain.SkyBoxFolder
 
             pipeline.SetPosition(Camera.Pos.x, Camera.Pos.y, Camera.Pos.z);
             pipeline.SetAngle(0, 0, 0);
-            pipeline.SetScale(100);
+            pipeline.SetScale(200);
         }
 
         public override void Draw()
