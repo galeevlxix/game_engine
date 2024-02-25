@@ -1,0 +1,35 @@
+# Blender 4.0.2 MTL File: 'Boxes.01.blend'
+# www.blender.org
+
+newmtl Large_Wooden_Box.01
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd Large_Wooden_Box.01_Diffuse.png
+map_Ns Large_Wooden_Box.01_Roughness.png
+map_Kn -bm 1.000000 Large_Wooden_Box.01_Normal.png
+
+newmtl Medium_Wooden_Box.01
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd Medium_Wooden_Box.01_Diffuse.png
+map_Ns Medium_Wooden_Box.01_Roughness.png
+map_Kn -bm 1.000000 Medium_Wooden_Box.01_Normal.png
+
+newmtl Small_Wooden_Box.01
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd Small_Wooden_Box.01_Diffuse.png
+map_Ns Small_Wooden_Box.01_Roughness.png
+map_Kn -bm 1.000000 Small_Wooden_Box.01_Normal.png

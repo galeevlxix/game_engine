@@ -13,7 +13,7 @@ namespace game_2.Brain.AssimpFolder
 
             Handle = GL.GenBuffer();
             Bind();
-            GL.BufferData(bufferTarget, data.Length * sizeof(TDataType), data.ToArray(), BufferUsageHint.StaticDraw);
+            GL.BufferData(bufferTarget, data.Length * sizeof(TDataType), data.ToArray(), BufferUsageHint.DynamicDraw);
         }
         public unsafe BufferObject(int amount, BufferTarget bufferTarget)
         {

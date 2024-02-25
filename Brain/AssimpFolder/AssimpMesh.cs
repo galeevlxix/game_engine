@@ -91,7 +91,7 @@ namespace game_2.Brain.AssimpFolder
 
             if (mesh.MaterialIndex >= 0)
             {
-                // Texturas
+                // Textures
                 Material material = scene.Materials[mesh.MaterialIndex];
                 texturesPaths = ProcessTextures(material.GetAllMaterialTextures());
             }

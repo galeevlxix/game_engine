@@ -8,13 +8,15 @@ using game_2.Brain.SkyBoxFolder;
 using game_2.Brain.AimFolder;
 using game_2.Brain.Lights;
 using game_2.Brain.InfoPanelFolder;
+using game_2.Brain.Compiler;
 
 namespace game_2
 {
     public class GameEngine : GameWindow
     {
         private bool isMouseDown;
-        private bool loaded = false;
+        private bool isLoaded = false;
+        private bool isFocused = true; 
 
         private int WindowsWidth;
         private int WindowsHeight;
@@ -72,13 +74,13 @@ namespace game_2
             skybox = new Skybox();
 
             Console.WriteLine("Загрузка шрифта...");
-            info = new InfoPanel(InfoPanel.FontType.EnglishWithNumbersAndPunctuation);
+            //info = new InfoPanel(InfoPanel.FontType.EnglishWithNumbersAndPunctuation);
 
             Console.WriteLine("Загрузка света...");
             LightningManager.Init();
 
             Console.WriteLine("Успешное завершение\n");
-            loaded = true;
+            isLoaded = true;
 
             await Task.Run(() => ConsoleCompiler.Run());
         }
@@ -89,6 +91,7 @@ namespace game_2
         // Рендер окна
         protected override void OnRenderFrame(FrameEventArgs args)
         {
+            //if (!isFocused) return;
             base.OnRenderFrame(args);
 
             // расчет среднего FPS
@@ -117,7 +120,7 @@ namespace game_2
 
             CentralizedShaders.ScreenShader.Use();
             aim.Draw();
-            info.PutLineAndDraw( Math.Round(fps_out) + "fps\n" + Camera.Target.ToStr() );
+            //info.PutLineAndDraw( Math.Round(fps_out) + "fps\n" + Camera.Pos.ToStr() );
 
             CentralizedShaders.MonochromeShader.Use();
 
@@ -171,7 +174,27 @@ namespace game_2
             GL.Viewport(0, 0, e.Width, e.Height);
             WindowsWidth = e.Width;
             WindowsHeight = e.Height;
-            if (loaded) mPersProj.ChangeWindowSize(WindowsWidth, WindowsHeight);
+            if (isLoaded) mPersProj.ChangeWindowSize(WindowsWidth, WindowsHeight);
+        }
+
+        protected override void OnMove(WindowPositionEventArgs e)
+        {
+            base.OnMove(e);
+            
+        }
+
+        protected override void OnFocusedChanged(FocusedChangedEventArgs e)
+        {
+            base.OnFocusedChanged(e);
+
+            if (!e.IsFocused)
+            {
+                isFocused = false;
+            }
+            else
+            {
+                isFocused = true;
+            }
         }
 
         protected override void OnClosed()
@@ -179,7 +202,7 @@ namespace game_2
             Models.Clear();
             skybox.OnDelete();
             aim.OnDelete();
-            info.OnClear();
+            //info.OnClear();
 
             CentralizedShaders.Dispose();
 

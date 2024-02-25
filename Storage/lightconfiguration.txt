@@ -1,2 +1,0 @@
-set spotlight 1 color 1 1 1
-set spotlight 1 cutoff 0.99

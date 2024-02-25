@@ -55,12 +55,12 @@ namespace game_2.Brain.ObjectFolder
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
             // Привязываем данные вершины к текущему буферу по умолчанию
             // Static Draw, потому что наши данные о вершинах в буфере не меняются
-            GL.BufferData(BufferTarget.ArrayBuffer, Vertices.Length * sizeof(float), Vertices, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, Vertices.Length * sizeof(float), Vertices, BufferUsageHint.DynamicDraw);
 
             // Element Buffer
             IBO = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, IBO);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, Indices.Length * sizeof(int), Indices, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, Indices.Length * sizeof(int), Indices, BufferUsageHint.DynamicDraw);
 
             // Устанавливаем указатели атрибутов вершины
             int location = CentralizedShaders.ObjectShader.GetAttribLocation("aPosition");

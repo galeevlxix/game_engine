@@ -16,6 +16,6 @@
             0, 2, 3,
         };
 
-        public static readonly string TexturePath = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Textures\\summ_grass8-xt.png";
+        public static readonly string TexturePath = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Textures\\summ_grass8-xt.png";
     }
 }

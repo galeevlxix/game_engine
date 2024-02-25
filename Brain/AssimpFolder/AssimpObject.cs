@@ -1,5 +1,4 @@
 ﻿using game_2.Brain.ObjectFolder;
-using game_2.FileManagers;
 using OpenTK.Graphics.OpenGL4;
 
 namespace game_2.Brain.AssimpFolder
@@ -34,29 +33,25 @@ namespace game_2.Brain.AssimpFolder
 
         public override void Draw()
         {
-            CentralizedShaders.ObjectShader.setMatrices(pipeline.getMVP().ToOpenTK());
+            CentralizedShaders.AssimpShader.setMatrices(pipeline.getMVP().ToOpenTK());
 
             foreach (var item in meshes)
             {
                 TextureMap[item._Paths._DiffusePath].Use();
+                if (item._Paths._NormalPath != "")
+                {
+                    TextureMap[item._Paths._NormalPath].Use();
+                }
                 item.Render();
             }
         }
 
         private void LoadTextures(string tex_path, PixelInternalFormat pixelFormat, TextureUnit unit)
         {
-            if (unit == TextureUnit.Texture1 && tex_path != "")
+            if (!TextureMap.ContainsKey(tex_path) && tex_path != string.Empty)
             {
-
-            }
-
-            if (!TextureMap.ContainsKey(tex_path))
-            {
-                if (tex_path != string.Empty)
-                {
-                    Texture _texture_map = Texture.Load(tex_path, pixelFormat, unit);
-                    TextureMap.Add(tex_path, _texture_map);
-                }
+                Texture _texture_map = Texture.Load(tex_path, pixelFormat, unit);
+                TextureMap.Add(tex_path, _texture_map);
             }
         }
 

@@ -2,8 +2,8 @@
 {
     public static class ShaderLoader
     {
-        private static string vspath = @"..\..\..\Shaders\Object\VertexShader.hlsl";
-        private static string fspath = @"C:..\..\..\Shaders\Object\FragmentShader.hlsl";
+        private static string vspath = @"..\..\..\Files\Shaders\Object\VertexShader.hlsl";
+        private static string fspath = @"C:..\..\..\Files\Shaders\Object\FragmentShader.hlsl";
         public static string LoadVertexShader()
         {
             return new StreamReader(vspath).ReadToEnd();

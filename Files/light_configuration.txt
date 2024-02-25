@@ -1,0 +1,3 @@
+set light directionallight intensity 0.3
+set light directionallight direction 1 -1 -1
+set light spotlight 1 color 1 1 1

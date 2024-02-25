@@ -1,0 +1,75 @@
+﻿set 
+{
+    light
+    {
+        baselight 
+        {
+            color <r g b>
+            intensity <value>
+        }
+        directionallight
+        {
+            color <r g b>
+            intensity <value>
+            direction <dir.x dir.y dir.z>
+        }
+        specularlight
+        {
+            power <value>
+            intensity <value>
+        }
+        pointlight 
+        {
+            <index> color <r g b>
+            <index> intensity <value>
+            <index> position <x y z>
+            <index> move <x y z>
+            <index> constant <value>
+            <index> linear <value>
+            <index> exp <value>
+        }
+        spotlight
+        {
+            <index> color <r g b>
+            <index> intensity <value>
+            <index> position <x y z>
+            <index> move <x y z>
+            <index> constant <value>
+            <index> linear <value>
+            <index> exp <value>
+            <index> direction <dir.x dir.y dir.z>
+            <index> cutoff
+        }
+    }
+    object
+    {
+        --Недоступно
+    }
+    camera
+    {
+        --Недоступно
+    }
+}
+get
+{
+    light
+    {
+        --Недоступно
+    }
+    object
+    {
+        --Недоступно
+    }
+    camera
+    {
+        --Недоступно
+    }
+}
+load
+{
+    lightconfiguration 
+}
+save
+{
+    lightconfiguration
+}

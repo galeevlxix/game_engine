@@ -6,7 +6,7 @@ namespace game_2.Brain.FieldFolder
 {
     public class FieldObject : GameObj
     {
-        public FieldObject(int Width, FieldType Type, float heightAmplitude, string texPath = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Textures\\stone2.jpg") 
+        public FieldObject(int Width, FieldType Type, float heightAmplitude, string texPath = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Textures\\stone2.jpg") 
         {
             GetArraysOfVerticesAndIndices(Width, Type, heightAmplitude, out float[] vertices, out int[] indices);
             mesh = new Mesh(vertices, indices, texPath);

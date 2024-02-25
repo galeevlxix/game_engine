@@ -20,8 +20,4 @@
     <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Models\fbx_files\Mococo\Common\" />
-  </ItemGroup>
-
 </Project>

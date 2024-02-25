@@ -21,7 +21,7 @@ namespace game_2.Brain.InfoPanelFolder
         public InfoPanel(FontType type)
         {
             _symbols = new List<GameObj>();
-            SymbolArrayOfVertices.LoadTexture("C:\\Users\\Lenovo\\source\\repos\\game_2\\Textures\\font.png");
+            SymbolArrayOfVertices.LoadTexture("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Textures\\font.png");
 
             for (int i = 0; i < (int)type; i++)
             {

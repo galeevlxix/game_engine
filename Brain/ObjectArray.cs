@@ -8,8 +8,8 @@ namespace game_2.Brain
     {
         private Dictionary<string, GameObj> obj_list;
 
-        private const string ModelFolderPath = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Models\\";
-        private const string TextureFolderPath = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Textures\\";
+        private const string ModelFolderPath = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\";
+        private const string TextureFolderPath = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Textures\\";
 
         public ObjectArray()
         {
@@ -35,7 +35,7 @@ namespace game_2.Brain
 
             Add("monkey", new GameObj(ModelFolderPath + "obj_files\\monkey\\monkey.obj", TextureFolderPath + "DefTexture.png"));
             Add("box", new GameObj(BoxModel));
-            Add("man", new AssimpObject(ModelFolderPath + "obj_files\\warr\\warr.obj"));
+            //Add("man", new AssimpObject(ModelFolderPath + "obj_files\\warr\\warr.obj"));
             Add("tnt1", new GameObj(TntModel));
             Add("tnt2", new GameObj(TntModel));
             Add("tnt3", new GameObj(TntModel));
@@ -43,10 +43,11 @@ namespace game_2.Brain
             Add("tnt5", new GameObj(TntModel));
             Add("steve", new GameObj(ModelFolderPath + "obj_files\\Steve.obj", TextureFolderPath + "Copy of steve.png"));
             Add("a_pikagirl", new AssimpObject(ModelFolderPath + "obj_files\\pika-girl\\WithPika.obj"));
-            Add("mococo", new AssimpObject(ModelFolderPath + "fbx_files\\Mococo\\Mococo_pose.fbx"));
+            //Add("mococo", new AssimpObject(ModelFolderPath + "fbx_files\\Mococo\\Mococo_pose.fbx"));
             Add("ball", new AssimpObject(ModelFolderPath + "obj_files\\Ball\\uploads_files_2222080_ball_obj.obj"));
-
-            Add("dust", new AssimpObject(ModelFolderPath + "obj_files\\de_dust\\source\\new_de_dust2.obj"));
+            Add("ship", new AssimpObject(ModelFolderPath + "obj_files\\ship\\SpaceShip.obj"));
+            //Add("dust", new AssimpObject(ModelFolderPath + "obj_files\\de_dust\\source\\new_de_dust2.obj"));
+            Add("boxes", new AssimpObject(ModelFolderPath + "obj_files\\Wooden_Boxes\\Models\\Wooden Boxes.obj"));
 
             SetProperties();
         }
@@ -61,9 +62,9 @@ namespace game_2.Brain
             this["box"].pipeline.SetAngle(0, 0, 0);
             this["box"].pipeline.SetPosition(-6, 1, -6);
 
-            this["man"].pipeline.SetScale(5f);
-            this["man"].pipeline.SetAngle(0, 0, 0);
-            this["man"].pipeline.SetPosition(-3.5f, 0, -15);
+            //this["man"].pipeline.SetScale(5f);
+            //this["man"].pipeline.SetAngle(0, 0, 0);
+            //this["man"].pipeline.SetPosition(-3.5f, 0, -15);
 
             this["tnt1"].pipeline.SetScale(1f);
             this["tnt1"].pipeline.SetAngle(0, 0, 0);
@@ -93,17 +94,19 @@ namespace game_2.Brain
             this["a_pikagirl"].pipeline.SetPosition(12, 7.4f, 6);
             this["a_pikagirl"].pipeline.SetAngle(0, 90, 0);
 
-            this["mococo"].pipeline.SetScale(1f);
-            this["mococo"].pipeline.SetPosition(12, 0, -6);
-            this["mococo"].pipeline.SetAngle(0, -90, 0);
+            //this["mococo"].pipeline.SetScale(1f);
+            //this["mococo"].pipeline.SetPosition(12, 0, -6);
+            //this["mococo"].pipeline.SetAngle(0, -90, 0);
 
             this["ball"].pipeline.SetPosition(-7, 3, 7);
             this["ball"].pipeline.SetScale(10);
             this["ball"].pipeline.SetAngle(0, 90, 0);
 
-            this["dust"].pipeline.SetScale(0.05f);
-            this["dust"].pipeline.SetAngle(90, 0, 0);
-            this["dust"].pipeline.SetPosition(-20, 0, 0);
+            //this["dust"].pipeline.SetScale(0.05f);
+            //this["dust"].pipeline.SetAngle(90, 0, 0);
+            //this["dust"].pipeline.SetPosition(-20, 0, 0);
+
+            this["boxes"].pipeline.SetPosition(0, 10, 0);
         }
 
         float cube_speed = 10;
@@ -143,7 +146,7 @@ namespace game_2.Brain
                         this["box"].pipeline.SetPositionZ(-6f);
                 }
 
-            this["ball"].pipeline.Rotate(0, 0, ball_rotation_speed, deltaTime);
+            //this["ball"].pipeline.Rotate(0, 0, ball_rotation_speed, deltaTime);
         }
 
         double counter = 0;
