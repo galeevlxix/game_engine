@@ -10,49 +10,49 @@
         [D]
         Установить параметры окружающего света
         {
-            color <r g b>
-            intensity <value>
+            color <r g b> {END_OF_LINE}
+            intensity <value> {END_OF_LINE}
         }
         directionallight
         [D]
         Установить параметры направленного света
         {
-            color <r g b> 
-            intensity <value>
-            direction <dir.x dir.y dir.z>
+            color <r g b> {END_OF_LINE}
+            intensity <value> {END_OF_LINE}
+            direction <dir.x dir.y dir.z> {END_OF_LINE}
         }
         specularlight
         [D]
         Установить параметры отраженного света
         {
-            power <value>
-            intensity <value>
+            power <value> {END_OF_LINE}
+            intensity <value> {END_OF_LINE}
         }
         pointlight 
         [D]
         Установить параметры точечного источника света
         {
-            <index> color <r g b>
-            <index> intensity <value>
-            <index> position <x y z>
-            <index> move <x y z>
-            <index> constant <value>
-            <index> linear <value>
-            <index> exp <value>
+            <index> color <r g b> {END_OF_LINE}
+            <index> intensity <value> {END_OF_LINE}
+            <index> position <x y z> {END_OF_LINE}
+            <index> move <x y z> {END_OF_LINE}
+            <index> constant <value> {END_OF_LINE}
+            <index> linear <value> {END_OF_LINE}
+            <index> exp <value> {END_OF_LINE}
         }
         spotlight
         [D]
         Установить параметры направленного источника света
         {
-            <index> color <r g b>
-            <index> intensity <value>
-            <index> position <x y z>
-            <index> move <x y z>
-            <index> constant <value>
-            <index> linear <value>
-            <index> exp <value>
-            <index> direction <dir.x dir.y dir.z>
-            <index> cutoff
+            <index> color <r g b> {END_OF_LINE}
+            <index> intensity <value> {END_OF_LINE}
+            <index> position <x y z> {END_OF_LINE}
+            <index> move <x y z> {END_OF_LINE}
+            <index> constant <value> {END_OF_LINE}
+            <index> linear <value> {END_OF_LINE}
+            <index> exp <value> {END_OF_LINE}
+            <index> direction <dir.x dir.y dir.z> {END_OF_LINE}
+            <index> cutoff {END_OF_LINE}
         }
     }
     object
@@ -69,25 +69,101 @@
     }
 }
 get
+[D]
+Получить информацию о параметрах 3D сцены
 {
     light
+    [D]
+    Получить сведения об типе освещения
     {
         --Недоступно
     }
     object
+    [D]
+    Получить сведения об объекте
     {
         --Недоступно
     }
     camera
+    [D]
+    Получить сведения о камере
     {
-        --Недоступно
+        pos
+        [D]
+        Получить вектор позиции камеры
+        {
+            {END_OF_LINE}
+        }
+        target
+        [D]
+        Получить вектор направления камеры
+        {
+            {END_OF_LINE}
+        }
+        up 
+        [D]
+        Получить вектор Up камеры
+        {
+            {END_OF_LINE}
+        }
+        persproj
+        [D]
+        Получить сведения о проекции перспективы камеры
+        {
+            fov
+            [D]
+            Получить величину поля зрения камеры
+            {
+                {END_OF_LINE}
+            }
+            width
+            [D]
+            Получить ширину камеры
+            {
+                {END_OF_LINE}
+            }
+            height
+            [D]
+            Получить высоту камеры
+            {
+                {END_OF_LINE}
+            }
+            znear
+            [D]
+            Получить близкую границу отсечения сцены
+            {
+                {END_OF_LINE}
+            }
+            zfar
+            [D]
+            Получить дальнюю границу отсечения сцены
+            {
+                {END_OF_LINE}
+            }
+        }
+    }
+    fps
+    [D]
+    Получить значение FPS
+    {
+        {END_OF_LINE}
     }
 }
 load
 {
-    lightconfiguration || lightconfig || light 
+    light
+    [D]
+    Загрузить команды настройки света из файла
+    {
+        {END_OF_LINE}
+    }
 }
 save
 {
-    lightconfiguration || lightconfig || light
+    light
+    [D]
+    Сохранить команды настройки света в файл
+    {
+        {END_OF_LINE}
+    }
 }

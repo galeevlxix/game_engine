@@ -51,10 +51,12 @@
         {
             if (parts.Length == 1)
             {
-                string output = "CompilerHelper > ";
+                string output = "CompilerHelper > Последующие команды:";
+                int i = 0;
                 foreach (CommandNode node in root.commandNodes)
                 {
-                    output += "" + node.name + ", ";
+                    i++;
+                    output += "\n" + i + ") " + node.name;
                 }
                 return output.Trim(' ').Trim(',');
             }
@@ -73,12 +75,14 @@
                         {
                             return "CompilerHelper > " + parts[index] + " является настраиваемым параметром." + (child_node.description != null ? "\nCompilerHelper > " + child_node.description : null);
                         }
-                        string output = "CompilerHelper > ";
+                        string output = "CompilerHelper > Последующие команды:";
+                        int i = 0;
                         foreach (CommandNode node in child_node.commandNodes)
                         {
-                            output += node.name + ", ";
+                            i++;
+                            output += "\n       " + i + ") " + node.name ;
                         }
-                        return output.Trim(' ').Trim(',') + (child_node.description != null ? "\nCompilerHelper > " + child_node.description : null);
+                        return output.Trim(' ').Trim(',') + (child_node.description != null ? "\nCompilerHelper:Description > " + child_node.description : null);
                     }
                     else
                     {

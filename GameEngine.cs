@@ -19,15 +19,12 @@ namespace game_2
     {
         private bool isMouseDown;
         private bool isLoaded = false;
-        private bool isFocused = true; 
 
         private int WindowsWidth;
         private int WindowsHeight;
 
-        //private ObjectArray Models;
-        //private AssimpObjectArray AssimpModels;
         private Skybox skybox;
-        private InfoPanel info;
+        //private InfoPanel info;
         private Aim aim;
         private ObjectArray models;
 
@@ -64,8 +61,6 @@ namespace game_2
             Camera.InitCamera();
             Camera.SetCameraPosition(0, 3, 4);
 
-            fps_out_list = new List<double>();
-
             Console.WriteLine("Загрузка шейдеров...");
             CentralizedShaders.Load();
 
@@ -74,7 +69,7 @@ namespace game_2
             aim = new Aim();
 
             Console.WriteLine("Загрузка шрифта...");
-            //info = new InfoPanel(InfoPanel.FontType.EnglishWithNumbersAndPunctuation);
+            //info = new InfoPanel(InfoPanel.FontType.EnglishWithNumbers);
 
             Console.WriteLine("Загрузка моделей (assimp)...");
             CentralizedShaders.AssimpShader.Use();
@@ -95,22 +90,12 @@ namespace game_2
             await Task.Run(() => ConsoleCompiler.Run());
         }
 
-        List<double> fps_out_list;
-        double fps_out = 0;
-
         // Рендер окна
         protected override void OnRenderFrame(FrameEventArgs args)
         {
             //if (!isFocused) return;
             base.OnRenderFrame(args);
-
-            // расчет среднего FPS
-            fps_out_list.Add(1 / args.Time);
-            if (fps_out_list.Count % 100 == 0)
-            {
-                fps_out = fps_out_list.Average();
-                fps_out_list.Clear();
-            }
+            FPSMeter.Update(args.Time);
 
             // управление камерой
             InputCallbacks(args.Time);
@@ -128,6 +113,7 @@ namespace game_2
 
             CentralizedShaders.ScreenShader.Use();
             aim.Draw();
+            //info.PutLineAndDraw((int)fps_out + "fps");
 
             CentralizedShaders.MonochromeShader.Use();
 
@@ -187,21 +173,11 @@ namespace game_2
         protected override void OnMove(WindowPositionEventArgs e)
         {
             base.OnMove(e);
-            
         }
 
         protected override void OnFocusedChanged(FocusedChangedEventArgs e)
         {
             base.OnFocusedChanged(e);
-
-            if (!e.IsFocused)
-            {
-                isFocused = false;
-            }
-            else
-            {
-                isFocused = true;
-            }
         }
 
         protected override void OnClosed()
@@ -210,7 +186,6 @@ namespace game_2
             skybox.OnDelete();
             aim.OnDelete();
             //info.OnClear();
-            
 
             CentralizedShaders.Dispose();
 

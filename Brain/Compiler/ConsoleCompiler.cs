@@ -75,14 +75,57 @@ namespace game_2.Brain.Compiler
         //GET
         private static string GetChoice(string[] parts)
         {
+            if (parts.Length == 1) return "0# Незаконченное get действие";
             switch (parts[1])
             {
-                case "position":
+                case "camera":
+                    return GetCameraChoice(parts);
+                case "fps":
+                    return FPSMeter.Int_FPS + " FPS";
+                case "object":
+                case "light":
+                    return "0# Недоступно";
+            }
+            return "0# Неизвестное get действие";
+        }
+
+        private static string GetCameraChoice(string[] parts)
+        {
+            if (parts.Length == 2) return "0# Незаконченное get camera действие";
+
+            switch (parts[2])
+            {
+                case "pos":
                     return Camera.Pos.ToStr();
                 case "target":
                     return Camera.Target.ToStr();
+                case "up":
+                    return Camera.Up.ToStr();
+                case "persproj":
+                    return GetPersProj(parts);
             }
-            return "0# Неизвестное get действие";
+            return "0# Неизвестное get camera действие";
+        }
+
+        private static string GetPersProj(string[] parts)
+        {
+            if (parts.Length == 3) return "0# Незаконченное get camera persproj действие";
+
+            switch (parts[3])
+            {
+                case "fov":
+                    return "FOV: " + mPersProj.GetFOV;
+                case "width":
+                    return "WIDTH: " + mPersProj.GetWidth;
+                case "height":
+                    return "HEIGHT: " + mPersProj.GetHeight;
+                case "znear":
+                    return "ZNEAR: " + mPersProj.GetZNear;
+                case "zfar":
+                    return "ZFAR: " + mPersProj.GetZFar;
+            }
+
+            return "0# Неизвестное get camera persproj действие";
         }
 
         //SAVE
@@ -91,8 +134,6 @@ namespace game_2.Brain.Compiler
             switch (parts[1])
             {
                 case "light":
-                case "lightconfig":
-                case "lightconfiguration":
                     using (StreamWriter sw = new StreamWriter(light_configuration_file))
                     {
                         foreach (string line in commands.Values) sw.WriteLine(line);
@@ -109,8 +150,6 @@ namespace game_2.Brain.Compiler
             switch (parts[1])
             {
                 case "light":
-                case "lightconfig":
-                case "lightconfiguration":
                     string? line;
                     using (StreamReader sr = new StreamReader(light_configuration_file))
                     {
@@ -132,8 +171,8 @@ namespace game_2.Brain.Compiler
             {
                 case "light":
                     return SetLightChoice(parts);
-                case "object":
-                case "camera":
+                case "object":  //material, scale, angle, position
+                case "camera":  //position, target, 
                     return "0# Недоступно";
             }
             return "0# Неизвестное set действие";
@@ -340,5 +379,7 @@ namespace game_2.Brain.Compiler
 
             return "0# Неизвестное set light действие";
         }
+
+
     }
 }

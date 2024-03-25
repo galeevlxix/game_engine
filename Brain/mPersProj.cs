@@ -11,6 +11,46 @@ namespace game_2.Brain
         private static float zFar = 350;
         public static matrix4f PersProjMatrix = new matrix4f();
 
+        public static float GetFOV
+        {
+            get
+            {
+                return FOV;
+            }
+        }
+
+        public static float GetWidth
+        {
+            get
+            {
+                return width;
+            }
+        }
+
+        public static float GetHeight
+        {
+            get
+            {
+                return height;
+            }
+        }
+
+        public static float GetZNear
+        {
+            get 
+            { 
+                return zNear;
+            }
+        }
+
+        public static float GetZFar
+        {
+            get
+            {
+                return zFar;
+            }
+        }
+
         public static void Init(float _FOV, float _width, float _height, float _zNear, float _zFar)
         {
             FOV = _FOV;
