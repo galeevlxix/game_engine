@@ -18,7 +18,7 @@ namespace game_2.Brain.ObjectFolder
         {
             if (g == 1)
             {
-                mesh = new Mesh(BoxVertices.Vertices, BoxVertices.Indices, BoxVertices.TexturePath);
+                mesh = new Mesh(BoxVertices.Vertices, BoxVertices.Indices, BoxVertices.DiffusePath);
             }
             else if (g == 2)
             {

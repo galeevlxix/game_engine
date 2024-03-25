@@ -27,6 +27,7 @@ newmtl ETC
 	Ks 0.0000 0.0000 0.0000
 	Ke 0.0000 0.0000 0.0000
 	map_Kd ETC.png
+	map_Kn PikaGirl_N.png
 
 newmtl Ground
 	Ns 10.0000
@@ -40,6 +41,7 @@ newmtl Ground
 	Ks 0.0000 0.0000 0.0000
 	Ke 0.0000 0.0000 0.0000
 	map_Kd ground_D.png
+	map_Kn PikaGirl_N.png
 
 newmtl Grass
 	Ns 10.0000

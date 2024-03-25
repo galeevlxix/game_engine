@@ -9,6 +9,9 @@ using game_2.Brain.AimFolder;
 using game_2.Brain.Lights;
 using game_2.Brain.InfoPanelFolder;
 using game_2.Brain.Compiler;
+using game_2.Brain.ObjectFolder;
+using game_2.Brain.NewAssimpFolder;
+using game_2.Brain.Lights.LightStructures;
 
 namespace game_2
 {
@@ -21,10 +24,12 @@ namespace game_2
         private int WindowsWidth;
         private int WindowsHeight;
 
-        private ObjectArray Models;
+        //private ObjectArray Models;
+        //private AssimpObjectArray AssimpModels;
         private Skybox skybox;
         private InfoPanel info;
         private Aim aim;
+        private ObjectArray models;
 
         private readonly Color4 BackGroundColor;
 
@@ -65,16 +70,21 @@ namespace game_2
             CentralizedShaders.Load();
 
             Console.WriteLine("Загрузка прицела...");
+            CentralizedShaders.ScreenShader.Use();
             aim = new Aim();
-
-            Console.WriteLine("Загрузка моделей...");
-            Models = new ObjectArray();
-
-            Console.WriteLine("Загрузка скайбокса...");
-            skybox = new Skybox();
 
             Console.WriteLine("Загрузка шрифта...");
             //info = new InfoPanel(InfoPanel.FontType.EnglishWithNumbersAndPunctuation);
+
+            Console.WriteLine("Загрузка моделей (assimp)...");
+            CentralizedShaders.AssimpShader.Use();
+            models = new ObjectArray();            
+            CentralizedShaders.AssimpShader.setDiffuseMap();
+            CentralizedShaders.AssimpShader.setNormalMap();
+
+            Console.WriteLine("Загрузка скайбокса...");
+            CentralizedShaders.SkyBoxShader.Use();
+            skybox = new Skybox();
 
             Console.WriteLine("Загрузка света...");
             LightningManager.Init();
@@ -106,21 +116,18 @@ namespace game_2
             InputCallbacks(args.Time);
             Camera.OnRender((float)args.Time);
 
-            GL.Uniform3(CentralizedShaders.ObjectShader.GetUniformLocation("cTarget"), Camera.Target.x, Camera.Target.y, Camera.Target.z);
+            GL.Uniform3(CentralizedShaders.AssimpShader.GetUniformLocation("cTarget"), Camera.Target.x, Camera.Target.y, Camera.Target.z);
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            Models.OnRender((float)args.Time);
-
-            CentralizedShaders.ObjectShader.Use();
-            Models.Draw();
+            CentralizedShaders.AssimpShader.Use();
+            models.Draw();          
 
             CentralizedShaders.SkyBoxShader.Use();
             skybox.Draw();
 
             CentralizedShaders.ScreenShader.Use();
             aim.Draw();
-            //info.PutLineAndDraw( Math.Round(fps_out) + "fps\n" + Camera.Pos.ToStr() );
 
             CentralizedShaders.MonochromeShader.Use();
 
@@ -199,10 +206,11 @@ namespace game_2
 
         protected override void OnClosed()
         {
-            Models.Clear();
+            models.Clear();
             skybox.OnDelete();
             aim.OnDelete();
             //info.OnClear();
+            
 
             CentralizedShaders.Dispose();
 

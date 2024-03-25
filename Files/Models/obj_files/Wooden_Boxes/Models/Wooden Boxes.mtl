@@ -12,6 +12,7 @@ map_Kd Large_Wooden_Box.01_Diffuse.png
 map_Ns Large_Wooden_Box.01_Roughness.png
 map_Kn -bm 1.000000 Large_Wooden_Box.01_Normal.png
 
+
 newmtl Medium_Wooden_Box.01
 Ka 1.000000 1.000000 1.000000
 Ks 0.500000 0.500000 0.500000

@@ -56,6 +56,7 @@
                         16, 19, 18
         };
 
-        public static readonly string TexturePath = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Textures\\container.png";
+        public static readonly string DiffusePath = "..\\..\\..\\Files\\Textures\\container.png";
+        public static readonly string NormalPath = "..\\..\\..\\Files\\Textures\\empty_normal2.png";
     }
 }

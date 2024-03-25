@@ -22,17 +22,17 @@ namespace game_2.Brain
                 ShaderLoader.LoadVertexShader(),
                 ShaderLoader.LoadFragmentShader());
             SkyBoxShader = new Shader(
-                ShaderLoader.LoadShader("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Shaders\\Skybox\\SkyboxVetexShader.hlsl"),
-                ShaderLoader.LoadShader("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Shaders\\Skybox\\SkyboxFragShader.hlsl"));
+                ShaderLoader.LoadShader("..\\..\\..\\Files\\Shaders\\Skybox\\SkyboxVetexShader.hlsl"),
+                ShaderLoader.LoadShader("..\\..\\..\\Files\\Shaders\\Skybox\\SkyboxFragShader.hlsl"));
             ScreenShader = new Shader(
-                ShaderLoader.LoadShader("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Shaders\\ScreenStatic\\ScreenStaticVertexShader.hlsl"),
-                ShaderLoader.LoadShader("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Shaders\\ScreenStatic\\ScreenStaticFragmentShader.hlsl"));
+                ShaderLoader.LoadShader("..\\..\\..\\Files\\Shaders\\ScreenStatic\\ScreenStaticVertexShader.hlsl"),
+                ShaderLoader.LoadShader("..\\..\\..\\Files\\Shaders\\ScreenStatic\\ScreenStaticFragmentShader.hlsl"));
             MonochromeShader = new Shader(
-                ShaderLoader.LoadShader("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Shaders\\MonochromeObject\\MonoVertexShader.hlsl"),
-                ShaderLoader.LoadShader("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Shaders\\MonochromeObject\\MonoFragmentShader.hlsl"));
+                ShaderLoader.LoadShader("..\\..\\..\\Files\\Shaders\\MonochromeObject\\MonoVertexShader.hlsl"),
+                ShaderLoader.LoadShader("..\\..\\..\\Files\\Shaders\\MonochromeObject\\MonoFragmentShader.hlsl"));
             AssimpShader = new Shader(
-                ShaderLoader.LoadShader("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Shaders\\AssimpObject\\VertexShader.hlsl"),
-                ShaderLoader.LoadShader("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Shaders\\AssimpObject\\FragmentShader.hlsl"));
+                ShaderLoader.LoadShader("..\\..\\..\\Files\\Shaders\\AssimpObject\\AssimpVertexShader.hlsl"),
+                ShaderLoader.LoadShader("..\\..\\..\\Files\\Shaders\\AssimpObject\\AssimpFragmentShader.hlsl"));
         }
 
         public static void Dispose()
@@ -41,6 +41,7 @@ namespace game_2.Brain
             SkyBoxShader.Dispose();
             ScreenShader.Dispose();
             MonochromeShader.Dispose();
+            AssimpShader.Dispose();
         }
     }
 }

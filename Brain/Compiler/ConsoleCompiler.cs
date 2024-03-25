@@ -8,7 +8,7 @@ namespace game_2.Brain.Compiler
     {
         private static string? line = "";
         private static bool isExecuting = false;
-        private static string file_path = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\light_configuration.txt";
+        private static string light_configuration_file = "..\\..\\..\\Files\\CompilerFiles\\light_configuration.txt";
 
         private static Dictionary<string, string> commands = new Dictionary<string, string>();
 
@@ -90,13 +90,15 @@ namespace game_2.Brain.Compiler
         {
             switch (parts[1])
             {
+                case "light":
+                case "lightconfig":
                 case "lightconfiguration":
-                    using (StreamWriter sw = new StreamWriter(file_path))
+                    using (StreamWriter sw = new StreamWriter(light_configuration_file))
                     {
                         foreach (string line in commands.Values) sw.WriteLine(line);
                         sw.Close();
                     }
-                    return "Команды сохранены в файл";
+                    return "Команды настройки света сохранены в файл";
             }
             return "0# Неизвестное save действие";
         }
@@ -106,16 +108,18 @@ namespace game_2.Brain.Compiler
         {
             switch (parts[1])
             {
+                case "light":
+                case "lightconfig":
                 case "lightconfiguration":
                     string? line;
-                    using (StreamReader sr = new StreamReader(file_path))
+                    using (StreamReader sr = new StreamReader(light_configuration_file))
                     {
                         while ((line = sr.ReadLine()) != null)
                         {
                             CompileLine(line);
                         }
                     }
-                    return "Команды загружены из файла";
+                    return "Команды настройки света загружены из файла";
             }
             return "0# Неизвестное load действие";
         }

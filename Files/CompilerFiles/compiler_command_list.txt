@@ -1,0 +1,93 @@
+﻿set
+[D]
+Установить параметры 3D сцены
+{
+    light
+    [D]
+    Установить параметры различных типов света
+    {
+        baselight 
+        [D]
+        Установить параметры окружающего света
+        {
+            color <r g b>
+            intensity <value>
+        }
+        directionallight
+        [D]
+        Установить параметры направленного света
+        {
+            color <r g b> 
+            intensity <value>
+            direction <dir.x dir.y dir.z>
+        }
+        specularlight
+        [D]
+        Установить параметры отраженного света
+        {
+            power <value>
+            intensity <value>
+        }
+        pointlight 
+        [D]
+        Установить параметры точечного источника света
+        {
+            <index> color <r g b>
+            <index> intensity <value>
+            <index> position <x y z>
+            <index> move <x y z>
+            <index> constant <value>
+            <index> linear <value>
+            <index> exp <value>
+        }
+        spotlight
+        [D]
+        Установить параметры направленного источника света
+        {
+            <index> color <r g b>
+            <index> intensity <value>
+            <index> position <x y z>
+            <index> move <x y z>
+            <index> constant <value>
+            <index> linear <value>
+            <index> exp <value>
+            <index> direction <dir.x dir.y dir.z>
+            <index> cutoff
+        }
+    }
+    object
+    [D]
+    Установить параметры объекта
+    {
+        --Недоступно
+    }
+    camera
+    [D]
+    Установить параметры камеры 
+    {
+        --Недоступно
+    }
+}
+get
+{
+    light
+    {
+        --Недоступно
+    }
+    object
+    {
+        --Недоступно
+    }
+    camera
+    {
+        --Недоступно
+    }
+}
+load
+{
+    lightconfiguration || lightconfig || light 
+}
+save
+{
+    lightconfiguration || lightconfig || light
+}

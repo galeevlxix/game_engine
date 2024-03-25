@@ -3,7 +3,7 @@
     public class CompilerHelper
     {
         private CommandNode root;
-        private const string command_list_file = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\compiler_command_list.txt";
+        private const string command_list_file = "..\\..\\..\\Files\\CompilerFiles\\compiler_command_list.txt";
         StreamReader sr;
         public CompilerHelper()
         {
@@ -30,6 +30,14 @@
                         break;
                     case "}":
                         return child_nodes;
+                    case "[D]":
+                        if (child_nodes.Count > 0)
+                        {
+                            line = sr.ReadLine();
+                            line = line.Trim();
+                            child_nodes[child_nodes.Count - 1].description = line;
+                        }
+                        break;
                     default:
                         CommandNode chn = new CommandNode();
                         chn.name = line;
@@ -63,14 +71,14 @@
                     {
                         if (child_node.commandNodes.Count == 0)
                         {
-                            return "CompilerHelper > " + parts[index] + " является настраиваемым параметром.";
+                            return "CompilerHelper > " + parts[index] + " является настраиваемым параметром." + (child_node.description != null ? "\nCompilerHelper > " + child_node.description : null);
                         }
                         string output = "CompilerHelper > ";
                         foreach (CommandNode node in child_node.commandNodes)
                         {
                             output += node.name + ", ";
                         }
-                        return output.Trim(' ').Trim(',');
+                        return output.Trim(' ').Trim(',') + (child_node.description != null ? "\nCompilerHelper > " + child_node.description : null);
                     }
                     else
                     {
@@ -85,6 +93,7 @@
         private class CommandNode
         {
             public string? name;
+            public string? description;
             public List<CommandNode> commandNodes = new List<CommandNode>();
         }
     }

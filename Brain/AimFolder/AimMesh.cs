@@ -11,12 +11,10 @@ namespace game_2.Brain.AimFolder
     {
         public AimMesh()
         {
-            Vertices = AimVertices.Vertices;
-            Indices = AimVertices.Indices;
             texture = Texture.Load(AimVertices.TexturePath);
             pers_proj = pers_mat();
 
-            Load();
+            Load(AimVertices.Vertices, AimVertices.Indices);
         }
 
         public override void Draw(Matrix4 matrix)
@@ -24,7 +22,7 @@ namespace game_2.Brain.AimFolder
             GL.BindVertexArray(VAO);
             UseTextures();
             CentralizedShaders.ScreenShader.setMatrices(matrix, pers_proj);
-            GL.DrawElements(PrimitiveType.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
+            GL.DrawElements(PrimitiveType.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);
         }
 
         protected Matrix4 pers_proj;

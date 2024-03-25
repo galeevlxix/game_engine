@@ -52,7 +52,7 @@ namespace game_2.Brain.Lights
         private static void ConfigureBaseLight()
         {
             baseLight.Color = new vector3f(1, 1, 1);
-            baseLight.Intensity = 0;
+            baseLight.Intensity = 0.4f;
 
             lightConfig.SetBaseLight(baseLight);
         }
@@ -60,7 +60,7 @@ namespace game_2.Brain.Lights
         private static void ConfigureDirectionalLight()
         {
             directionalLight.BaseLight.Color = new vector3f(1, 1, 1);
-            directionalLight.BaseLight.Intensity = 0;
+            directionalLight.BaseLight.Intensity = 0.4f;
             directionalLight.Direction = new vector3f(1, -1, -1);
 
             lightConfig.SetDirectionalLight(directionalLight);

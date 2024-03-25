@@ -9,13 +9,10 @@ namespace game_2.Brain.MonochromeObjectFolder
         public MonochromeObjectMesh()
         {
             Storage.SphereVertices.InitSegments(30);
-            Vertices = Storage.SphereVertices.GetVertices();
-            Indices = Storage.SphereVertices.GetIndices();
-
-            Load();
+            Load(Storage.SphereVertices.GetVertices(), Storage.SphereVertices.GetIndices());
         }
 
-        protected override void Load()
+        protected override void Load(float[] Vertices, int[] Indices)
         {
             // Генерация и привязка VAO и VBO
             VAO = GL.GenVertexArray();
@@ -40,13 +37,15 @@ namespace game_2.Brain.MonochromeObjectFolder
             // Развязываем VAO и VBO
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
             GL.BindVertexArray(0);
+
+            indicesCount = Indices.Length;
         }
 
         public override void Draw(Matrix4 matrix)
         {
             CentralizedShaders.MonochromeShader.setMatrices(matrix);
             GL.BindVertexArray(VAO);
-            GL.DrawElements(BeginMode.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
+            GL.DrawElements(BeginMode.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);
         }
 
         public override void Dispose()

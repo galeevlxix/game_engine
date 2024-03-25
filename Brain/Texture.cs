@@ -8,7 +8,7 @@ namespace game_2.Brain
     {
         public readonly int Handle;
 
-        private TextureUnit textureUnit = TextureUnit.Texture0;
+        public TextureUnit textureUnit = TextureUnit.Texture0;
 
         private Texture(int glHandle, TextureUnit _unit)
         {

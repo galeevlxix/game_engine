@@ -15,6 +15,6 @@
                         0, 3, 2,
         };
 
-        public static readonly string TexturePath = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Textures\\font.png";
+        public static readonly string TexturePath = "..\\..\\..\\Files\\Textures\\font.png";
     }
 }

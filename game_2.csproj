@@ -20,4 +20,8 @@
     <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Files\Models\fbx_files\stylized-organic-red\textures\" />
+  </ItemGroup>
+
 </Project>

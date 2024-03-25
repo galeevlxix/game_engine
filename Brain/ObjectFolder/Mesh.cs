@@ -11,41 +11,31 @@ namespace game_2.Brain.ObjectFolder
         protected int VAO { get; set; }
         protected int IBO { get; set; }
 
-        protected float[] Vertices { get; set; }
-        protected int[] Indices { get; set; }
+        protected int indicesCount = 0;
 
         protected Texture texture;
-        protected Material material;
 
         public Mesh()
         {
-            Vertices = BoxVertices.Vertices;
-            Indices = BoxVertices.Indices;
-            texture = Texture.Load(BoxVertices.TexturePath);
-
-            Load();
+            texture = Texture.Load(BoxVertices.DiffusePath);
+            Load(BoxVertices.Vertices, BoxVertices.Indices);
         }
 
         public Mesh(string file_name, string tex_file_name)
         {
             ModelLoader.LoadMesh(file_name, out float[] Vertices, out int[] Indices);
-            this.Vertices = Vertices;
-            this.Indices = Indices;
             texture = Texture.Load(tex_file_name);
 
-            Load();
+            Load(Vertices, Indices);
         }
 
         public Mesh(float[] Vertices, int[] Indices, string tex_file_name)
         {
-            this.Vertices = Vertices;
-            this.Indices = Indices;
             texture = Texture.Load(tex_file_name);
-
-            Load();
+            Load(Vertices, Indices);
         }
 
-        protected virtual void Load()
+        protected virtual void Load(float[] Vertices, int[] Indices)
         {
             // Генерация и привязка VAO и VBO
             VAO = GL.GenVertexArray();
@@ -78,6 +68,8 @@ namespace game_2.Brain.ObjectFolder
             // Развязываем VAO и VBO
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
             GL.BindVertexArray(0);
+
+            indicesCount = Indices.Length;
         }
 
         public virtual void Draw(Matrix4 matrix)
@@ -85,7 +77,7 @@ namespace game_2.Brain.ObjectFolder
             CentralizedShaders.ObjectShader.setMatrices(matrix);
             GL.BindVertexArray(VAO);
             UseTextures();
-            GL.DrawElements(BeginMode.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
+            GL.DrawElements(BeginMode.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);
         }
 
         public virtual void Draw(Matrix4 matrix, Matrix4 cameraPos, Matrix4 cameraRot, Matrix4 PersProj)
@@ -93,7 +85,7 @@ namespace game_2.Brain.ObjectFolder
             CentralizedShaders.ObjectShader.setMatrices(matrix, cameraPos, cameraRot, PersProj);
             GL.BindVertexArray(VAO);
             UseTextures();
-            GL.DrawElements(BeginMode.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
+            GL.DrawElements(BeginMode.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);
         }
 
         public virtual void Draw(Matrix4 matrix, bool check)
@@ -103,11 +95,11 @@ namespace game_2.Brain.ObjectFolder
                 UseTextures();
                 GL.BindVertexArray(VAO);
                 CentralizedShaders.ObjectShader.setMatrices(matrix);
-                GL.DrawElements(BeginMode.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
+                GL.DrawElements(BeginMode.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);
             }
         }
 
-        protected void UseTextures() => texture.Use();
+        protected virtual void UseTextures() => texture.Use();
 
         public virtual void Dispose()
         {

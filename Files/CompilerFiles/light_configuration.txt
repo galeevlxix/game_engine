@@ -1,0 +1,5 @@
+set light baselight intensity 0
+set light directionallight intensity 0.2
+set light directionallight direction 1 0 -0.2
+set light pointlight 0 intensity 2
+set light pointlight 1 intensity 2

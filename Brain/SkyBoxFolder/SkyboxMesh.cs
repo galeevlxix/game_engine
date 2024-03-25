@@ -9,14 +9,11 @@ namespace game_2.Brain.SkyBoxFolder
     {
         public SkyboxMesh()
         {
-            Vertices = SkyboxVertices.Vertices;
-            Indices = SkyboxVertices.Indices;
             texture = Texture.Load(SkyboxVertices.TexturePath);
-
-            Load();
+            Load(SkyboxVertices.Vertices, SkyboxVertices.Indices);
         }
 
-        protected override void Load()
+        protected override void Load(float[] Vertices, int[] Indices)
         {
             // Генерация и привязка VAO и VBO
             VAO = GL.GenVertexArray();
@@ -45,6 +42,8 @@ namespace game_2.Brain.SkyBoxFolder
             // Развязываем VAO и VBO
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
             GL.BindVertexArray(0);
+
+            indicesCount = Indices.Length;
         }
 
         public override void Draw(Matrix4 matrix)
@@ -52,7 +51,7 @@ namespace game_2.Brain.SkyBoxFolder
             GL.BindVertexArray(VAO);
             UseTextures();
             CentralizedShaders.SkyBoxShader.setMatrices(matrix, Camera.CameraRotation.ToOpenTK(), mPersProj.PersProjMatrix.ToOpenTK());
-            GL.DrawElements(BeginMode.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
+            GL.DrawElements(BeginMode.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);
         }
     }
 }

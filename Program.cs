@@ -24,7 +24,7 @@ namespace game_2
         }
 
         //функция для создания нового файла obj с нормалями из старого файла obj без нормалей. UPD: Больше не используется.
-        private static void addNormalsToObjectFile(string oldFilePath, string newFilePath)
+        private static void addNormalsToObjFile(string oldFilePath, string newFilePath)
         {
             TextReader reader = new StreamReader(oldFilePath);
             string? line;

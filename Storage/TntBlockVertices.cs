@@ -55,6 +55,6 @@
                         16, 19, 18
         };
 
-        public static readonly string TexturePath = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Textures\\tnt_texture.png";
+        public static readonly string TexturePath = "..\\..\\..\\Files\\Textures\\tnt_texture.png";
     }
 }
