@@ -26,7 +26,6 @@ namespace game_2
         private Skybox skybox;
         //private InfoPanel info;
         private Aim aim;
-        private ObjectArray models;
 
         private readonly Color4 BackGroundColor;
 
@@ -73,7 +72,7 @@ namespace game_2
 
             Console.WriteLine("Загрузка моделей (assimp)...");
             CentralizedShaders.AssimpShader.Use();
-            models = new ObjectArray();            
+            ObjectArray.Init();          
             CentralizedShaders.AssimpShader.setDiffuseMap();
             CentralizedShaders.AssimpShader.setNormalMap();
 
@@ -106,7 +105,7 @@ namespace game_2
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             CentralizedShaders.AssimpShader.Use();
-            models.Draw();          
+            ObjectArray.Draw();        
 
             CentralizedShaders.SkyBoxShader.Use();
             skybox.Draw();
@@ -182,7 +181,7 @@ namespace game_2
 
         protected override void OnClosed()
         {
-            models.Clear();
+            ObjectArray.Clear();
             skybox.OnDelete();
             aim.OnDelete();
             //info.OnClear();

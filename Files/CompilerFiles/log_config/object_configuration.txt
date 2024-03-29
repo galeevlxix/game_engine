@@ -1,0 +1,5 @@
+alter object elep move 0 0 -1
+alter object elep move 0 0 -1
+alter object elep move 0 0 -1
+alter object elep move -10 0 0
+alter object elep move 0 0 -4

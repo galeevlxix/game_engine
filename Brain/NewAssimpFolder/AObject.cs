@@ -1,11 +1,5 @@
 ﻿using Assimp;
-using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace game_2.Brain.NewAssimpFolder
 {
@@ -93,17 +87,22 @@ namespace game_2.Brain.NewAssimpFolder
             }
 
             ModelTexturePaths texturesPaths = new ModelTexturePaths();
+            float shininess = 1;
+
+            AMaterial true_material;
 
             if (mesh.MaterialIndex >= 0)
             {
                 // Textures
                 Material material = _scene.Materials[mesh.MaterialIndex];
                 texturesPaths = ProcessTextures(material.GetAllMaterialTextures());
+                shininess = material.Shininess;
             }
 
-            _entries.Add(new AEntry(vertices, indices, texturesPaths));
+            true_material = AMaterial.Init(texturesPaths);
+            true_material.SetSpecularPower(shininess);
 
-
+            _entries.Add(new AEntry(vertices, indices, true_material));
         }
 
         private ModelTexturePaths ProcessTextures(TextureSlot[] allTextures)
@@ -138,7 +137,7 @@ namespace game_2.Brain.NewAssimpFolder
             foreach (AEntry item in _entries) item.OnDelete();
         }
 
-        // Pipeline work
+        // УСТАНОВИТЬ
         public void SetScale(float scale)
         {
             foreach (AEntry item in _entries) item.pipeline.SetScale(scale);
@@ -151,7 +150,7 @@ namespace game_2.Brain.NewAssimpFolder
 
         public void SetAngle(float angleX, float angleY, float angleZ)
         {
-            foreach (AEntry item in _entries) item.pipeline.SetScale(angleX, angleY, angleZ);
+            foreach (AEntry item in _entries) item.pipeline.SetAngle(angleX, angleY, angleZ);
         }
 
         public void SetPosition(float PosX, float PosY, float PosZ)
@@ -159,6 +158,28 @@ namespace game_2.Brain.NewAssimpFolder
             foreach (AEntry item in _entries) item.pipeline.SetPosition(PosX, PosY, PosZ);
         }
 
+        // НЕМЕДЛЕННО ОБНОВИТЬ
+        public void ExpandImmediately(float scaleX, float scaleY, float scaleZ)
+        {
+            foreach (AEntry item in _entries) item.pipeline.SetScale(item.pipeline.ScaleX + scaleX, item.pipeline.ScaleY + scaleY, item.pipeline.ScaleZ + scaleZ);
+        }
+
+        public void ExpandImmediately(float value)
+        {
+            foreach (AEntry item in _entries) item.pipeline.SetScale(item.pipeline.ScaleX + value, item.pipeline.ScaleY + value, item.pipeline.ScaleZ + value);
+        }
+
+        public void RotateImmediately(float angleX, float angleY, float angleZ)
+        {
+            foreach (AEntry item in _entries) item.pipeline.SetAngle(item.pipeline.AngleX + angleX, item.pipeline.AngleY + angleY, item.pipeline.AngleZ + angleZ);
+        }
+
+        public void MoveImmediately(float PosX, float PosY, float PosZ)
+        {
+            foreach (AEntry item in _entries) item.pipeline.SetPosition(item.pipeline.PosX + PosX, item.pipeline.PosY + PosY, item.pipeline.PosZ + PosZ);
+        }
+
+        // СКОРОСТЬ * ВРЕМЯ
         public void Rotate(float speedX, float speedY, float speedZ, float time)
         {
             foreach (AEntry item in _entries) item.pipeline.Rotate(speedX, speedY, speedZ, time);
@@ -172,6 +193,11 @@ namespace game_2.Brain.NewAssimpFolder
         public void Expand(float speedX, float speedY, float speedZ, float time)
         {
             foreach (AEntry item in _entries) item.pipeline.Expand(speedX, speedY, speedZ, time);
+        }
+
+        public void Expand(float speedVal, float time)
+        {
+            foreach (AEntry item in _entries) item.pipeline.Expand(speedVal, time);
         }
 
         public void Reset()

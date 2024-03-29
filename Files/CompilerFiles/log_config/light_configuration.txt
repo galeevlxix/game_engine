@@ -1,0 +1,7 @@
+alter light pointlight 1 intensity 2
+alter light pointlight 0 intensity 2
+alter light baselight intensity 0.1
+alter light directionallight intensity 0.3
+alter light directionallight color 1 1 1
+alter light directionallight direction 2 -0 -1
+alter light spotlight 1 color 1 1 1

@@ -14,11 +14,14 @@ namespace game_2.Brain.NewAssimpFolder
 
         int indicesCount;
 
-        public AMesh(List<AVertex> Vertices, List<int> Indices, ModelTexturePaths paths)
+        private AMaterial material;
+
+        public AMesh(List<AVertex> Vertices, List<int> Indices, AMaterial material)
         {
             textures= new Dictionary<string, Texture>();
             Load(Vertices, Indices);
-            LoadTextures(paths);
+
+            this.material = material;
         }
 
         private unsafe void Load(List<AVertex> Vertices, List<int> Indices)
@@ -47,37 +50,11 @@ namespace game_2.Brain.NewAssimpFolder
             indicesCount = Indices.Count;
         }
 
-        private void LoadTextures(ModelTexturePaths paths)
-        {
-            LoadOneMap(paths._DiffusePath, TextureUnit.Texture0);
-            LoadOneMap(paths._NormalPath, TextureUnit.Texture1);
-        }
-
-        private void LoadOneMap(string file_path, TextureUnit unit)
-        {
-            if (file_path != string.Empty && !textures.ContainsKey(file_path))
-            {
-                Texture _texture_map = Texture.Load(file_path, PixelInternalFormat.Rgba, unit, true);
-                textures.Add(file_path, _texture_map);
-            } 
-            else if(file_path == string.Empty && !textures.ContainsKey(file_path) && unit == TextureUnit.Texture1)
-            {
-                string empty_normal_map = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Textures\\white_list.bmp"; 
-                Texture _texture_map = Texture.Load(empty_normal_map, PixelInternalFormat.Rgba, unit, true);
-                textures.Add(empty_normal_map, _texture_map);
-            }
-        }
-
-        protected void UseTextures()
-        {
-            foreach (Texture texture in textures.Values) texture.Use();
-        }
-
         public unsafe void Draw(Matrix4 matrix)
         {
             CentralizedShaders.AssimpShader.setMatrices(matrix);
             VAO.Bind();
-            UseTextures();
+            material.Use();
             GL.DrawElements(BeginMode.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);
         }
 

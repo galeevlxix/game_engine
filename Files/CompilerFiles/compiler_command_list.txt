@@ -1,4 +1,4 @@
-﻿set
+﻿alter
 [D]
 Установить параметры 3D сцены
 {
@@ -59,7 +59,20 @@
     [D]
     Установить параметры объекта
     {
-        --Недоступно
+        <object_name> scale <x y z> {END_OF_LINE}
+        <object_name> scale <value> {END_OF_LINE}
+        <object_name> angle <x y z> {END_OF_LINE}
+        <object_name> position <x y z> {END_OF_LINE}
+        <object_name> expand <x y z> {END_OF_LINE}
+        <object_name> expand <value> {END_OF_LINE}
+        <object_name> rotate <x y z> {END_OF_LINE}
+        <object_name> move <x y z> {END_OF_LINE}
+        material 
+        [D]
+        Установить параметры материала объекта
+        {
+            --Недоступно
+        }
     }
     camera
     [D]
@@ -88,7 +101,7 @@ get
     [D]
     Получить сведения о камере
     {
-        pos
+        position
         [D]
         Получить вектор позиции камеры
         {
@@ -157,12 +170,24 @@ load
     {
         {END_OF_LINE}
     }
+    object
+    [D]
+    Загрузить команды настройки объектов из файла
+    {
+        {END_OF_LINE}
+    }
 }
 save
 {
     light
     [D]
     Сохранить команды настройки света в файл
+    {
+        {END_OF_LINE}
+    }
+    object
+    [D]
+    Загрузить команды настройки объектов из файла
     {
         {END_OF_LINE}
     }

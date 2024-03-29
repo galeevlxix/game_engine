@@ -8,9 +8,16 @@ namespace game_2.Brain.Compiler
     {
         private static string? line = "";
         private static bool isExecuting = false;
-        private static string light_configuration_file = "..\\..\\..\\Files\\CompilerFiles\\light_configuration.txt";
+        private static string light_configuration_file = "..\\..\\..\\Files\\CompilerFiles\\log_config\\light_configuration.txt";
+        private static string object_configuration_file = "..\\..\\..\\Files\\CompilerFiles\\log_config\\object_configuration.txt";
 
         private static Dictionary<string, string> commands = new Dictionary<string, string>();
+
+        private static List<string> prohibited_to_delete = new List<string>()
+        {
+            "2_4", "2_5", "2_6"
+        };
+        private static int unique_num = 0;
 
         private static CompilerHelper helper = new CompilerHelper();
         public static void Run()
@@ -26,7 +33,7 @@ namespace game_2.Brain.Compiler
             if (line != "" && !isExecuting)
             {
                 isExecuting = true;
-                string feedback = CompileLine(line);
+                string feedback = ParseLine(line);
                 Console.WriteLine(feedback);
                 string[] parts = feedback.Split('#');
 
@@ -38,18 +45,29 @@ namespace game_2.Brain.Compiler
                     {
                         key += "_" + parts[i];
                     }
-                    if (commands.ContainsKey(key))
+                    
+                    if(!prohibited_to_delete.Contains(parts[0] + "_" + parts[1]))
                     {
-                        commands.Remove(key);
+                        if (commands.ContainsKey(key))
+                        {
+                            commands.Remove(key);
+                        }
+                        commands.Add(key, line);
                     }
-                    commands.Add(key, line);
+                    else
+                    {
+                        unique_num++;
+                        commands.Add(key + "_" + unique_num, line);
+                    }
+
                 }
 
                 line = "";
                 isExecuting = false;
             }
         }
-        private static string CompileLine(string? line)
+
+        private static string ParseLine(string? line)
         {
             line = line.Trim();
             line = line.Replace("  ", " ");
@@ -58,8 +76,8 @@ namespace game_2.Brain.Compiler
 
             switch (parts[0])
             {
-                case "set":
-                    return SetChoice(parts);
+                case "alter":
+                    return AlterChoice(parts);
                 case "get":
                     return GetChoice(parts);
                 case "save":
@@ -95,7 +113,7 @@ namespace game_2.Brain.Compiler
 
             switch (parts[2])
             {
-                case "pos":
+                case "position":
                     return Camera.Pos.ToStr();
                 case "target":
                     return Camera.Target.ToStr();
@@ -136,10 +154,25 @@ namespace game_2.Brain.Compiler
                 case "light":
                     using (StreamWriter sw = new StreamWriter(light_configuration_file))
                     {
-                        foreach (string line in commands.Values) sw.WriteLine(line);
+                        foreach (KeyValuePair<string, string> item in commands)
+                        {                            
+                            if (item.Key.Split('_')[0] == "1") sw.WriteLine(item.Value);
+                        }
                         sw.Close();
                     }
                     return "Команды настройки света сохранены в файл";
+                case "object":
+                    using (StreamWriter sw = new StreamWriter(object_configuration_file))
+                    {
+                        foreach (KeyValuePair<string, string> item in commands)
+                        {
+                            if (item.Key.Split('_')[0] == "2") sw.WriteLine(item.Value);
+                        }
+                        sw.Close();
+                    }
+                    return "Команды настройки объектов сохранены в файл";
+                case "all":
+                    return SaveChoice(new string[] { "save", "light" }) + "\n" + SaveChoice(new string[] { "save", "object" });
             }
             return "0# Неизвестное save действие";
         }
@@ -155,46 +188,228 @@ namespace game_2.Brain.Compiler
                     {
                         while ((line = sr.ReadLine()) != null)
                         {
-                            CompileLine(line);
+                            ParseLine(line);
                         }
                     }
                     return "Команды настройки света загружены из файла";
+                case "object":
+                    string? line1;
+                    using (StreamReader sr = new StreamReader(object_configuration_file))
+                    {
+                        while ((line1 = sr.ReadLine()) != null)
+                        {
+                            ParseLine(line1);
+                        }
+                    }
+                    return "Команды настройки объектов загружены из файла";
+                case "all":
+                    return LoadChoice(new string[] { "save", "light" }) + "\n" + LoadChoice(new string[] { "save", "object" });
             }
             return "0# Неизвестное load действие";
         }
 
-        //SET
-        private static string SetChoice(string[] parts)
+        //ALTER
+        private static string AlterChoice(string[] parts)
         {
-            if (parts.Length == 1) return "0# Незаконченное set действие";
+            if (parts.Length == 1) return "0# Незаконченное alter действие";
             switch (parts[1])
             {
                 case "light":
-                    return SetLightChoice(parts);
+                    return AlterLightChoice(parts);
                 case "object":  //material, scale, angle, position
+                    if (parts.Length == 2 || parts[2] == null || parts[2] == string.Empty) return "0# Незаконченное alter object действие -> Необходимо указать имя объекта";
+                    if (ObjectArray.Count == 0) return "0# Массив Assimp-объектов пуст";
+                    if (!ObjectArray.Exists(parts[2])) return "0# Объекта " + parts[2] + " не существует в массиве Assimp-объектов";
+                    return AlterObjectChoice(parts, parts[2]);
                 case "camera":  //position, target, 
                     return "0# Недоступно";
             }
-            return "0# Неизвестное set действие";
+            return "0# Неизвестное alter действие";
         }
 
-        private static string SetLightChoice(string[] parts)
+        private static string AlterObjectChoice(string[] parts, string obj)
         {
-            if (parts.Length == 2) return "0# Незаконченное set light действие";
+            if (parts.Length == 3) return "0# Незаконченное alter object действие -> Необходимо указать изменяемый параметр и его значение";
+            switch (parts[3])
+            {
+                //УСТАНОВИТЬ
+                case "scale":
+                    if (parts.Length == 5)
+                    {
+                        float value;
+                        try
+                        {
+                            value = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                        }
+                        catch
+                        {
+                            return "0# Не удается преобразовать в числовое значение";
+                        }
+                        ObjectArray.SetScale(obj, value, value, value);
+                        return "2#1#" + obj + "# Масштаб объекта изменен на Scale(" + value + "," + value + "," + value + ")";
+                    }
+                    else if (parts.Length == 7)
+                    {
+                        float x, y, z;
+                        try
+                        {
+                            x = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                            y = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                            z = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                        }
+                        catch
+                        {
+                            return "0# Не удается преобразовать в числовое значение";
+                        }
+                        ObjectArray.SetScale(obj, x, y, z);
+                        return "2#1#" + obj + "# Масштаб объекта изменен на Scale(" + x + "," + y + "," + z + ")";
+                    }
+                    else
+                    {
+                        return "0# Неизвестное alter object " + obj + " scale действие -> Необходимо ввести корректное значение";
+                    }                    
+                case "angle":
+                    if (parts.Length == 7)
+                    {
+                        float x, y, z;
+                        try
+                        {
+                            x = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                            y = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                            z = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                        }
+                        catch
+                        {
+                            return "0# Не удается преобразовать в числовое значение";
+                        }
+                        ObjectArray.SetAngle(obj, x, y, z);
+                        return "2#2#" + obj + "# Угол объекта изменен на Angle(" + x + "," + y + "," + z + ")";
+                    }
+                    else
+                    {
+                        return "0# Неизвестное alter object " + obj + " angle действие -> Необходимо ввести корректное значение";
+                    }
+                case "position":
+                    if (parts.Length == 7)
+                    {
+                        float x, y, z;
+                        try
+                        {
+                            x = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                            y = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                            z = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                        }
+                        catch
+                        {
+                            return "0# Не удается преобразовать в числовое значение";
+                        }
+                        ObjectArray.SetPosition(obj, x, y, z);
+                        return "2#3#" + obj + "# Позиция объекта изменена на Position(" + x + "," + y + "," + z + ")";
+                    }
+                    else
+                    {
+                        return "0# Неизвестное alter object " + obj + " position действие -> Необходимо ввести корректное значение";
+                    }
+                //НЕМЕДЛЕННО ОБНОВИТЬ
+                case "expand":
+                    if (parts.Length == 5)
+                    {
+                        float value;
+                        try
+                        {
+                            value = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                        }
+                        catch
+                        {
+                            return "0# Не удается преобразовать в числовое значение";
+                        }
+                        ObjectArray.ExpandImmediately(obj, value, value, value);
+                        return "2#4#" + obj + "# Масштаб объекта увеличен на Expand(" + value + "," + value + "," + value + ")";
+                    }
+                    else if (parts.Length == 7)
+                    {
+                        float x, y, z;
+                        try
+                        {
+                            x = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                            y = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                            z = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                        }
+                        catch
+                        {
+                            return "0# Не удается преобразовать в числовое значение";
+                        }
+                        ObjectArray.ExpandImmediately(obj, x, y, z);
+                        return "2#4#" + obj + "# Масштаб объекта увеличен на Expand(" + x + "," + y + "," + z + ")";
+                    }
+                    else
+                    {
+                        return "0# Неизвестное alter object " + obj + " expand действие -> Необходимо ввести корректное значение";
+                    }
+                case "rotate":
+                    if (parts.Length == 7)
+                    {
+                        float x, y, z;
+                        try
+                        {
+                            x = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                            y = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                            z = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                        }
+                        catch
+                        {
+                            return "0# Не удается преобразовать в числовое значение";
+                        }
+                        ObjectArray.RotateImmediately(obj, x, y, z);
+                        return "2#5#" + obj + "# Угол объекта увеличен на Rotate(" + x + "," + y + "," + z + ")";
+                    }
+                    else
+                    {
+                        return "0# Неизвестное alter object " + obj + " rotate действие -> Необходимо ввести корректное значение";
+                    }
+                case "move":
+                    if (parts.Length == 7)
+                    {
+                        float x, y, z;
+                        try
+                        {
+                            x = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                            y = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                            z = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                        }
+                        catch
+                        {
+                            return "0# Не удается преобразовать в числовое значение";
+                        }
+                        ObjectArray.MoveImmediately(obj, x, y, z);
+                        return "2#6#" + obj + "# Позиция объекта изменена на Move(" + x + "," + y + "," + z + ")";
+                    }
+                    else
+                    {
+                        return "0# Неизвестное alter object " + obj + " move действие -> Необходимо ввести корректное значение";
+                    }
+                case "material":
+                    return "Недоступно";
+            }
+
+            return "0# Неизвестное alter object действие";
+        }
+
+        private static string AlterLightChoice(string[] parts)
+        {
+            if (parts.Length == 2) return "0# Незаконченное alter light действие";
 
             switch (parts[2])
             {
                 case "baselight":
-                    return SetBaseLightChoice(parts);
+                    return AlterBaseLightChoice(parts);
                 case "directionallight":
-                    return SetDirectionalLightChoice(parts);
-                case "specularlight":
-                    return SetSpecularLightChoice(parts);
+                    return AlterDirectionalLightChoice(parts);
                 case "pointlight":
                     if (int.TryParse(parts[3], out int result))
                     {
                         if (result >= 0 && result < LightningManager.PointlightsCount)
-                            return SetPointLightChoice(parts, result);
+                            return AlterPointLightChoice(parts, result);
                         else return "0# Индекс за пределами массива pointlights";
                     }
                     else return "0# Индекс pointlight должен быть числом";
@@ -202,25 +417,35 @@ namespace game_2.Brain.Compiler
                     if (int.TryParse(parts[3], out int res))
                     {
                         if (res >= 0 && res < LightningManager.SpotlightsCount)
-                            return SetSpotLightChoice(parts, res);
+                            return AlterSpotLightChoice(parts, res);
                         else return "0# Индекс за пределами массива spotlights";
                     }
                     else return "0# Индекс spotlight должен быть числом";
             }
-            return "0# Неизвестное set light действие";
+            return "0# Неизвестное alter light действие";
         }
 
-        //SET -> BASE LIGHT
-        private static string SetBaseLightChoice(string[] parts)
+        //ALTER -> BASE LIGHT
+        private static string AlterBaseLightChoice(string[] parts)
         {
-            if (parts.Length == 3) return "0# Незаконченное set light действие";
+            if (parts.Length == 3) return "0# Незаконченное alter light действие";
 
             switch (parts[3])
             {
                 case "color":
-                    float red = float.Parse(parts[4], CultureInfo.InvariantCulture);
-                    float green = float.Parse(parts[5], CultureInfo.InvariantCulture);
-                    float blue = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                    float red;
+                    float green;
+                    float blue;
+                    try
+                    {
+                        red = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                        green = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                        blue = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                    }
+                    catch
+                    {
+                        return "0# Не удается преобразовать в числовое значение";
+                    }
                     vector3f color = new vector3f(red, green, blue);
                     LightningManager.lightConfig.SetBaseLightColor(color);
                     return "1#1#1# Окружающий свет изменен на Color(" + red + ", " + green + ", " + blue + ")";
@@ -229,19 +454,29 @@ namespace game_2.Brain.Compiler
                     LightningManager.lightConfig.SetBaseLightIntensity(intensity);
                     return "1#1#2# Яркость окружающего света изменена на " + intensity;
             }
-            return "0# Неизвестное set light действие";
+            return "0# Неизвестное alter light действие";
         }
 
-        //SET -> DIRECTIONAL LIGHT
-        private static string SetDirectionalLightChoice(string[] parts)
+        //ALTER -> DIRECTIONAL LIGHT
+        private static string AlterDirectionalLightChoice(string[] parts)
         {
-            if (parts.Length == 3) return "0# Незаконченное set light действие";
+            if (parts.Length == 3) return "0# Незаконченное alter light действие";
             switch (parts[3])
             {
                 case "color":
-                    float red = float.Parse(parts[4], CultureInfo.InvariantCulture);
-                    float green = float.Parse(parts[5], CultureInfo.InvariantCulture);
-                    float blue = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                    float red;
+                    float green;
+                    float blue;
+                    try
+                    {
+                        red = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                        green = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                        blue = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                    }
+                    catch
+                    {
+                        return "0# Не удается преобразовать в числовое значение";
+                    }
                     vector3f color = new vector3f(red, green, blue);
                     LightningManager.lightConfig.SetDirectionalLightColor(color);
                     return "1#2#1# Напраленный свет изменен на Color(" + red + ", " + green + ", " + blue + ")";
@@ -250,39 +485,31 @@ namespace game_2.Brain.Compiler
                     LightningManager.lightConfig.SetDirectionalLightIntensity(intensity);
                     return "1#2#2# Яркость направленного света изменена на " + intensity;
                 case "direction":
-                    float x = float.Parse(parts[4], CultureInfo.InvariantCulture);
-                    float y = float.Parse(parts[5], CultureInfo.InvariantCulture);
-                    float z = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                    float x;
+                    float y;
+                    float z;
+                    try
+                    {
+                        x = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                        y = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                        z = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                    }
+                    catch
+                    {
+                        return "0# Не удается преобразовать в числовое значение";
+                    }
                     vector3f dir = new vector3f(x, y, z);
                     LightningManager.lightConfig.SetDirectionalLightDirection(dir);
                     return "1#2#3# Направление света изменено на Direction(" + x + ", " + y + ", " + z + ")";
 
             }
-            return "0# Неизвестное set light действие";
+            return "0# Неизвестное alter light действие";
         }
 
-        //SET -> SPECULAR LIGHT
-        private static string SetSpecularLightChoice(string[] parts)
+        //ALTER POINT LIGHT
+        private static string AlterPointLightChoice(string[] parts, int index)
         {
-            if (parts.Length == 3) return "0# Незаконченное set light действие";
-            switch (parts[3])
-            {
-                case "power":
-                    float power = float.Parse(parts[4], CultureInfo.InvariantCulture);
-                    LightningManager.lightConfig.SetMatSpecularPower(power);
-                    return "1#3#1# Сила отражения света изменена на " + power;
-                case "intensity":
-                    float intensity = float.Parse(parts[4], CultureInfo.InvariantCulture);
-                    LightningManager.lightConfig.SetMatSpecularIntensity(intensity);
-                    return "1#3#2# Интенсивность отражения света изменена на " + intensity;
-            }
-            return "0# Неизвестное set light действие";
-        }
-
-        //SET POINT LIGHT
-        private static string SetPointLightChoice(string[] parts, int index)
-        {
-            if (parts.Length == 4) return "0# Незаконченное set light действие";
+            if (parts.Length == 4) return "0# Незаконченное alter light действие";
             switch (parts[4])
             {
                 case "position":
@@ -321,13 +548,13 @@ namespace game_2.Brain.Compiler
                     return "1#4#7#" + index + "# Экспоненциальное затухание точечного света " + index + " изменена на " + exp;
             }
 
-            return "0# Неизвестное set light действие";
+            return "0# Неизвестное alter light действие";
         }
 
         //SET SPOT LIGHT
-        private static string SetSpotLightChoice(string[] parts, int index)
+        private static string AlterSpotLightChoice(string[] parts, int index)
         {
-            if (parts.Length == 4) return "0# Незаконченное set light действие";
+            if (parts.Length == 4) return "0# Незаконченное alter light действие";
             switch (parts[4])
             {
                 case "position":
@@ -377,7 +604,7 @@ namespace game_2.Brain.Compiler
                     return "1#5#9#" + index + "# Cutoff прожекторного света " + index + " изменен на " + cutoff;
             }
 
-            return "0# Неизвестное set light действие";
+            return "0# Неизвестное alter light действие";
         }
 
 

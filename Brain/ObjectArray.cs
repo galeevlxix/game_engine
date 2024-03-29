@@ -4,65 +4,48 @@ using game_2.MathFolder;
 
 namespace game_2.Brain
 {
-    public class ObjectArray
+    public static class ObjectArray
     {
-        private Dictionary<string, AObject> obj_list;
+        private static Dictionary<string, AObject> obj_list;
 
-        protected const string ModelFolderPath = "..\\..\\..\\Files\\Models\\";
-        protected const string TextureFolderPath = "..\\..\\..\\Files\\Textures\\";
+        private static string ModelFolderPath = "..\\..\\..\\Files\\Models\\";
+        private static string TextureFolderPath = "..\\..\\..\\Files\\Textures\\";
 
-        public ObjectArray()
+        public static void Init()
         {
             obj_list = new Dictionary<string, AObject>();
-            Init();
-        }
 
-        public ObjectArray(AObject gameObj)
-        {
-            obj_list = new Dictionary<string, AObject>();
-            Add("default object", gameObj);
-        }
-
-        public ObjectArray(Dictionary<string, AObject> dict)
-        {
-            obj_list = dict;
-        }
-
-        private void Init()
-        {
-            Add("lion", new AObject("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\obj_files\\lion\\source\\model.obj"));
-            Add("monkey", new AObject("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\obj_files\\monkey\\monkey.obj"));
+            Add("elep", new AObject(ModelFolderPath + "obj_files\\lion\\source\\model.obj"));
+            Add("monkey", new AObject(ModelFolderPath + "obj_files\\monkey\\monkey.obj"));
             
             SetProperties();
         }
 
-        private void SetProperties()
+        private static void SetProperties()
         {
-            this["lion"].SetScale(0.01f);
-            this["lion"].SetPosition(10, 0, 0);
+            SetScale("elep", 0.01f);
+            SetPosition("elep", 10, 0, 0);
 
-            //this["dust"].SetScale(0.01f);
+            SetScale("monkey", 2);
         }
 
-        public void OnRender(float deltaTime)
+        public static void OnRender(float deltaTime)
         {
 
         }
 
-        double counter = 0;
-
-        public void Add(string name, AObject gameObj)
+        public static void Add(string name, AObject gameObj)
         {
             obj_list.Add(name, gameObj);
         }
 
-        public void Remove(string name)
+        public static void Remove(string name)
         {
             obj_list[name].OnDelete();
             obj_list.Remove(name);
         }
 
-        public void Clear()
+        public static void Clear()
         {
             foreach(AObject obj in obj_list.Values)
             {
@@ -71,7 +54,7 @@ namespace game_2.Brain
             obj_list.Clear();
         }
 
-        public int Count 
+        public static int Count 
         { 
             get 
             { 
@@ -79,7 +62,7 @@ namespace game_2.Brain
             } 
         }
 
-        public void Draw()
+        public static void Draw()
         {
             foreach(AObject obj in obj_list.Values)
             {
@@ -87,7 +70,7 @@ namespace game_2.Brain
             }
         }
 
-        public void Reset()
+        public static void Reset()
         {
             foreach (AObject obj in obj_list.Values)
             {
@@ -95,31 +78,72 @@ namespace game_2.Brain
             }
         }
 
-        public AObject this [string name]
+        public static bool Exists(string name)
         {
-            get
-            {
-                return obj_list[name];
-            }
-            set
-            {
-                obj_list[name] = value;
-            }
+            return obj_list.ContainsKey(name);
         }
 
-        public void SetAngle(string name, float x, float y, float z)
+        // УСТАНОВИТЬ
+        public static void SetAngle(string name, float x, float y, float z)
         {
             obj_list[name].SetAngle(x, y, z);
         }
 
-        public void SetPosition(string name, float x, float y, float z)
+        public static void SetPosition(string name, float x, float y, float z)
         {
             obj_list[name].SetPosition(x, y, z);
         }
 
-        public void SetScale(string name, float x, float y, float z)
+        public static void SetScale(string name, float x, float y, float z)
         {
             obj_list[name].SetScale(x, y, z);
+        }
+
+        public static void SetScale(string name, float val)
+        {
+            obj_list[name].SetScale(val);
+        }
+
+        // НЕМЕДЛЕННО ОБНОВИТЬ
+        public static void ExpandImmediately(string name, float scaleX, float scaleY, float scaleZ)
+        {
+            obj_list[name].ExpandImmediately(scaleX, scaleY, scaleZ);
+        }
+
+        public static void ExpandImmediately(string name, float value)
+        {
+            obj_list[name].ExpandImmediately(value);
+        }
+
+        public static void RotateImmediately(string name, float angleX, float angleY, float angleZ)
+        {
+            obj_list[name].RotateImmediately(angleX, angleY, angleZ);
+        }
+
+        public static void MoveImmediately(string name, float PosX, float PosY, float PosZ)
+        {
+            obj_list[name].MoveImmediately(PosX, PosY, PosZ);   
+        }
+
+        // СКОРОСТЬ * ВРЕМЯ
+        private static void Rotate(string name, float speedX, float speedY, float speedZ, float time)
+        {
+            obj_list[name].Rotate(speedX, speedY, speedZ, time);
+        }
+
+        private static void Move(string name, float speedX, float speedY, float speedZ, float time)
+        {
+            obj_list[name].Move(speedX, speedY, speedZ, time);
+        }
+
+        private static void Expand(string name, float speedX, float speedY, float speedZ, float time)
+        {
+            obj_list[name].Expand(speedX, speedY, speedZ, time);
+        }
+
+        private static void Expand(string name, float speedVal, float time)
+        {
+            obj_list[name].Expand(speedVal, time);
         }
     }
 }

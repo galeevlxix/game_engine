@@ -9,6 +9,6 @@ newmtl first
 	Kd 0.5880 0.5880 0.5880
 	Ks 0.0000 0.0000 0.0000
 	Ke 0.0000 0.0000 0.0000
-	map_Kd GOD__Base_Color___id_basecolor_.jpg
+	map_Kd GOD__Base_Color___id_basecolor_.png
 	map_Kn GOD__Normal___id_normal_.jpg
 	

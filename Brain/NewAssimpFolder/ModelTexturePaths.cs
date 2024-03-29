@@ -1,4 +1,4 @@
-﻿namespace game_2.Brain
+﻿namespace game_2.Brain.NewAssimpFolder
 {
     public class ModelTexturePaths
     {

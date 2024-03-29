@@ -50,7 +50,6 @@ uniform BaseLight gBaseLight;
 uniform DirectionalLight gDirectionalLight;
 
 uniform vec3 gCameraPos;
-uniform float gMatSpecularIntensity;
 uniform float gMatSpecularPower;
 
 uniform PointLight gPointLights[MAX_POINT_LIGHTS];

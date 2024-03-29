@@ -10,7 +10,6 @@ namespace game_2.Brain.Lights
         private DirectionalLightLocations _directionalLightLocations;
 
         int _cameraPositionLocation;
-        int _matSpecularIntensityLocation;
         int _matSpecularPowerLocation;
 
         const int MAX_POINT_LIGHTS = 10;
@@ -41,7 +40,6 @@ namespace game_2.Brain.Lights
 
             //specular
             _cameraPositionLocation = CentralizedShaders.AssimpShader.GetUniformLocation("gCameraPos");
-            _matSpecularIntensityLocation = CentralizedShaders.AssimpShader.GetUniformLocation("gMatSpecularIntensity");
             _matSpecularPowerLocation = CentralizedShaders.AssimpShader.GetUniformLocation("gMatSpecularPower");
 
             //pointLights
@@ -88,7 +86,6 @@ namespace game_2.Brain.Lights
 
             //specular
             GL.Uniform3(_cameraPositionLocation, 0, 0, 0);
-            GL.Uniform1(_matSpecularIntensityLocation, 0);
             GL.Uniform1(_matSpecularPowerLocation, 0);
 
             //pointlights
@@ -180,11 +177,10 @@ namespace game_2.Brain.Lights
         }
 
         //specular
-        public void SetSpecular(vector3f Position, float SpecularIntensity, float SpecularPower)
+        public void SetSpecular(vector3f Position, float SpecularPower)
         {
             Use();
             GL.Uniform3(_cameraPositionLocation, Position.x, Position.x, Position.z);
-            GL.Uniform1(_matSpecularIntensityLocation, SpecularIntensity);
             GL.Uniform1(_matSpecularPowerLocation, SpecularPower);
         }
 
@@ -192,12 +188,6 @@ namespace game_2.Brain.Lights
         {
             Use();
             GL.Uniform3(_cameraPositionLocation, Position.x, Position.y, Position.z);
-        }
-
-        public void SetMatSpecularIntensity(float SpecularIntensity)
-        {
-            Use();
-            GL.Uniform1(_matSpecularIntensityLocation, SpecularIntensity);
         }
 
         public void SetMatSpecularPower(float SpecularPower)

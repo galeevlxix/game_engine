@@ -14,9 +14,9 @@ namespace game_2
 
             windowSettings.Size = new OpenTK.Mathematics.Vector2i(1920, 1080);
 
-            windowSettings.Title = "Game";
+            windowSettings.WindowState = OpenTK.Windowing.Common.WindowState.Maximized;
 
-            settings.IsMultiThreaded = false;
+            windowSettings.Title = "Game";
 
             GameEngine engine = new GameEngine(settings, windowSettings);
             engine.Init();

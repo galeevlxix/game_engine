@@ -22,7 +22,7 @@ namespace game_2.Brain.Lights
         {
             CreateLamps();
             lightConfig = new LightingTechnique();
-            lightConfig.SetSpecular(Camera.Pos, 0.5f, 32);
+            lightConfig.SetSpecular(Camera.Pos, 32);
             ConfigureBaseLight();
             ConfigureDirectionalLight();
             ConfigurePointLights();

@@ -7,9 +7,9 @@ namespace game_2.Brain.NewAssimpFolder
         private AMesh _mesh;
         public Pipeline pipeline;
 
-        public AEntry(List<AVertex> Vertices, List<int> Indices, ModelTexturePaths Paths)
+        public AEntry(List<AVertex> Vertices, List<int> Indices, AMaterial material)
         {
-            _mesh = new AMesh(Vertices, Indices, Paths);
+            _mesh = new AMesh(Vertices, Indices, material);
             pipeline = new Pipeline();
         }
 
