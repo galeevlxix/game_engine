@@ -6,8 +6,6 @@ namespace game_2.Brain.NewAssimpFolder
 {
     public class AMesh
     {
-        private Dictionary<string, Texture> textures;
-
         private VertexArrayObject VAO;
         private BufferObject<AVertex> VBO;
         private BufferObject<int> IBO;
@@ -18,7 +16,6 @@ namespace game_2.Brain.NewAssimpFolder
 
         public AMesh(List<AVertex> Vertices, List<int> Indices, AMaterial material)
         {
-            textures= new Dictionary<string, Texture>();
             Load(Vertices, Indices);
 
             this.material = material;
@@ -60,8 +57,6 @@ namespace game_2.Brain.NewAssimpFolder
 
         public void Dispose()
         {
-            foreach (Texture texture in textures.Values) texture.Dispose();
-
             VAO.Dispose();
             VBO.Dispose();
             IBO.Dispose();

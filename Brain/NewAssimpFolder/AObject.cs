@@ -43,6 +43,7 @@ namespace game_2.Brain.NewAssimpFolder
         {
             for (int i = 0; i < node.MeshCount; i++)
             {
+                //Console.WriteLine("Mesh " + i + " processing...");
                 ProcessMesh(_scene.Meshes[node.MeshIndices[i]]);
             }
 
@@ -89,20 +90,20 @@ namespace game_2.Brain.NewAssimpFolder
             ModelTexturePaths texturesPaths = new ModelTexturePaths();
             float shininess = 1;
 
-            AMaterial true_material;
+            AMaterial material;
 
             if (mesh.MaterialIndex >= 0)
             {
                 // Textures
-                Material material = _scene.Materials[mesh.MaterialIndex];
-                texturesPaths = ProcessTextures(material.GetAllMaterialTextures());
-                shininess = material.Shininess;
+                Material input_material = _scene.Materials[mesh.MaterialIndex];
+                texturesPaths = ProcessTextures(input_material.GetAllMaterialTextures());
+                shininess = input_material.Shininess;                
             }
 
-            true_material = AMaterial.Init(texturesPaths);
-            true_material.SetSpecularPower(shininess);
+            material = AMaterial.Init(texturesPaths);
+            material.SetSpecularPower(shininess);
 
-            _entries.Add(new AEntry(vertices, indices, true_material));
+            _entries.Add(new AEntry(vertices, indices, material));
         }
 
         private ModelTexturePaths ProcessTextures(TextureSlot[] allTextures)
@@ -121,9 +122,18 @@ namespace game_2.Brain.NewAssimpFolder
                     {
                         texturesPath._NormalPath = new string(Path.Combine(_modelDirectoryPath, slot.FilePath));
                     }
+                    else if (slot.TextureType == TextureType.Specular)
+                    {
+                        texturesPath._SpecularPath = new string(Path.Combine(_modelDirectoryPath, slot.FilePath));
+                    }
                 }
             }
             return texturesPath;
+        }
+
+        private void ProcessProperties()
+        {
+            
         }
 
         public void Draw()

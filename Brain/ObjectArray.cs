@@ -15,18 +15,28 @@ namespace game_2.Brain
         {
             obj_list = new Dictionary<string, AObject>();
 
-            Add("elep", new AObject(ModelFolderPath + "obj_files\\lion\\source\\model.obj"));
+            Add("de_dust", new AObject(ModelFolderPath + "obj_files\\de_dust\\source\\new_de_dust2_comp.obj"));
             Add("monkey", new AObject(ModelFolderPath + "obj_files\\monkey\\monkey.obj"));
-            
+            Add("pika", new AObject("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\obj_files\\pika-girl\\WithPika2.obj"));
+            Add("ball", new AObject("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\obj_files\\Ball\\ball1.obj"));
+
             SetProperties();
         }
 
         private static void SetProperties()
         {
-            SetScale("elep", 0.01f);
-            SetPosition("elep", 10, 0, 0);
+            SetScale("de_dust", 0.05f);
+            SetAngle("de_dust", 90, 0, 0);
+            SetPosition("de_dust", -20, 0, 0);
 
+            SetPosition("monkey", 0, 2, 0);
             SetScale("monkey", 2);
+
+            SetPosition("pika", 12, 7.5f, 12);
+            SetAngle("pika", 0, 90, 0);
+
+            SetScale("ball", 12);
+            SetPosition("ball", -5, 4, 10);
         }
 
         public static void OnRender(float deltaTime)

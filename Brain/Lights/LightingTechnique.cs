@@ -40,7 +40,7 @@ namespace game_2.Brain.Lights
 
             //specular
             _cameraPositionLocation = CentralizedShaders.AssimpShader.GetUniformLocation("gCameraPos");
-            _matSpecularPowerLocation = CentralizedShaders.AssimpShader.GetUniformLocation("gMatSpecularPower");
+            _matSpecularPowerLocation = CentralizedShaders.AssimpShader.GetUniformLocation("gMaterial.SpecularPower");
 
             //pointLights
             _numPointLightsLocation = CentralizedShaders.AssimpShader.GetUniformLocation("gNumPointLights");

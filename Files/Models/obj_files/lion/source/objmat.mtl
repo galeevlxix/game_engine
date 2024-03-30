@@ -1,5 +1,5 @@
 newmtl first
-	Ns 10.0000
+	Ns 32.0000
 	Ni 1.5000
 	d 1.0000
 	Tr 0.0000
@@ -11,4 +11,5 @@ newmtl first
 	Ke 0.0000 0.0000 0.0000
 	map_Kd GOD__Base_Color___id_basecolor_.png
 	map_Kn GOD__Normal___id_normal_.jpg
+	map_Ks GOD__Glossiness___id_glossiness_.jpg
 	

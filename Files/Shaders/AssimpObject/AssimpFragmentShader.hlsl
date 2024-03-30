@@ -6,8 +6,14 @@ in vec3 Normal0;
 in vec3 WorldPos0;
 in vec3 Tangent0;
 
-uniform sampler2D gDiffuseMap;
-uniform sampler2D gNormalMap;
+struct Material
+{
+    sampler2D DiffuseMap;
+    sampler2D NormalMap;
+    sampler2D SpecularMap;
+    
+    float SpecularPower;
+};
 
 struct BaseLight
 {
@@ -49,14 +55,15 @@ const int MAX_SPOT_LIGHTS = 10;
 uniform BaseLight gBaseLight;
 uniform DirectionalLight gDirectionalLight;
 
-uniform vec3 gCameraPos;
-uniform float gMatSpecularPower;
-
 uniform PointLight gPointLights[MAX_POINT_LIGHTS];
 uniform int gNumPointLights;
 
 uniform SpotLight gSpotLights[MAX_SPOT_LIGHTS];
 uniform int gNumSpotLights;
+
+uniform vec3 gCameraPos;
+
+uniform Material gMaterial;
 
 vec4 CalcLightInternal(BaseLight Light, vec3 LightDirection, vec3 Normal);
 vec4 CalcDirectionalLight(vec3 Normal);
@@ -68,7 +75,7 @@ void main()
 { 
     vec3 Normal = CalcBumpedNormal();
 
-    vec4 texel = texture2D(gDiffuseMap, texCoord.xy);
+    vec4 texel = texture2D(gMaterial.DiffuseMap, texCoord.xy);
 
     if (texel.a < 0.3) discard;
     
@@ -95,7 +102,7 @@ vec3 CalcBumpedNormal()
     vec3 Tangent = normalize(Tangent0);
     Tangent = normalize(Tangent - dot(Tangent, Normal) * Normal);
     vec3 Bitangent = cross(Tangent, Normal);
-    vec3 BumpMapNormal = (texture2D(gNormalMap, texCoord.xy)).xyz;
+    vec3 BumpMapNormal = (texture2D(gMaterial.NormalMap, texCoord.xy)).xyz;
     BumpMapNormal = 2.0 * BumpMapNormal - vec3(1.0, 1.0, 1.0);
     vec3 NewNormal;                              
     mat3 TBN = mat3(Tangent, Bitangent, Normal);    
@@ -120,11 +127,11 @@ vec4 CalcLightInternal(BaseLight Light, vec3 pLightDirection, vec3 Normal)
         vec3 VertexToEye = normalize(gCameraPos - WorldPos0);
         vec3 LightReflect = normalize(reflect(LightDirection, Normal));
         float SpecularFactor = dot(VertexToEye, LightReflect);
-        SpecularFactor = pow(SpecularFactor, gMatSpecularPower);
+        SpecularFactor = pow(SpecularFactor, gMaterial.SpecularPower);
 
         if (SpecularFactor > 0) 
         {
-            SpecularColor = vec4(Light.Color, 1.0f) * Light.Intensity * SpecularFactor;
+            SpecularColor =  vec4(Light.Color, 1.0f) * Light.Intensity * SpecularFactor;
         }
     }
     return DiffuseColor + SpecularColor;

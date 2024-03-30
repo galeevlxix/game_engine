@@ -128,12 +128,17 @@ namespace game_2.Brain
         
         public void setDiffuseMap()
         {
-            GL.Uniform1(_uniformLocations["gDiffuseMap"], 0);
+            GL.Uniform1(_uniformLocations["gMaterial.DiffuseMap"], 0);
         }
 
         public void setNormalMap()
         {
-            GL.Uniform1(_uniformLocations["gNormalMap"], 1);
+            GL.Uniform1(_uniformLocations["gMaterial.NormalMap"], 1);
+        }
+
+        public void setSpecularMap()
+        {
+            GL.Uniform1(_uniformLocations["gMaterial.SpecularMap"], 2);
         }
 
         public void setFloat(string name, float data)

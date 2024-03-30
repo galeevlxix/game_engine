@@ -1,5 +1,5 @@
-alter object elep move 0 0 -1
-alter object elep move 0 0 -1
-alter object elep move 0 0 -1
-alter object elep move -10 0 0
-alter object elep move 0 0 -4
+alter object de_dust scale 0.05
+alter object de_dust angle 90 0 0
+alter object de_dust position -20 0 0
+alter object monkey position 0 2 0
+alter object monkey scale 2

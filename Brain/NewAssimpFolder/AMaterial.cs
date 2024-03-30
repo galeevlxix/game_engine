@@ -1,28 +1,23 @@
 ﻿using game_2.Brain.Lights;
 using OpenTK.Graphics.OpenGL4;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace game_2.Brain.NewAssimpFolder
 {
     public class AMaterial
     {
-        private Dictionary<string, Texture> m_textures;
+        private ModelTexturePaths m_paths;
         private float m_specular_power;
 
         private AMaterial()
         {
-            m_textures = new Dictionary<string, Texture>();
-            m_specular_power = 32.0f;
+            m_paths = new ModelTexturePaths();
         }
 
         public static AMaterial Init(ModelTexturePaths paths)
         {
             AMaterial material = new AMaterial();
-            material.LoadTextures(paths);
+            material.m_paths = paths;
+            material.LoadTextures();
 
             return material;
         }
@@ -35,28 +30,19 @@ namespace game_2.Brain.NewAssimpFolder
 
         private void UseTextures()
         {
-            foreach (Texture texture in m_textures.Values) texture.Use();
+            TextureHeap.Use(m_paths);
         }
         
-        private void LoadTextures(ModelTexturePaths paths)
+        private void LoadTextures()
         {
-            LoadOneMap(paths._DiffusePath, TextureUnit.Texture0);
-            LoadOneMap(paths._NormalPath, TextureUnit.Texture1);
-        }
+            //missing maps
+            if (m_paths._NormalPath == string.Empty) m_paths._NormalPath = TextureHeap.empty_normal_map;
+            if (m_paths._SpecularPath == string.Empty) m_paths._SpecularPath = TextureHeap.empty_specular_map;
 
-        private void LoadOneMap(string file_path, TextureUnit unit)
-        {
-            if (file_path != string.Empty && !m_textures.ContainsKey(file_path))
-            {
-                Texture _texture_map = Texture.Load(file_path, PixelInternalFormat.Rgba, unit, true);
-                m_textures.Add(file_path, _texture_map);
-            }
-            else if (file_path == string.Empty && !m_textures.ContainsKey(file_path) && unit == TextureUnit.Texture1)
-            {
-                string empty_normal_map = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Textures\\white_list.bmp";
-                Texture _texture_map = Texture.Load(empty_normal_map, PixelInternalFormat.Rgba, unit, true);
-                m_textures.Add(empty_normal_map, _texture_map);
-            }
+            //add
+            TextureHeap.Add(m_paths._DiffusePath);
+            TextureHeap.Add(m_paths._NormalPath, TextureUnit.Texture1);
+            TextureHeap.Add(m_paths._SpecularPath, TextureUnit.Texture2);
         }
 
         public void SetSpecularPower(float value)
