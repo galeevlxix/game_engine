@@ -75,6 +75,7 @@ namespace game_2
             ObjectArray.Init();          
             CentralizedShaders.AssimpShader.setDiffuseMap();
             CentralizedShaders.AssimpShader.setNormalMap();
+            CentralizedShaders.AssimpShader.setSpecularMap();
 
             Console.WriteLine("Загрузка скайбокса...");
             CentralizedShaders.SkyBoxShader.Use();
@@ -105,6 +106,7 @@ namespace game_2
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             CentralizedShaders.AssimpShader.Use();
+            ObjectArray.OnRender((float)args.Time);
             ObjectArray.Draw();        
 
             CentralizedShaders.SkyBoxShader.Use();

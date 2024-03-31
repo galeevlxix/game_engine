@@ -6,9 +6,9 @@ namespace game_2.Brain.NewAssimpFolder
     {
         private static Dictionary<string, Texture> _textureHeap = new Dictionary<string, Texture>();
 
-        public static string empty_normal_map = "..\\..\\..\\Files\\Textures\\strong-empty-normal-map.jpg";
+        public static string empty_normal_map = "..\\..\\..\\Files\\Textures\\EmptyNormalMap.png";
         
-        public static string empty_specular_map = "..\\..\\..\\Files\\Textures\\white_list.png";
+        public static string empty_specular_map = "..\\..\\..\\Files\\Textures\\white_list2.bmp";
         public static void Add(string file_path, TextureUnit unit = TextureUnit.Texture0, PixelInternalFormat format = PixelInternalFormat.Rgba)
         {
             if (!_textureHeap.ContainsKey(file_path))

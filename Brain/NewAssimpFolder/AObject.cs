@@ -1,5 +1,6 @@
 ﻿using Assimp;
 using OpenTK.Mathematics;
+using System.Xml.Linq;
 
 namespace game_2.Brain.NewAssimpFolder
 {
@@ -12,7 +13,7 @@ namespace game_2.Brain.NewAssimpFolder
         private string _modelDirectoryPath;
 
         public AObject(string ModelFilePath) 
-        { 
+        {
             _modelFilePath = ModelFilePath;
             InitScene();
         }
@@ -129,11 +130,6 @@ namespace game_2.Brain.NewAssimpFolder
                 }
             }
             return texturesPath;
-        }
-
-        private void ProcessProperties()
-        {
-            
         }
 
         public void Draw()

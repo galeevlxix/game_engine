@@ -19,6 +19,9 @@ namespace game_2.Brain
             Add("monkey", new AObject(ModelFolderPath + "obj_files\\monkey\\monkey.obj"));
             Add("pika", new AObject("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\obj_files\\pika-girl\\WithPika2.obj"));
             Add("ball", new AObject("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\obj_files\\Ball\\ball1.obj"));
+            Add("dingel", new AObject("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\fbx_files\\Dingel\\source\\Dingel_comp.obj"));
+            Add("mococo", new AObject("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\fbx_files\\Mococo\\Mococo_pose.fbx"));
+            Add("sphere", new AObject("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\fbx_files\\stylized-organic-red\\source\\Stylizedground_sphere_comp.obj"));
 
             SetProperties();
         }
@@ -37,16 +40,28 @@ namespace game_2.Brain
 
             SetScale("ball", 12);
             SetPosition("ball", -5, 4, 10);
+
+            SetPosition("dingel", -6, 0, -10);
+            SetScale("dingel", 0.04f);
+
+            SetPosition("mococo", 10, 0, -5);
+            SetAngle("mococo", 0, -90, 0);
+            SetScale("mococo", 0.8f);
+
+            SetScale("sphere", 0.05f);
+            SetPosition("sphere", -9, 5, 0);
         }
 
+        private static float rot_speed = 45;
         public static void OnRender(float deltaTime)
         {
-
+            Rotate("monkey", 0, rot_speed, 0, deltaTime);
         }
 
         public static void Add(string name, AObject gameObj)
         {
             obj_list.Add(name, gameObj);
+            Console.WriteLine("     Загружена модель " + name);
         }
 
         public static void Remove(string name)

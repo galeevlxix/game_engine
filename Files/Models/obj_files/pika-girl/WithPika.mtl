@@ -2,7 +2,7 @@
 # File Created: 30.10.2018 14:44:32
 
 newmtl pikagirl
-	Ns 64.0000
+	Ns 10.0000
 	Ni 1.5000
 	d 1.0000
 	Tr 0.0000
@@ -14,6 +14,7 @@ newmtl pikagirl
 	Ke 0.0000 0.0000 0.0000
 	map_Kd PikaGirl_C.png
 	map_Kn PikaGirl_N.png
+	map_Ks PikaGirl_R.png
 
 newmtl ETC
 	Ns 10.0000
@@ -27,7 +28,6 @@ newmtl ETC
 	Ks 0.0000 0.0000 0.0000
 	Ke 0.0000 0.0000 0.0000
 	map_Kd ETC.png
-	map_Kn PikaGirl_N.png
 
 newmtl Ground
 	Ns 10.0000
@@ -42,6 +42,7 @@ newmtl Ground
 	Ke 0.0000 0.0000 0.0000
 	map_Kd ground_D.png
 	map_Kn PikaGirl_N.png
+	map_Ks ground_R.png
 
 newmtl Grass
 	Ns 10.0000
@@ -56,6 +57,7 @@ newmtl Grass
 	Ke 0.0000 0.0000 0.0000
 	map_Kd grass_diff.tga
 	map_Kn grass_norm.tga
+	map_Ks grass_spec.tga
 
 newmtl Pika
 	Ns 10.0000
@@ -82,5 +84,5 @@ newmtl Glow
 	Kd 0.5880 0.5880 0.5880
 	Ks 0.0000 0.0000 0.0000
 	Ke 0.0000 0.0000 0.0000
-	map_Kd PikaGirl_N.png
+	map_Kd ETC.png
 

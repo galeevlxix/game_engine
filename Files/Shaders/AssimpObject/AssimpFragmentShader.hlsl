@@ -128,10 +128,11 @@ vec4 CalcLightInternal(BaseLight Light, vec3 pLightDirection, vec3 Normal)
         vec3 LightReflect = normalize(reflect(LightDirection, Normal));
         float SpecularFactor = dot(VertexToEye, LightReflect);
         SpecularFactor = pow(SpecularFactor, gMaterial.SpecularPower);
+        
 
         if (SpecularFactor > 0) 
         {
-            SpecularColor =  vec4(Light.Color, 1.0f) * Light.Intensity * SpecularFactor;
+            SpecularColor = vec4(Light.Color, 1.0f) * Light.Intensity * SpecularFactor * texture2D(gMaterial.SpecularMap, texCoord.xy);
         }
     }
     return DiffuseColor + SpecularColor;
