@@ -8,7 +8,6 @@ using game_2.Brain.SkyBoxFolder;
 using game_2.Brain.AimFolder;
 using game_2.Brain.Lights;
 using game_2.Brain.Compiler;
-using game_2.Brain.Shadow;
 
 namespace game_2
 {
@@ -23,7 +22,6 @@ namespace game_2
         private Skybox skybox;
         //private InfoPanel info;
         private Aim aim;
-        private ShadowMapFBO shadow_map;
 
         private readonly Color4 BackGroundColor;
 
@@ -76,7 +74,6 @@ namespace game_2
             CentralizedShaders.AssimpShader.setDiffuseMap();
             CentralizedShaders.AssimpShader.setNormalMap();
             CentralizedShaders.AssimpShader.setSpecularMap();
-            CentralizedShaders.AssimpShader.setShadowMap();
 
             Console.WriteLine("Загрузка скайбокса...");
             CentralizedShaders.SkyBoxShader.Use();
@@ -84,9 +81,6 @@ namespace game_2
 
             Console.WriteLine("Загрузка света...");
             LightningManager.Init();
-
-            shadow_map = new ShadowMapFBO();
-            shadow_map.Init(WindowWidth, WindowHeight);
 
             Console.WriteLine("Успешное завершение\n");
             isLoaded = true;
@@ -103,8 +97,6 @@ namespace game_2
             // управление камерой
             InputCallbacks(args.Time);
             Camera.OnRender((float)args.Time);
-
-            RenderShadow();
 
             RenderScene(args);
 
@@ -126,17 +118,6 @@ namespace game_2
             GLFW.PollEvents();
         }
 
-        private void RenderShadow()
-        {
-            GL.CullFace(CullFaceMode.Front);
-            shadow_map.BindForWriting();
-            GL.Clear(ClearBufferMask.DepthBufferBit);
-            CentralizedShaders.ShadowMapShader.Use();
-            ObjectArray.DrawInShadowShader(LightningManager.spotlights[0]);
-
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
-        }
-
         private void RenderScene(FrameEventArgs args)
         {
             GL.CullFace(CullFaceMode.Back);
@@ -144,9 +125,8 @@ namespace game_2
             CentralizedShaders.AssimpShader.Use();
             GL.Uniform3(CentralizedShaders.AssimpShader.GetUniformLocation("cTarget"), Camera.Target.x, Camera.Target.y, Camera.Target.z);
             
-            shadow_map.BindForReading(TextureUnit.Texture3);
             ObjectArray.OnRender((float)args.Time);
-            ObjectArray.Draw(LightningManager.spotlights[0]);
+            ObjectArray.Draw();
         }
 
         private void InputCallbacks(double Time)

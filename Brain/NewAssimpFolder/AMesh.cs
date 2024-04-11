@@ -72,13 +72,6 @@ namespace game_2.Brain.NewAssimpFolder
             GL.DrawElements(BeginMode.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);
         }
 
-        public void DrawInShadowShader(Matrix4 wvp)
-        {
-            CentralizedShaders.ShadowMapShader.setMatrix("wvp", wvp);
-            VAO.Bind();
-            GL.DrawElements(BeginMode.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);
-        }
-
         public void Dispose()
         {
             VAO.Dispose();

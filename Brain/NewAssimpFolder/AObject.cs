@@ -143,15 +143,6 @@ namespace game_2.Brain.NewAssimpFolder
         {
             foreach (AEntry item in _entries) item.Draw();
         }
-        public void Draw(Spotlight light)
-        {
-            foreach (AEntry item in _entries) item.Draw(light);
-        }
-
-        public void DrawInShadowShader(Spotlight light)
-        {
-            foreach (AEntry item in _entries) item.DrawInShadowShader(light);
-        }
 
         public void OnDelete()
         {

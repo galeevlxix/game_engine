@@ -13,7 +13,7 @@ namespace game_2
             NativeWindowSettings windowSettings = NativeWindowSettings.Default;
 
             windowSettings.WindowState = OpenTK.Windowing.Common.WindowState.Maximized;
-            Console.WriteLine(windowSettings.CurrentMonitor.Pointer.ToString());
+            Console.WriteLine("Дайте письку плжалуйстьа оченб прошу настя девушка проист ");
 
             windowSettings.Title = "Game";
 

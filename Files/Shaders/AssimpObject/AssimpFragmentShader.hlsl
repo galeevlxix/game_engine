@@ -6,8 +6,6 @@ in vec3 Normal0;
 in vec3 WorldPos0;
 in vec3 Tangent0;
 
-in vec4 LightSpacePos;
-
 struct Material
 {
     sampler2D DiffuseMap;
@@ -65,8 +63,6 @@ uniform int gNumSpotLights;
 
 uniform vec3 gCameraPos;
 
-uniform sampler2D gShadowMap;
-
 uniform Material gMaterial;
 
 vec4 CalcLightInternal(BaseLight Light, vec3 LightDirection, vec3 Normal);
@@ -74,14 +70,11 @@ vec4 CalcDirectionalLight(vec3 Normal);
 vec4 CalcPointLight(PointLight pLight, vec3 Normal);
 vec4 CalcSpotLight(SpotLight sLight, vec3 Normal);
 vec3 CalcBumpedNormal();
-float CalcShadowFactor();
  
 void main() 
 { 
     vec3 Normal = CalcBumpedNormal();
     
-    float shadowFactor = CalcShadowFactor();
-
     vec4 texel = texture2D(gMaterial.DiffuseMap, texCoord.xy);
 
     if (texel.a < 0.3) discard;
@@ -95,31 +88,13 @@ void main()
         TotalLight += CalcPointLight(gPointLights[i], Normal);
     }
     
-    TotalLight += shadowFactor * CalcSpotLight(gSpotLights[0], Normal);
-    
-    TotalLight += CalcSpotLight(gSpotLights[1], Normal);
+    for (int i = 0; i < gNumSpotLights; i++)
+    {
+        TotalLight += CalcSpotLight(gSpotLights[i], Normal);
+    }
 
 	outputColor = texel * TotalLight;
 }   
-
-float CalcShadowFactor()
-{
-    vec3 ProjCoords = LightSpacePos.xyz / LightSpacePos.w;
-    vec2 UVCoords;
-    UVCoords.x = 0.5 * ProjCoords.x + 0.5;
-    UVCoords.y = 0.5 * ProjCoords.y + 0.5;
-    float z = 0.5 * ProjCoords.z + 0.5;
-    
-    float Depth = (texture2D(gShadowMap, UVCoords)).x;
-    if (Depth < z + 0.00001)
-    {
-        return 0.0;
-    }
-    else
-    {
-        return 1;
-    }
-}
 
 vec3 CalcBumpedNormal()
 {

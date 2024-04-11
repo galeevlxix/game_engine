@@ -144,11 +144,6 @@ namespace game_2.Brain
             GL.Uniform1(_uniformLocations["gMaterial.SpecularMap"], 2);
         }
 
-        public void setShadowMap()
-        {
-            GL.Uniform1(_uniformLocations["gShadowMap"], 3);
-        }
-
         public void setFloat(string name, float data)
         {
             GL.Uniform1(_uniformLocations[name], data);
@@ -199,3 +194,4 @@ namespace game_2.Brain
         }
     }
 }
+

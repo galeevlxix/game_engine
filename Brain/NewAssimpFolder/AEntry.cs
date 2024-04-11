@@ -20,16 +20,6 @@ namespace game_2.Brain.NewAssimpFolder
             _mesh.Draw(pipeline.getWorld(), pipeline.getWVP());
         }
 
-        public void Draw(Spotlight light)
-        {
-            _mesh.Draw(pipeline.getWorld(), pipeline.getWVP(), pipeline.getWVP(light));
-        }
-
-        public void DrawInShadowShader(Spotlight light)
-        {
-            _mesh.DrawInShadowShader(pipeline.getWVP(light));
-        }
-
         public void OnDelete() => _mesh.Dispose();
     }
 }

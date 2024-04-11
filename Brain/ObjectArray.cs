@@ -99,22 +99,13 @@ namespace game_2.Brain
             } 
         }
 
-        public static void Draw(Spotlight light)
+        public static void Draw()
         {
             foreach(AObject obj in obj_list.Values)
             {
-                obj.Draw(light);
+                obj.Draw();
             }
         }
-
-        public static void DrawInShadowShader(Spotlight light)
-        {
-            foreach (AObject obj in obj_list.Values)
-            {
-                obj.DrawInShadowShader(light);
-            }
-        }
-
         public static void Reset()
         {
             foreach (AObject obj in obj_list.Values)
