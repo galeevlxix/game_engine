@@ -16,7 +16,7 @@ namespace game_2.Brain.SkyBoxFolder
 
         public override void Draw()
         {
-            mesh.Draw(pipeline.getMVP().ToOpenTK());
+            mesh.Draw(pipeline.getWorld());
         }
     }
 }

@@ -46,11 +46,11 @@ namespace game_2.Brain.ObjectFolder
             pipeline = new Pipeline();
         }
 
-        public virtual void Draw() => mesh.Draw(pipeline.getMVP().ToOpenTK());
+        public virtual void Draw() => mesh.Draw(pipeline.getWorld());
 
-        public virtual void Draw(matrix4f cameraPos, matrix4f cameraRot, matrix4f PersProj) => mesh.Draw(pipeline.getMVP().ToOpenTK(), cameraPos.ToOpenTK(), cameraRot.ToOpenTK(), PersProj.ToOpenTK());
+        public virtual void Draw(matrix4f cameraPos, matrix4f cameraRot, matrix4f PersProj) => mesh.Draw(pipeline.getWorld(), cameraPos.ToOpenTK(), cameraRot.ToOpenTK(), PersProj.ToOpenTK());
 
-        public virtual void Draw(int dist) => mesh.Draw(pipeline.getMVP().ToOpenTK(), Check_Distance(dist));
+        public virtual void Draw(int dist) => mesh.Draw(pipeline.getWorld(), Check_Distance(dist));
 
         public bool Check_Distance(float d)
         {

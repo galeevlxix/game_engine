@@ -8,17 +8,18 @@ out vec2 texCoord;
 out vec3 Normal0;
 out vec3 WorldPos0;
 out vec3 Tangent0;
+out vec4 LightSpacePos;
 
 uniform mat4 world;
-uniform mat4 campos;
-uniform mat4 camrot;
-uniform mat4 pers;
+uniform mat4 light_wvp;
+uniform mat4 wvp;
 
 void main()                                            
 {        
 	texCoord = aTexCoord;
-	gl_Position = vec4(aPosition, 1.0) * world * campos * camrot * pers;
+    gl_Position = vec4(aPosition, 1.0) * wvp;
     Normal0 = (vec4(aNormal, 0.0) * world).xyz;
     Tangent0 = (vec4(aTangent, 0.0) * world).xyz;
 	WorldPos0 = (vec4(aPosition, 1.0) * world).xyz;
+    LightSpacePos = vec4(aPosition, 1.0) * light_wvp;
 }

@@ -86,21 +86,21 @@ namespace game_2.Brain
             }
         }
 
-        public void setMatrices(Matrix4 m)
+        //поменять на передачу world и WVP
+        public void setMatrices(Matrix4 world)
         {
             Matrix4 p = mPersProj.PersProjMatrix.ToOpenTK();
             Matrix4 c_pos = Camera.CameraTranslation.ToOpenTK();
             Matrix4 c_rot = Camera.CameraRotation.ToOpenTK();
 
-            setMatrices(m, c_pos, c_rot, p);
+            setMatrix("world", world);
+            setMatrix("wvp", world * c_pos * c_rot * p);
         }
 
         public void setMatrices(Matrix4 world, Matrix4 c_pos, Matrix4 c_rot, Matrix4 p)
         {
             setMatrix("world", world);
-            setMatrix("pers", p);
-            setMatrix("campos", c_pos);
-            setMatrix("camrot", c_rot);
+            setMatrix("wvp", world * c_pos * c_rot * p);
         }
 
         public void setMatrices(Matrix4 world, Matrix4 c_rot, Matrix4 p)
@@ -118,7 +118,10 @@ namespace game_2.Brain
 
         public void setMatrix(string name, Matrix4 data)
         {
-            GL.UniformMatrix4(_uniformLocations[name], true, ref data);
+            if (_uniformLocations.ContainsKey(name))
+            {
+                GL.UniformMatrix4(_uniformLocations[name], true, ref data);
+            }
         }
 
         public void setInt(string name, int data)
@@ -139,6 +142,11 @@ namespace game_2.Brain
         public void setSpecularMap()
         {
             GL.Uniform1(_uniformLocations["gMaterial.SpecularMap"], 2);
+        }
+
+        public void setShadowMap()
+        {
+            GL.Uniform1(_uniformLocations["gShadowMap"], 3);
         }
 
         public void setFloat(string name, float data)

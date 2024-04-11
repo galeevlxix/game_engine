@@ -15,8 +15,10 @@ namespace game_2.Brain.Lights
         public static PointLight[] pointLights = new PointLight[2];
         public static Spotlight[] spotlights = new Spotlight[2];
 
-        private static MonochromeObject redLamp;
-        private static MonochromeObject blueLamp;
+        //private static MonochromeObject redLamp;
+        //private static MonochromeObject blueLamp;
+
+        private static MonochromeObject proj;
 
         public static void Init()
         {
@@ -35,16 +37,18 @@ namespace game_2.Brain.Lights
             counter += deltaTime;
             DrawLamps(deltaTime);
             lightConfig.SetCameraPosition(Camera.Pos);
-            pointLights[0].Position += new vector3f(math3d.sin(counter) * 5 * deltaTime, math3d.sin(counter * 3) * 3 * deltaTime, -math3d.cos(counter) * 5 * deltaTime);
-            pointLights[1].Position += new vector3f(-math3d.sin(counter) * 5 * deltaTime, math3d.sin(counter * 3) * 3 * deltaTime, math3d.cos(counter) * 5 * deltaTime);
+ /*           pointLights[0].Position += new vector3f(math3d.sin(counter) * 5 * deltaTime, math3d.sin(counter * 3) * 3 * deltaTime, -math3d.cos(counter) * 5 * deltaTime);
+            pointLights[1].Position += new vector3f(-math3d.sin(counter) * 5 * deltaTime, math3d.sin(counter * 3) * 3 * deltaTime, math3d.cos(counter) * 5 * deltaTime);*/
             spotlights[1].Direction = -Camera.Target;
             spotlights[1].PointLight.Position = Camera.Pos;
+            spotlights[0].PointLight.Position = proj.pipeline.PositionVector;
+
             UpdateLightsConfiguration();
         }
 
         private static void UpdateLightsConfiguration()
         {
-            lightConfig.SetPointLights(pointLights);
+            //lightConfig.SetPointLights(pointLights);
             lightConfig.SetSpotLights(spotlights);
         }
 
@@ -52,7 +56,7 @@ namespace game_2.Brain.Lights
         private static void ConfigureBaseLight()
         {
             baseLight.Color = new vector3f(1, 1, 1);
-            baseLight.Intensity = 0.4f;
+            baseLight.Intensity = 0.1f;
 
             lightConfig.SetBaseLight(baseLight);
         }
@@ -60,7 +64,7 @@ namespace game_2.Brain.Lights
         private static void ConfigureDirectionalLight()
         {
             directionalLight.BaseLight.Color = new vector3f(1, 1, 1);
-            directionalLight.BaseLight.Intensity = 0.4f;
+            directionalLight.BaseLight.Intensity = 0.1f;
             directionalLight.Direction = new vector3f(1, -1, -1);
 
             lightConfig.SetDirectionalLight(directionalLight);
@@ -68,7 +72,7 @@ namespace game_2.Brain.Lights
 
         private static void ConfigurePointLights()
         {
-            pointLights[0].Position = new vector3f(-5, 2, 0);
+            /*pointLights[0].Position = new vector3f(-5, 2, 0);
             pointLights[0].Attenuation.Exp = 0.032f;
             pointLights[0].Attenuation.Linear = 0.09f;
             pointLights[0].Attenuation.Constant = 1;
@@ -82,19 +86,19 @@ namespace game_2.Brain.Lights
             pointLights[1].BaseLight.Color = new vector3f(0, 1, 1);
             pointLights[1].BaseLight.Intensity = 1f;
 
-            lightConfig.SetPointLights(pointLights);
+            lightConfig.SetPointLights(pointLights);*/
         }
 
         private static void ConfigureSpotlights()
         {
-            spotlights[0].PointLight.Position = new vector3f(-10, 1, 25);
+            spotlights[0].PointLight.Position = new vector3f(5, 3, 0);
             spotlights[0].PointLight.BaseLight.Color = new vector3f(1, 1, 0);
-            spotlights[0].PointLight.BaseLight.Intensity = 1;
+            spotlights[0].PointLight.BaseLight.Intensity = 2;
             spotlights[0].PointLight.Attenuation.Constant = 1;
             spotlights[0].PointLight.Attenuation.Linear = 0.027f;
             spotlights[0].PointLight.Attenuation.Exp = 0.0028f;
-            spotlights[0].Direction = new vector3f(0, -1, 0);
-            spotlights[0].Cutoff1 = 0.3f;
+            spotlights[0].Direction = new vector3f(1, 0, 0);
+            spotlights[0].Cutoff1 = 0.20f;
 
             spotlights[1].PointLight.Position = Camera.Pos;
             spotlights[1].PointLight.BaseLight.Color = new vector3f(1, 0, 1);
@@ -111,27 +115,34 @@ namespace game_2.Brain.Lights
         //create & draw light objects
         private static void CreateLamps()
         {
-            redLamp = new MonochromeObject(new vector3f(1, 0, 0), new vector3f(1, 1, 1));
+/*            redLamp = new MonochromeObject(new vector3f(1, 0, 0), new vector3f(1, 1, 1));
             redLamp.pipeline.SetScale(0.5f);
             redLamp.pipeline.SetPosition(-5, 2, 0);
 
             blueLamp = new MonochromeObject(new vector3f(0, 1, 1), new vector3f(1, 1, 1));
             blueLamp.pipeline.SetScale(0.5f);
-            blueLamp.pipeline.SetPosition(5, 2, 0);
+            blueLamp.pipeline.SetPosition(5, 2, 0);*/
+
+            proj = new MonochromeObject(new vector3f(1, 1, 1), new vector3f(1, 1, 1));
+            proj.pipeline.SetScale(0.1f);
+            proj.pipeline.SetPosition(8, 2, 0);
         }
 
         private static void DrawLamps(float deltaTime)
         {
             CentralizedShaders.MonochromeShader.Use();
 
-            redLamp.pipeline.MoveX(math3d.sin(counter) * 5, deltaTime);
+            /*redLamp.pipeline.MoveX(math3d.sin(counter) * 5, deltaTime);
             redLamp.pipeline.MoveY(math3d.sin(counter * 3) * 3, deltaTime);
             redLamp.pipeline.MoveZ(-math3d.cos(counter) * 5, deltaTime);
             redLamp.Draw();
             blueLamp.pipeline.MoveX(-math3d.sin(counter) * 5, deltaTime);
             blueLamp.pipeline.MoveY(math3d.sin(counter * 3) * 3, deltaTime);
             blueLamp.pipeline.MoveZ(math3d.cos(counter) * 5, deltaTime);
-            blueLamp.Draw();
+            blueLamp.Draw();*/
+
+            proj.pipeline.MoveZ(-math3d.cos(counter) * 5, deltaTime);
+            proj.Draw();
         }
 
         public static int PointlightsCount { get => pointLights.Length; }

@@ -1,4 +1,6 @@
-﻿using game_2.Brain.ObjectFolder;
+﻿using game_2.Brain.Lights.LightStructures;
+using game_2.Brain.ObjectFolder;
+using game_2.MathFolder;
 
 namespace game_2.Brain.NewAssimpFolder
 {
@@ -15,7 +17,17 @@ namespace game_2.Brain.NewAssimpFolder
 
         public void Draw()  
         {
-            _mesh.Draw(pipeline.getMVP().ToOpenTK());
+            _mesh.Draw(pipeline.getWorld(), pipeline.getWVP());
+        }
+
+        public void Draw(Spotlight light)
+        {
+            _mesh.Draw(pipeline.getWorld(), pipeline.getWVP(), pipeline.getWVP(light));
+        }
+
+        public void DrawInShadowShader(Spotlight light)
+        {
+            _mesh.DrawInShadowShader(pipeline.getWVP(light));
         }
 
         public void OnDelete() => _mesh.Dispose();

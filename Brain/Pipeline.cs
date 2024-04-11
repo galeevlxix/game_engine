@@ -1,4 +1,6 @@
-﻿using game_2.MathFolder;
+﻿using game_2.Brain.Lights.LightStructures;
+using game_2.MathFolder;
+using OpenTK.Mathematics;
 
 namespace game_2.Brain
 {
@@ -190,7 +192,7 @@ namespace game_2.Brain
             SetScale(1, 1, 1);
         }        
 
-        public matrix4f getMVP()
+        public Matrix4 getWorld()
         {
             matrix4f scaleTrans = new matrix4f();
             matrix4f rotateTrans = new matrix4f();
@@ -200,7 +202,53 @@ namespace game_2.Brain
             rotateTrans.Rotate(RotateVector.x, RotateVector.y, RotateVector.z);
             translationTrans.InitTranslationTransform(PositionVector.x, PositionVector.y, PositionVector.z);
 
-            return scaleTrans * rotateTrans * translationTrans;
+            return (scaleTrans * rotateTrans * translationTrans).ToOpenTK();
+        }
+
+        public Matrix4 getWVP()
+        {
+            matrix4f scaleTrans = new matrix4f();
+            matrix4f rotateTrans = new matrix4f();
+            matrix4f translationTrans = new matrix4f();
+            scaleTrans.InitScaleTransform(ScaleVector.x, ScaleVector.y, ScaleVector.z);
+            rotateTrans.Rotate(RotateVector.x, RotateVector.y, RotateVector.z);
+            translationTrans.InitTranslationTransform(PositionVector.x, PositionVector.y, PositionVector.z);
+
+            matrix4f pers = mPersProj.PersProjMatrix;
+            matrix4f c_pos = Camera.CameraTranslation;
+            matrix4f c_rot = Camera.CameraRotation;
+
+            return (scaleTrans * rotateTrans * translationTrans * c_pos * c_rot * pers).ToOpenTK();
+        }
+
+        public Matrix4 getWVP(Spotlight spotlight)
+        {
+            matrix4f scaleTrans = new matrix4f();
+            matrix4f rotateTrans = new matrix4f();
+            matrix4f translationTrans = new matrix4f();
+            scaleTrans.InitScaleTransform(ScaleVector.x, ScaleVector.y, ScaleVector.z);
+            rotateTrans.Rotate(RotateVector.x, RotateVector.y, RotateVector.z);
+            translationTrans.InitTranslationTransform(PositionVector.x, PositionVector.y, PositionVector.z);
+
+            matrix4f pers = new matrix4f();
+            matrix4f c_pos = new matrix4f();
+            matrix4f c_rot = new matrix4f();
+
+            pers.InitPersProjTransform(120, 800, 800, 0.01f, 100);
+
+            c_pos.InitTranslationTransform(
+                -spotlight.PointLight.Position.x,
+                -spotlight.PointLight.Position.y,
+                -spotlight.PointLight.Position.z);
+
+            vector3f dir = new vector3f(-spotlight.Direction.x, spotlight.Direction.y, -spotlight.Direction.z);
+            dir.Normalize();
+
+            vector3f Up = vector3f.Cross(dir, vector3f.Right);
+
+            c_rot.InitCameraTransform(dir, vector3f.Up);
+
+            return (scaleTrans * rotateTrans * translationTrans * c_pos * c_rot * pers).ToOpenTK();
         }
     }
 }

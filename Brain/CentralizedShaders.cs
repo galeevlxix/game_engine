@@ -1,4 +1,5 @@
 ﻿using game_2.FileManagers;
+using OpenTK.Graphics.OpenGL;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -15,6 +16,7 @@ namespace game_2.Brain
         public static Shader ScreenShader;
         public static Shader MonochromeShader;
         public static Shader AssimpShader; //добавлены карты нормалей
+        public static Shader ShadowMapShader; 
 
         public static void Load()
         {
@@ -33,6 +35,9 @@ namespace game_2.Brain
             AssimpShader = new Shader(
                 ShaderLoader.LoadShader("..\\..\\..\\Files\\Shaders\\AssimpObject\\AssimpVertexShader.hlsl"),
                 ShaderLoader.LoadShader("..\\..\\..\\Files\\Shaders\\AssimpObject\\AssimpFragmentShader.hlsl"));
+            ShadowMapShader = new Shader(
+                ShaderLoader.LoadShader("..\\..\\..\\Files\\Shaders\\ShadowMap\\ShadowMapVertexShader.hlsl"),
+                ShaderLoader.LoadShader("..\\..\\..\\Files\\Shaders\\ShadowMap\\ShadowMapFragmentShader.hlsl"));
         }
 
         public static void Dispose()
@@ -42,6 +47,7 @@ namespace game_2.Brain
             ScreenShader.Dispose();
             MonochromeShader.Dispose();
             AssimpShader.Dispose();
+            ShadowMapShader.Dispose();
         }
     }
 }

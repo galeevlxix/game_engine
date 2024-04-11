@@ -8,14 +8,12 @@ out vec3 Normal0;
 out vec3 WorldPos0;
 
 uniform mat4 world;
-uniform mat4 campos;
-uniform mat4 camrot;
-uniform mat4 pers;
+uniform mat4 wvp;
 
 void main()                                            
 {        
 	texCoord = aTexCoord;
-	gl_Position = vec4(aPosition, 1.0) * world * campos * camrot * pers;
+    gl_Position = vec4(aPosition, 1.0) * wvp;
 	Normal0 = normalize((vec4(aNormal, 0.0) * world).xyz);
 	WorldPos0 = (vec4(aPosition, 1.0) * world).xyz;
 }

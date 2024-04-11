@@ -47,11 +47,35 @@ namespace game_2.Brain.NewAssimpFolder
             indicesCount = Indices.Count;
         }
 
-        public unsafe void Draw(Matrix4 matrix)
+        public void Draw(Matrix4 world, Matrix4 wvp)
         {
-            CentralizedShaders.AssimpShader.setMatrices(matrix);
+            CentralizedShaders.AssimpShader.setMatrix("world", world);
+            CentralizedShaders.AssimpShader.setMatrix("wvp", wvp);
             VAO.Bind();
             material.Use();
+            GL.DrawElements(BeginMode.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);
+        }
+        public void Draw(Matrix4 world, Matrix4 wvp, Matrix4 light_wvp)
+        {
+            CentralizedShaders.AssimpShader.setMatrix("world", world);
+            CentralizedShaders.AssimpShader.setMatrix("wvp", wvp);
+            CentralizedShaders.AssimpShader.setMatrix("light_wvp", light_wvp);
+            VAO.Bind();
+            material.Use();
+            GL.DrawElements(BeginMode.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);
+        }
+        public void Draw(Matrix4 world, Matrix4 c_pos, Matrix4 c_rot, Matrix4 pers)
+        {
+            CentralizedShaders.AssimpShader.setMatrices(world, c_pos, c_rot, pers);
+            VAO.Bind();
+            material.Use();
+            GL.DrawElements(BeginMode.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);
+        }
+
+        public void DrawInShadowShader(Matrix4 wvp)
+        {
+            CentralizedShaders.ShadowMapShader.setMatrix("wvp", wvp);
+            VAO.Bind();
             GL.DrawElements(BeginMode.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);
         }
 

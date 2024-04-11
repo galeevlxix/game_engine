@@ -46,7 +46,7 @@ namespace game_2.Brain
         public static void InitCamera()
         {
             Pos = vector3f.Zero;
-            Target = vector3f.Ford;
+            Target = new vector3f (0, 0 , -1);
             Target.Normalize();
             Up = vector3f.Up;
 

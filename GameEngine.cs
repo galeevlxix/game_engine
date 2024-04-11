@@ -7,11 +7,8 @@ using OpenTK.Mathematics;
 using game_2.Brain.SkyBoxFolder;
 using game_2.Brain.AimFolder;
 using game_2.Brain.Lights;
-using game_2.Brain.InfoPanelFolder;
 using game_2.Brain.Compiler;
-using game_2.Brain.ObjectFolder;
-using game_2.Brain.NewAssimpFolder;
-using game_2.Brain.Lights.LightStructures;
+using game_2.Brain.Shadow;
 
 namespace game_2
 {
@@ -20,17 +17,20 @@ namespace game_2
         private bool isMouseDown;
         private bool isLoaded = false;
 
-        private int WindowsWidth;
-        private int WindowsHeight;
+        private int WindowWidth;
+        private int WindowHeight;
 
         private Skybox skybox;
         //private InfoPanel info;
         private Aim aim;
+        private ShadowMapFBO shadow_map;
 
         private readonly Color4 BackGroundColor;
 
         public GameEngine(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings) : base(gameWindowSettings, nativeWindowSettings) 
         {
+            WindowWidth = nativeWindowSettings.Size.X;
+            WindowHeight = nativeWindowSettings.Size.Y;
             BackGroundColor = new Color4(0.102f, 0.102f, 0.153f, 1);
         }
 
@@ -58,7 +58,7 @@ namespace game_2
 
             Console.WriteLine("Загрузка камеры...");
             Camera.InitCamera();
-            Camera.SetCameraPosition(0, 3, 4);
+            Camera.SetCameraPosition(8, 3, -10);
 
             Console.WriteLine("Загрузка шейдеров...");
             CentralizedShaders.Load();
@@ -76,6 +76,7 @@ namespace game_2
             CentralizedShaders.AssimpShader.setDiffuseMap();
             CentralizedShaders.AssimpShader.setNormalMap();
             CentralizedShaders.AssimpShader.setSpecularMap();
+            CentralizedShaders.AssimpShader.setShadowMap();
 
             Console.WriteLine("Загрузка скайбокса...");
             CentralizedShaders.SkyBoxShader.Use();
@@ -83,6 +84,9 @@ namespace game_2
 
             Console.WriteLine("Загрузка света...");
             LightningManager.Init();
+
+            shadow_map = new ShadowMapFBO();
+            shadow_map.Init(WindowWidth, WindowHeight);
 
             Console.WriteLine("Успешное завершение\n");
             isLoaded = true;
@@ -93,7 +97,6 @@ namespace game_2
         // Рендер окна
         protected override void OnRenderFrame(FrameEventArgs args)
         {
-            //if (!isFocused) return;
             base.OnRenderFrame(args);
             FPSMeter.Update(args.Time);
 
@@ -101,13 +104,9 @@ namespace game_2
             InputCallbacks(args.Time);
             Camera.OnRender((float)args.Time);
 
-            GL.Uniform3(CentralizedShaders.AssimpShader.GetUniformLocation("cTarget"), Camera.Target.x, Camera.Target.y, Camera.Target.z);
+            RenderShadow();
 
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
-            CentralizedShaders.AssimpShader.Use();
-            ObjectArray.OnRender((float)args.Time);
-            ObjectArray.Draw();        
+            RenderScene(args);
 
             CentralizedShaders.SkyBoxShader.Use();
             skybox.Draw();
@@ -127,22 +126,37 @@ namespace game_2
             GLFW.PollEvents();
         }
 
+        private void RenderShadow()
+        {
+            GL.CullFace(CullFaceMode.Front);
+            shadow_map.BindForWriting();
+            GL.Clear(ClearBufferMask.DepthBufferBit);
+            CentralizedShaders.ShadowMapShader.Use();
+            ObjectArray.DrawInShadowShader(LightningManager.spotlights[0]);
+
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+        }
+
+        private void RenderScene(FrameEventArgs args)
+        {
+            GL.CullFace(CullFaceMode.Back);
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+            CentralizedShaders.AssimpShader.Use();
+            GL.Uniform3(CentralizedShaders.AssimpShader.GetUniformLocation("cTarget"), Camera.Target.x, Camera.Target.y, Camera.Target.z);
+            
+            shadow_map.BindForReading(TextureUnit.Texture3);
+            ObjectArray.OnRender((float)args.Time);
+            ObjectArray.Draw(LightningManager.spotlights[0]);
+        }
+
         private void InputCallbacks(double Time)
         {
             KeyboardState input = KeyboardState;
-            if (input.IsKeyDown(Keys.Escape))
-            {
-                Close();
-            }
+            if (input.IsKeyDown(Keys.Escape)) Close();
 
-            if (isMouseDown)
-            {
-                mPersProj.ChangeFOV(25);
-            }
-            else
-            {
-                mPersProj.ChangeFOV(50);
-            }
+            if (isMouseDown) mPersProj.ChangeFOV(25);
+            else mPersProj.ChangeFOV(50);
+
             Camera.OnMouse(-MouseState.Delta.X, -MouseState.Delta.Y);
             Camera.OnKeyboard(KeyboardState, (float)Time);
         }
@@ -166,19 +180,9 @@ namespace game_2
         {
             base.OnResize(e);
             GL.Viewport(0, 0, e.Width, e.Height);
-            WindowsWidth = e.Width;
-            WindowsHeight = e.Height;
-            if (isLoaded) mPersProj.ChangeWindowSize(WindowsWidth, WindowsHeight);
-        }
-
-        protected override void OnMove(WindowPositionEventArgs e)
-        {
-            base.OnMove(e);
-        }
-
-        protected override void OnFocusedChanged(FocusedChangedEventArgs e)
-        {
-            base.OnFocusedChanged(e);
+            WindowWidth = e.Width;
+            WindowHeight = e.Height;
+            if (isLoaded) mPersProj.ChangeWindowSize(WindowWidth, WindowHeight);
         }
 
         protected override void OnClosed()

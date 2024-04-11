@@ -1,4 +1,5 @@
-﻿using game_2.Brain.NewAssimpFolder;
+﻿using game_2.Brain.Lights.LightStructures;
+using game_2.Brain.NewAssimpFolder;
 using game_2.Brain.ObjectFolder;
 using game_2.MathFolder;
 
@@ -15,47 +16,58 @@ namespace game_2.Brain
         {
             obj_list = new Dictionary<string, AObject>();
 
-            Add("de_dust", new AObject(ModelFolderPath + "obj_files\\de_dust\\source\\new_de_dust2_comp.obj"));
-            Add("monkey", new AObject(ModelFolderPath + "obj_files\\monkey\\monkey.obj"));
-            Add("pika", new AObject("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\obj_files\\pika-girl\\WithPika2.obj"));
-            Add("ball", new AObject("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\obj_files\\Ball\\ball1.obj"));
-            Add("dingel", new AObject("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\fbx_files\\Dingel\\source\\Dingel_comp.obj"));
-            Add("mococo", new AObject("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\fbx_files\\Mococo\\Mococo_pose.fbx"));
-            Add("sphere", new AObject("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\fbx_files\\stylized-organic-red\\source\\Stylizedground_sphere_comp.obj"));
+            Add("back", new AObject(ModelFolderPath + "obj_files\\background\\cube.obj"));
+
+            //Add("ball", new AObject(ModelFolderPath + "obj_files\\Ball\\ball1.obj"));
+
+            //Add("de_dust", new AObject(ModelFolderPath + "obj_files\\de_dust\\source\\new_de_dust2_comp.obj"));
+            //Add("monkey", new AObject(ModelFolderPath + "obj_files\\monkey\\monkey.obj"));
+            //Add("pika", new AObject("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\obj_files\\pika-girl\\WithPika2.obj"));
+            
+            
+            //Add("ball", new AObject("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\obj_files\\Ball\\ball1.obj"));
+            //Add("dingel", new AObject("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\fbx_files\\Dingel\\source\\Dingel_comp.obj"));
+            //Add("mococo", new AObject("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\fbx_files\\Mococo\\Mococo_pose.fbx"));
+            //Add("sphere", new AObject("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\fbx_files\\stylized-organic-red\\source\\Stylizedground_sphere_comp.obj"));
 
             SetProperties();
         }
 
         private static void SetProperties()
         {
-            SetScale("de_dust", 0.05f);
-            SetAngle("de_dust", 90, 0, 0);
-            SetPosition("de_dust", -20, 0, 0);
+            SetAngle("back", 0, -90, 0);
+            SetPosition("back", 12, 5, 0);
+            SetScale("back", 5);
 
-            SetPosition("monkey", 0, 2, 0);
-            SetScale("monkey", 2);
+            //SetScale("de_dust", 0.05f);
+            //SetAngle("de_dust", 90, 0, 0);
+            //SetPosition("de_dust", -20, 0, 0);
 
-            SetPosition("pika", 12, 7.5f, 12);
-            SetAngle("pika", 0, 90, 0);
+            //SetPosition("monkey", 0, 4, 0);
+            //SetScale("monkey", 0.8f);
 
-            SetScale("ball", 12);
-            SetPosition("ball", -5, 4, 10);
+            //SetPosition("pika", 12, 7.5f, 12);
+            //SetAngle("pika", 0, 90, 0);
 
-            SetPosition("dingel", -6, 0, -10);
-            SetScale("dingel", 0.04f);
+            //SetScale("ball", 12);
+            //SetPosition("ball", -5, 4, 10);
 
-            SetPosition("mococo", 10, 0, -5);
-            SetAngle("mococo", 0, -90, 0);
-            SetScale("mococo", 0.8f);
+            //SetPosition("ball", 13, 1, 0);
+            //SetAngle("ball", 0, 90, 0);
+            //SetScale("ball", 0);
 
-            SetScale("sphere", 0.05f);
-            SetPosition("sphere", -9, 5, 0);
+            //SetPosition("mococo", 10, 0, -5);
+            //SetAngle("mococo", 0, -90, 0);
+            //SetScale("mococo", 0.8f);
+
+            //SetScale("sphere", 0.05f);
+            //SetPosition("sphere", -9, 5, 0);
         }
 
         private static float rot_speed = 45;
         public static void OnRender(float deltaTime)
         {
-            Rotate("monkey", 0, rot_speed, 0, deltaTime);
+            //Rotate("monkey", 0, rot_speed, 0, deltaTime);
         }
 
         public static void Add(string name, AObject gameObj)
@@ -87,11 +99,19 @@ namespace game_2.Brain
             } 
         }
 
-        public static void Draw()
+        public static void Draw(Spotlight light)
         {
             foreach(AObject obj in obj_list.Values)
             {
-                obj.Draw();
+                obj.Draw(light);
+            }
+        }
+
+        public static void DrawInShadowShader(Spotlight light)
+        {
+            foreach (AObject obj in obj_list.Values)
+            {
+                obj.DrawInShadowShader(light);
             }
         }
 

@@ -1,4 +1,5 @@
 ﻿using Assimp;
+using game_2.Brain.Lights.LightStructures;
 using OpenTK.Mathematics;
 using System.Xml.Linq;
 
@@ -28,6 +29,8 @@ namespace game_2.Brain.NewAssimpFolder
                 throw new Exception("Ошибка: не существует файл " + _modelFilePath);
             _modelDirectoryPath = Path.GetDirectoryName(_modelFilePath);
 
+            DateTime start = DateTime.Now;
+
             using (var importer = new AssimpContext())
             {
                 _scene = importer.ImportFile(
@@ -38,6 +41,10 @@ namespace game_2.Brain.NewAssimpFolder
             }
 
             ProcessNodes(_scene.RootNode);
+
+            DateTime end = DateTime.Now;
+
+            Console.WriteLine("         Время загрузки:" + (end - start).TotalSeconds.ToString());
         }
 
         private void ProcessNodes(Node node)
@@ -135,6 +142,15 @@ namespace game_2.Brain.NewAssimpFolder
         public void Draw()
         {
             foreach (AEntry item in _entries) item.Draw();
+        }
+        public void Draw(Spotlight light)
+        {
+            foreach (AEntry item in _entries) item.Draw(light);
+        }
+
+        public void DrawInShadowShader(Spotlight light)
+        {
+            foreach (AEntry item in _entries) item.DrawInShadowShader(light);
         }
 
         public void OnDelete()

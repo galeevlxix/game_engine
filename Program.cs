@@ -12,9 +12,8 @@ namespace game_2
             GameWindowSettings settings = GameWindowSettings.Default;
             NativeWindowSettings windowSettings = NativeWindowSettings.Default;
 
-            windowSettings.Size = new OpenTK.Mathematics.Vector2i(1920, 1080);
-
             windowSettings.WindowState = OpenTK.Windowing.Common.WindowState.Maximized;
+            Console.WriteLine(windowSettings.CurrentMonitor.Pointer.ToString());
 
             windowSettings.Title = "Game";
 
