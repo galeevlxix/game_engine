@@ -13,6 +13,8 @@ namespace game_2.Brain.NewAssimpFolder
         private string _modelFilePath;
         private string _modelDirectoryPath;
 
+        public Pipeline _pipeline;
+
         public AObject(string ModelFilePath) 
         {
             _modelFilePath = ModelFilePath;
@@ -24,7 +26,9 @@ namespace game_2.Brain.NewAssimpFolder
             //загрузка сцены из файла
             _scene = new Scene();
             _entries = new List<AEntry>();
-            
+            _pipeline = new Pipeline();
+
+
             if (!File.Exists(_modelFilePath))
                 throw new Exception("Ошибка: не существует файл " + _modelFilePath);
             _modelDirectoryPath = Path.GetDirectoryName(_modelFilePath);
@@ -141,7 +145,17 @@ namespace game_2.Brain.NewAssimpFolder
 
         public void Draw()
         {
-            foreach (AEntry item in _entries) item.Draw();
+            foreach (AEntry item in _entries) item.Draw(_pipeline.getWorld(), _pipeline.getWVP());
+        }
+
+        public void Draw(ShaderName shader, Matrix4 matrix)
+        {
+            foreach (AEntry item in _entries) item.Draw(shader, matrix);
+        }
+
+        public void Draw(ShaderName shader, Matrix4 wvp, Matrix4 light_wvp, Matrix4 world)
+        {
+            foreach (AEntry item in _entries) item.Draw(shader, wvp, light_wvp, world);
         }
 
         public void OnDelete()
@@ -153,69 +167,69 @@ namespace game_2.Brain.NewAssimpFolder
         // УСТАНОВИТЬ
         public void SetScale(float scale)
         {
-            foreach (AEntry item in _entries) item.pipeline.SetScale(scale);
+            _pipeline.SetScale(scale);
         }
 
         public void SetScale(float scaleX, float scaleY, float scaleZ)
         {
-            foreach (AEntry item in _entries) item.pipeline.SetScale(scaleX, scaleY, scaleZ);
+            _pipeline.SetScale(scaleX, scaleY, scaleZ);
         }
 
         public void SetAngle(float angleX, float angleY, float angleZ)
         {
-            foreach (AEntry item in _entries) item.pipeline.SetAngle(angleX, angleY, angleZ);
+            _pipeline.SetAngle(angleX, angleY, angleZ);
         }
 
         public void SetPosition(float PosX, float PosY, float PosZ)
         {
-            foreach (AEntry item in _entries) item.pipeline.SetPosition(PosX, PosY, PosZ);
+            _pipeline.SetPosition(PosX, PosY, PosZ);
         }
 
         // НЕМЕДЛЕННО ОБНОВИТЬ
         public void ExpandImmediately(float scaleX, float scaleY, float scaleZ)
         {
-            foreach (AEntry item in _entries) item.pipeline.SetScale(item.pipeline.ScaleX + scaleX, item.pipeline.ScaleY + scaleY, item.pipeline.ScaleZ + scaleZ);
+            _pipeline.SetScale(_pipeline.ScaleX + scaleX, _pipeline.ScaleY + scaleY, _pipeline.ScaleZ + scaleZ);
         }
 
         public void ExpandImmediately(float value)
         {
-            foreach (AEntry item in _entries) item.pipeline.SetScale(item.pipeline.ScaleX + value, item.pipeline.ScaleY + value, item.pipeline.ScaleZ + value);
+            _pipeline.SetScale(_pipeline.ScaleX + value, _pipeline.ScaleY + value, _pipeline.ScaleZ + value);
         }
 
         public void RotateImmediately(float angleX, float angleY, float angleZ)
         {
-            foreach (AEntry item in _entries) item.pipeline.SetAngle(item.pipeline.AngleX + angleX, item.pipeline.AngleY + angleY, item.pipeline.AngleZ + angleZ);
+            _pipeline.SetAngle(_pipeline.AngleX + angleX, _pipeline.AngleY + angleY, _pipeline.AngleZ + angleZ);
         }
 
         public void MoveImmediately(float PosX, float PosY, float PosZ)
         {
-            foreach (AEntry item in _entries) item.pipeline.SetPosition(item.pipeline.PosX + PosX, item.pipeline.PosY + PosY, item.pipeline.PosZ + PosZ);
+            _pipeline.SetPosition(_pipeline.PosX + PosX, _pipeline.PosY + PosY, _pipeline.PosZ + PosZ);
         }
 
         // СКОРОСТЬ * ВРЕМЯ
         public void Rotate(float speedX, float speedY, float speedZ, float time)
         {
-            foreach (AEntry item in _entries) item.pipeline.Rotate(speedX, speedY, speedZ, time);
+            _pipeline.Rotate(speedX, speedY, speedZ, time);
         }
 
         public void Move(float speedX, float speedY, float speedZ, float time)
         {
-            foreach (AEntry item in _entries) item.pipeline.Move(speedX, speedY, speedZ, time);
+            _pipeline.Move(speedX, speedY, speedZ, time);
         }
 
         public void Expand(float speedX, float speedY, float speedZ, float time)
         {
-            foreach (AEntry item in _entries) item.pipeline.Expand(speedX, speedY, speedZ, time);
+            _pipeline.Expand(speedX, speedY, speedZ, time);
         }
 
         public void Expand(float speedVal, float time)
         {
-            foreach (AEntry item in _entries) item.pipeline.Expand(speedVal, time);
+            _pipeline.Expand(speedVal, time);
         }
 
         public void Reset()
         {
-            foreach (AEntry item in _entries) item.pipeline.Reset();
+            _pipeline.Reset();
         }
     }
 }

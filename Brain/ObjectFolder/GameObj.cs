@@ -50,8 +50,6 @@ namespace game_2.Brain.ObjectFolder
 
         public virtual void Draw(matrix4f cameraPos, matrix4f cameraRot, matrix4f PersProj) => mesh.Draw(pipeline.getWorld(), cameraPos.ToOpenTK(), cameraRot.ToOpenTK(), PersProj.ToOpenTK());
 
-        public virtual void Draw(int dist) => mesh.Draw(pipeline.getWorld(), Check_Distance(dist));
-
         public bool Check_Distance(float d)
         {
             var dx = Camera.Pos.x - pipeline.PositionVector.x;

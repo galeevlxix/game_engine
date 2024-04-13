@@ -10,7 +10,7 @@ namespace game_2.Brain.NewAssimpFolder
         private BufferObject<AVertex> VBO;
         private BufferObject<int> IBO;
 
-        int indicesCount;
+        private int indicesCount;
 
         private AMaterial material;
 
@@ -49,24 +49,25 @@ namespace game_2.Brain.NewAssimpFolder
 
         public void Draw(Matrix4 world, Matrix4 wvp)
         {
-            CentralizedShaders.AssimpShader.setMatrix("world", world);
-            CentralizedShaders.AssimpShader.setMatrix("wvp", wvp);
+            CentralizedShaders.SetValue(ShaderName.AssimpShader, "world", world);
+            CentralizedShaders.SetValue(ShaderName.AssimpShader, "wvp", wvp);
             VAO.Bind();
             material.Use();
             GL.DrawElements(BeginMode.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);
         }
-        public void Draw(Matrix4 world, Matrix4 wvp, Matrix4 light_wvp)
+
+        public void Draw(ShaderName shader, Matrix4 wvp)
         {
-            CentralizedShaders.AssimpShader.setMatrix("world", world);
-            CentralizedShaders.AssimpShader.setMatrix("wvp", wvp);
-            CentralizedShaders.AssimpShader.setMatrix("light_wvp", light_wvp);
+            CentralizedShaders.SetValue(shader, "wvp", wvp);
             VAO.Bind();
             material.Use();
             GL.DrawElements(BeginMode.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);
         }
-        public void Draw(Matrix4 world, Matrix4 c_pos, Matrix4 c_rot, Matrix4 pers)
+        public void Draw(ShaderName shader, Matrix4 wvp, Matrix4 light_wvp, Matrix4 world)
         {
-            CentralizedShaders.AssimpShader.setMatrices(world, c_pos, c_rot, pers);
+            CentralizedShaders.SetValue(shader, "wvp", wvp);
+            CentralizedShaders.SetValue(shader, "light_wvp", light_wvp);
+            CentralizedShaders.SetValue(shader, "world", world);
             VAO.Bind();
             material.Use();
             GL.DrawElements(BeginMode.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);

@@ -31,11 +31,11 @@ namespace game_2.Brain.SkyBoxFolder
             GL.BufferData(BufferTarget.ElementArrayBuffer, Indices.Length * sizeof(int), Indices, BufferUsageHint.StaticDraw);
 
             // Устанавливаем указатели атрибутов вершины
-            var location = CentralizedShaders.SkyBoxShader.GetAttribLocation("aPosition");
+            int location = CentralizedShaders.GetAttribLocation(ShaderName.SkyBoxShader, "aPosition");
             GL.VertexAttribPointer(location, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
             GL.EnableVertexAttribArray(location);
 
-            var texCordLocation = CentralizedShaders.SkyBoxShader.GetAttribLocation("aTexCoord");
+            var texCordLocation = CentralizedShaders.GetAttribLocation(ShaderName.SkyBoxShader, "aTexCoord");
             GL.VertexAttribPointer(texCordLocation, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * sizeof(float));
             GL.EnableVertexAttribArray(texCordLocation);
 
@@ -48,9 +48,9 @@ namespace game_2.Brain.SkyBoxFolder
 
         public override void Draw(Matrix4 matrix)
         {
+            CentralizedShaders.SetValue(ShaderName.SkyBoxShader, matrix, Camera.CameraRotation.ToOpenTK(), mPersProj.PersProjMatrix.ToOpenTK());
             GL.BindVertexArray(VAO);
             UseTextures();
-            CentralizedShaders.SkyBoxShader.setMatrices(matrix, Camera.CameraRotation.ToOpenTK(), mPersProj.PersProjMatrix.ToOpenTK());
             GL.DrawElements(BeginMode.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);
         }
     }

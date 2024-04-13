@@ -19,8 +19,9 @@ namespace game_2.Brain.MonochromeObjectFolder
 
         public override void Draw()
         {
-            CentralizedShaders.MonochromeShader.setVector3("color", Color);
-            CentralizedShaders.MonochromeShader.setVector3("light", Light);
+            CentralizedShaders.SetValue(ShaderName.MonochromeShader, "color", Color);
+            CentralizedShaders.SetValue(ShaderName.MonochromeShader, "light", Light);
+
             base.Draw();
         }
 

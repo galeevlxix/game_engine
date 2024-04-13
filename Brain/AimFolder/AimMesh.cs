@@ -19,9 +19,9 @@ namespace game_2.Brain.AimFolder
 
         public override void Draw(Matrix4 matrix)
         {
+            CentralizedShaders.SetValue(ShaderName.ScreenShader, matrix, pers_proj);
             GL.BindVertexArray(VAO);
             UseTextures();
-            CentralizedShaders.ScreenShader.setMatrices(matrix, pers_proj);
             GL.DrawElements(PrimitiveType.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);
         }
 

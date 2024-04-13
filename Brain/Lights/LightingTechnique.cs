@@ -30,44 +30,44 @@ namespace game_2.Brain.Lights
         private void Init()
         {
             //baseLight
-            _baseLightLocations.Color = CentralizedShaders.AssimpShader.GetUniformLocation("gBaseLight.Color");
-            _baseLightLocations.Intensity = CentralizedShaders.AssimpShader.GetUniformLocation("gBaseLight.Intensity");
+            _baseLightLocations.Color = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gBaseLight.Color");
+            _baseLightLocations.Intensity = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gBaseLight.Intensity");
 
             //dirLight
-            _directionalLightLocations.BaseLight.Color = CentralizedShaders.AssimpShader.GetUniformLocation("gDirectionalLight.Base.Color");
-            _directionalLightLocations.BaseLight.Intensity = CentralizedShaders.AssimpShader.GetUniformLocation("gDirectionalLight.Base.Intensity");
-            _directionalLightLocations.Direction = CentralizedShaders.AssimpShader.GetUniformLocation("gDirectionalLight.Direction");
+            _directionalLightLocations.BaseLight.Color = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gDirectionalLight.Base.Color");
+            _directionalLightLocations.BaseLight.Intensity = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gDirectionalLight.Base.Intensity");
+            _directionalLightLocations.Direction = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gDirectionalLight.Direction");
 
             //specular
-            _cameraPositionLocation = CentralizedShaders.AssimpShader.GetUniformLocation("gCameraPos");
-            _matSpecularPowerLocation = CentralizedShaders.AssimpShader.GetUniformLocation("gMaterial.SpecularPower");
+            _cameraPositionLocation = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gCameraPos");
+            _matSpecularPowerLocation = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gMaterial.SpecularPower");
 
             //pointLights
-            _numPointLightsLocation = CentralizedShaders.AssimpShader.GetUniformLocation("gNumPointLights");
+            _numPointLightsLocation = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gNumPointLights");
             for (int i = 0; i < MAX_POINT_LIGHTS; i++)
             {
-                _pointLightLocations[i].BaseLightLocations.Color = CentralizedShaders.AssimpShader.GetUniformLocation("gPointLights[" + i + "].Base.Color");
-                _pointLightLocations[i].BaseLightLocations.Intensity = CentralizedShaders.AssimpShader.GetUniformLocation("gPointLights[" + i + "].Base.Intensity");
-                _pointLightLocations[i].Position = CentralizedShaders.AssimpShader.GetUniformLocation("gPointLights[" + i +"].Position");
-                _pointLightLocations[i].Attenuation.Exp = CentralizedShaders.AssimpShader.GetUniformLocation("gPointLights[" + i + "].Atten.Exp");
-                _pointLightLocations[i].Attenuation.Linear = CentralizedShaders.AssimpShader.GetUniformLocation("gPointLights[" + i + "].Atten.Linear");
-                _pointLightLocations[i].Attenuation.Constant = CentralizedShaders.AssimpShader.GetUniformLocation("gPointLights[" + i + "].Atten.Constant");
+                _pointLightLocations[i].BaseLightLocations.Color = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gPointLights[" + i + "].Base.Color");
+                _pointLightLocations[i].BaseLightLocations.Intensity = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gPointLights[" + i + "].Base.Intensity");
+                _pointLightLocations[i].Position = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gPointLights[" + i + "].Position");
+                _pointLightLocations[i].Attenuation.Exp = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gPointLights[" + i + "].Atten.Exp");
+                _pointLightLocations[i].Attenuation.Linear = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gPointLights[" + i + "].Atten.Linear");
+                _pointLightLocations[i].Attenuation.Constant = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gPointLights[" + i + "].Atten.Constant");
             }
 
             //spotLights
-            _numSpotLightsLocation = CentralizedShaders.AssimpShader.GetUniformLocation("gNumSpotLights");
+            _numSpotLightsLocation = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gNumSpotLights");
 
             for (int i = 0; i < MAX_SPOT_LIGHTS; i++)
             {
-                _spotlightLocations[i].PointLightLocations.BaseLightLocations.Color = CentralizedShaders.AssimpShader.GetUniformLocation("gSpotLights[" + i + "].Base.Base.Color");
-                _spotlightLocations[i].PointLightLocations.BaseLightLocations.Intensity = CentralizedShaders.AssimpShader.GetUniformLocation("gSpotLights[" + i + "].Base.Base.Intensity");
-                _spotlightLocations[i].PointLightLocations.Position = CentralizedShaders.AssimpShader.GetUniformLocation("gSpotLights[" + i + "].Base.Position");
-                _spotlightLocations[i].PointLightLocations.Attenuation.Exp = CentralizedShaders.AssimpShader.GetUniformLocation("gSpotLights[" + i + "].Base.Atten.Exp");
-                _spotlightLocations[i].PointLightLocations.Attenuation.Constant = CentralizedShaders.AssimpShader.GetUniformLocation("gSpotLights[" + i + "].Base.Atten.Constant");
-                _spotlightLocations[i].PointLightLocations.Attenuation.Linear = CentralizedShaders.AssimpShader.GetUniformLocation("gSpotLights[" + i + "].Base.Atten.Linear");
-                _spotlightLocations[i].Direction = CentralizedShaders.AssimpShader.GetUniformLocation("gSpotLights[" + i + "].Direction");
-                _spotlightLocations[i].Cutoff1 = CentralizedShaders.AssimpShader.GetUniformLocation("gSpotLights[" + i + "].Cutoff1");
-                _spotlightLocations[i].Cutoff2 = CentralizedShaders.AssimpShader.GetUniformLocation("gSpotLights[" + i + "].Cutoff2");
+                _spotlightLocations[i].PointLightLocations.BaseLightLocations.Color = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gSpotLights[" + i + "].Base.Base.Color");
+                _spotlightLocations[i].PointLightLocations.BaseLightLocations.Intensity = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gSpotLights[" + i + "].Base.Base.Intensity");
+                _spotlightLocations[i].PointLightLocations.Position = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gSpotLights[" + i + "].Base.Position");
+                _spotlightLocations[i].PointLightLocations.Attenuation.Exp = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gSpotLights[" + i + "].Base.Atten.Exp");
+                _spotlightLocations[i].PointLightLocations.Attenuation.Constant = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gSpotLights[" + i + "].Base.Atten.Constant");
+                _spotlightLocations[i].PointLightLocations.Attenuation.Linear = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gSpotLights[" + i + "].Base.Atten.Linear");
+                _spotlightLocations[i].Direction = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gSpotLights[" + i + "].Direction");
+                _spotlightLocations[i].Cutoff1 = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gSpotLights[" + i + "].Cutoff1");
+                _spotlightLocations[i].Cutoff2 = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gSpotLights[" + i + "].Cutoff2");
             }
         }
 
@@ -274,6 +274,6 @@ namespace game_2.Brain.Lights
             }
         }
 
-        private void Use() => CentralizedShaders.AssimpShader.Use();
+        private void Use() => CentralizedShaders.UseShader(ShaderName.AssimpShader);
     }
 }

@@ -16,7 +16,7 @@ namespace game_2.Brain
         {
             obj_list = new Dictionary<string, AObject>();
 
-            Add("back", new AObject(ModelFolderPath + "obj_files\\background\\cube.obj"));
+            //Add("back", new AObject(ModelFolderPath + "obj_files\\background\\cube.obj"));
 
             //Add("ball", new AObject(ModelFolderPath + "obj_files\\Ball\\ball1.obj"));
 
@@ -35,9 +35,9 @@ namespace game_2.Brain
 
         private static void SetProperties()
         {
-            SetAngle("back", 0, -90, 0);
-            SetPosition("back", 12, 5, 0);
-            SetScale("back", 5);
+            //SetAngle("back", 0, -90, 0);
+            //SetPosition("back", 12, 5, 0);
+            //SetScale("back", 5);
 
             //SetScale("de_dust", 0.05f);
             //SetAngle("de_dust", 90, 0, 0);

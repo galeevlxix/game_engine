@@ -1,4 +1,4 @@
-﻿using OpenTK.Graphics.OpenGL4;
+﻿using OpenTK.Graphics.OpenGL;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
@@ -8,6 +8,9 @@ using game_2.Brain.SkyBoxFolder;
 using game_2.Brain.AimFolder;
 using game_2.Brain.Lights;
 using game_2.Brain.Compiler;
+using game_2.Brain.Shadows;
+using game_2.Brain.NewAssimpFolder;
+using game_2.MathFolder;
 
 namespace game_2
 {
@@ -20,10 +23,13 @@ namespace game_2
         private int WindowHeight;
 
         private Skybox skybox;
-        //private InfoPanel info;
         private Aim aim;
 
+        private ShadowMapFBO shadowMap;
+
         private readonly Color4 BackGroundColor;
+
+        int shadow_size = 1024;
 
         public GameEngine(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings) : base(gameWindowSettings, nativeWindowSettings) 
         {
@@ -62,21 +68,29 @@ namespace game_2
             CentralizedShaders.Load();
 
             Console.WriteLine("Загрузка прицела...");
-            CentralizedShaders.ScreenShader.Use();
             aim = new Aim();
 
-            Console.WriteLine("Загрузка шрифта...");
-            //info = new InfoPanel(InfoPanel.FontType.EnglishWithNumbers);
-
             Console.WriteLine("Загрузка моделей (assimp)...");
-            CentralizedShaders.AssimpShader.Use();
-            ObjectArray.Init();          
-            CentralizedShaders.AssimpShader.setDiffuseMap();
-            CentralizedShaders.AssimpShader.setNormalMap();
-            CentralizedShaders.AssimpShader.setSpecularMap();
+            //ObjectArray.Init();
+            CentralizedShaders.SetValue(ShaderName.ShadowShader, "gShadowMap", 0);
+            CentralizedShaders.SetValue(ShaderName.AssimpShader, "gMaterial.DiffuseMap", 0);
+            CentralizedShaders.SetValue(ShaderName.AssimpShader, "gMaterial.NormalMap", 1);
+            CentralizedShaders.SetValue(ShaderName.AssimpShader, "gMaterial.SpecularMap", 2);
+            CentralizedShaders.SetValue(ShaderName.AssimpShader, "gShadowMap", 3);
+            back = new AObject(ModelFolderPath + "obj_files\\background\\cube.obj");
+            ball = new AObject(ModelFolderPath + "obj_files\\Ball\\ball1.obj");
+
+            back.SetAngle(0, -90, 0);
+            back.SetPosition(12, 5, 0);
+            back.SetScale(5);
+
+            ball.SetPosition(13, 1, 0);
+            ball.SetAngle(0, 90, 0);
+            ball.SetScale(5);
+
+            shadowMap = new ShadowMapFBO(shadow_size, shadow_size);
 
             Console.WriteLine("Загрузка скайбокса...");
-            CentralizedShaders.SkyBoxShader.Use();
             skybox = new Skybox();
 
             Console.WriteLine("Загрузка света...");
@@ -86,7 +100,11 @@ namespace game_2
             isLoaded = true;
 
             await Task.Run(() => ConsoleCompiler.Run());
+
         }
+        private static string ModelFolderPath = "..\\..\\..\\Files\\Models\\";
+        private AObject back;
+        private AObject ball;
 
         // Рендер окна
         protected override void OnRenderFrame(FrameEventArgs args)
@@ -98,16 +116,63 @@ namespace game_2
             InputCallbacks(args.Time);
             Camera.OnRender((float)args.Time);
 
-            RenderScene(args);
+            ////// RENDER SHADOW //////////////////
+            
+            //GL.CullFace(CullFaceMode.Front);    
+            GL.ClearColor(BackGroundColor);
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            CentralizedShaders.SkyBoxShader.Use();
+            matrix4f viewMat = new matrix4f(), posMat = new matrix4f(), persMat = new matrix4f();
+            viewMat.InitCameraTransform(-LightningManager.spotlights[0].Direction, vector3f.Up);
+            vector3f pos = LightningManager.spotlights[0].PointLight.Position;
+            posMat.InitTranslationTransform(-pos.x, -pos.y, -pos.z);
+            persMat.InitPersProjTransform(45, shadow_size, shadow_size, 0.01f, 100);
+            Matrix4 LightSpaceMatrix = (posMat * viewMat * persMat).ToOpenTK();
+
+            CentralizedShaders.UseShader(ShaderName.ShadowShader);
+
+            GL.Viewport(0, 0, shadow_size, shadow_size);
+            shadowMap.BindForWriting();
+            GL.Clear(ClearBufferMask.DepthBufferBit);
+
+            //BALL
+            Matrix4 world_ball = ball._pipeline.getWorld();
+            Matrix4 ball_light_wvp = world_ball * LightSpaceMatrix;
+            ball.Draw(ShaderName.ShadowShader, ball_light_wvp);
+
+            //BACK
+            Matrix4 world_back = back._pipeline.getWorld();
+            Matrix4 back_light_wvp = world_back * LightSpaceMatrix;
+            back.Draw(ShaderName.ShadowShader, back_light_wvp);
+
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+
+            ////// RENDER SCENE //////////////////////////
+
+            //GL.CullFace(CullFaceMode.Back);
+            // reset viewport
+            GL.Viewport(0, 0, WindowWidth, WindowHeight);
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+
+            CentralizedShaders.UseShader(ShaderName.AssimpShader);
+
+            persMat = mPersProj.PersProjMatrix;
+            viewMat.InitCameraTransform(Camera.Target, Camera.Up);
+            posMat.InitTranslationTransform(-Camera.Pos);
+            Matrix4 SpaceMatrix = (posMat * viewMat * persMat).ToOpenTK();
+            shadowMap.BindForReading(TextureUnit.Texture3);
+
+            //BALL
+            Matrix4 wvp = world_ball * SpaceMatrix;
+            ball.Draw(ShaderName.AssimpShader, wvp, ball_light_wvp, world_ball);
+
+            //BACK
+            wvp = world_back * SpaceMatrix;
+            back.Draw(ShaderName.AssimpShader, wvp, back_light_wvp, world_back);
+
             skybox.Draw();
 
-            CentralizedShaders.ScreenShader.Use();
             aim.Draw();
-            //info.PutLineAndDraw((int)fps_out + "fps");
-
-            CentralizedShaders.MonochromeShader.Use();
 
             float dt = (float)args.Time * 2;
 
@@ -116,17 +181,6 @@ namespace game_2
             ConsoleCompiler.Execute();            
             SwapBuffers();
             GLFW.PollEvents();
-        }
-
-        private void RenderScene(FrameEventArgs args)
-        {
-            GL.CullFace(CullFaceMode.Back);
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-            CentralizedShaders.AssimpShader.Use();
-            GL.Uniform3(CentralizedShaders.AssimpShader.GetUniformLocation("cTarget"), Camera.Target.x, Camera.Target.y, Camera.Target.z);
-            
-            ObjectArray.OnRender((float)args.Time);
-            ObjectArray.Draw();
         }
 
         private void InputCallbacks(double Time)
@@ -167,7 +221,7 @@ namespace game_2
 
         protected override void OnClosed()
         {
-            ObjectArray.Clear();
+           // ObjectArray.Clear();
             skybox.OnDelete();
             aim.OnDelete();
             //info.OnClear();

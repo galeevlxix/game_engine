@@ -22,7 +22,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Brain\Shadows\" />
     <Folder Include="Files\Models\fbx_files\stylized-organic-red\textures\" />
   </ItemGroup>
 

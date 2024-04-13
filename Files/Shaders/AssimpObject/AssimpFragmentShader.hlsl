@@ -5,6 +5,7 @@ in vec2 texCoord;
 in vec3 Normal0;
 in vec3 WorldPos0;
 in vec3 Tangent0;
+in vec4 LightPos0;
 
 struct Material
 {
@@ -65,19 +66,25 @@ uniform vec3 gCameraPos;
 
 uniform Material gMaterial;
 
+uniform sampler2D gShadowMap;
+
 vec4 CalcLightInternal(BaseLight Light, vec3 LightDirection, vec3 Normal);
 vec4 CalcDirectionalLight(vec3 Normal);
 vec4 CalcPointLight(PointLight pLight, vec3 Normal);
 vec4 CalcSpotLight(SpotLight sLight, vec3 Normal);
 vec3 CalcBumpedNormal();
+float CalcShadowFactor(vec4 LightSpacePos);
  
-void main() 
-{ 
+void main()
+{
     vec3 Normal = CalcBumpedNormal();
+    float shadowFactor = CalcShadowFactor(LightPos0);
+    //Normal = normalize(Normal0);
     
     vec4 texel = texture2D(gMaterial.DiffuseMap, texCoord.xy);
 
-    if (texel.a < 0.3) discard;
+    if (texel.a < 0.3)
+        discard;
     
     vec4 AmbientColor = vec4(gBaseLight.Color, 1.0) * gBaseLight.Intensity;
 
@@ -88,13 +95,27 @@ void main()
         TotalLight += CalcPointLight(gPointLights[i], Normal);
     }
     
-    for (int i = 0; i < gNumSpotLights; i++)
-    {
-        TotalLight += CalcSpotLight(gSpotLights[i], Normal);
-    }
+    TotalLight += shadowFactor * CalcSpotLight(gSpotLights[0], Normal);
+    TotalLight += CalcSpotLight(gSpotLights[1], Normal);
+    
+    outputColor = texel * TotalLight;
+}
 
-	outputColor = texel * TotalLight;
-}   
+float CalcShadowFactor(vec4 LightSpacePos)
+{
+    // perform perspective divide
+    vec3 ProjCoords = LightSpacePos.xyz / LightSpacePos.w;
+    // transform to [0,1] range
+    ProjCoords = 0.5 * ProjCoords + 0.5;
+    // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+    float Depth = texture2D(gShadowMap, ProjCoords.xy).x;
+    // get depth of current fragment from light's perspective
+    // check whether current frag pos is in shadow
+    if (Depth < ProjCoords.z)
+        return 0.1;
+    else
+        return 1.0;
+}
 
 vec3 CalcBumpedNormal()
 {

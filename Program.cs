@@ -12,8 +12,8 @@ namespace game_2
             GameWindowSettings settings = GameWindowSettings.Default;
             NativeWindowSettings windowSettings = NativeWindowSettings.Default;
 
-            windowSettings.WindowState = OpenTK.Windowing.Common.WindowState.Maximized;
-            Console.WriteLine("Дайте письку плжалуйстьа оченб прошу настя девушка проист ");
+            windowSettings.WindowState = OpenTK.Windowing.Common.WindowState.Normal;
+            windowSettings.Size = new OpenTK.Mathematics.Vector2i(800, 600);
 
             windowSettings.Title = "Game";
 

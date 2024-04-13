@@ -30,7 +30,7 @@ namespace game_2.Brain.MonochromeObjectFolder
             GL.BufferData(BufferTarget.ElementArrayBuffer, Indices.Length * sizeof(int), Indices, BufferUsageHint.StaticDraw);
 
             // Устанавливаем указатели атрибутов вершины
-            int location = CentralizedShaders.MonochromeShader.GetAttribLocation("aPosition");
+            int location = CentralizedShaders.GetAttribLocation(ShaderName.MonochromeShader, "aPosition");
             GL.VertexAttribPointer(location, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
             GL.EnableVertexAttribArray(location);
 
@@ -43,7 +43,11 @@ namespace game_2.Brain.MonochromeObjectFolder
 
         public override void Draw(Matrix4 matrix)
         {
-            CentralizedShaders.MonochromeShader.setMatrices(matrix);
+            Matrix4 p = mPersProj.PersProjMatrix.ToOpenTK();
+            Matrix4 c_pos = Camera.CameraTranslation.ToOpenTK();
+            Matrix4 c_rot = Camera.CameraRotation.ToOpenTK();
+
+            CentralizedShaders.SetValue(ShaderName.MonochromeShader, "wvp", matrix * c_pos * c_rot * p);
             GL.BindVertexArray(VAO);
             GL.DrawElements(BeginMode.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);
         }

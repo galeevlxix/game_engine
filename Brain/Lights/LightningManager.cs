@@ -41,6 +41,7 @@ namespace game_2.Brain.Lights
             pointLights[1].Position += new vector3f(-math3d.sin(counter) * 5 * deltaTime, math3d.sin(counter * 3) * 3 * deltaTime, math3d.cos(counter) * 5 * deltaTime);*/
             spotlights[1].Direction = -Camera.Target;
             spotlights[1].PointLight.Position = Camera.Pos;
+
             spotlights[0].PointLight.Position = proj.pipeline.PositionVector;
 
             UpdateLightsConfiguration();
@@ -125,12 +126,12 @@ namespace game_2.Brain.Lights
 
             proj = new MonochromeObject(new vector3f(1, 1, 1), new vector3f(1, 1, 1));
             proj.pipeline.SetScale(0.1f);
-            proj.pipeline.SetPosition(8, 2, 0);
+            proj.pipeline.SetPosition(9, 1, 0);
         }
 
         private static void DrawLamps(float deltaTime)
         {
-            CentralizedShaders.MonochromeShader.Use();
+            CentralizedShaders.UseShader(ShaderName.MonochromeShader);
 
             /*redLamp.pipeline.MoveX(math3d.sin(counter) * 5, deltaTime);
             redLamp.pipeline.MoveY(math3d.sin(counter * 3) * 3, deltaTime);
@@ -141,7 +142,9 @@ namespace game_2.Brain.Lights
             blueLamp.pipeline.MoveZ(math3d.cos(counter) * 5, deltaTime);
             blueLamp.Draw();*/
 
+            proj.pipeline.MoveY(math3d.sin(counter), deltaTime);
             proj.pipeline.MoveZ(-math3d.cos(counter) * 5, deltaTime);
+            //spotlights[0].Direction = new vector3f(math3d.sin(counter), 0, math3d.cos(counter));
             proj.Draw();
         }
 

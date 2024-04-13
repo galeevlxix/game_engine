@@ -53,15 +53,15 @@ namespace game_2.Brain.ObjectFolder
             GL.BufferData(BufferTarget.ElementArrayBuffer, Indices.Length * sizeof(int), Indices, BufferUsageHint.DynamicDraw);
 
             // Устанавливаем указатели атрибутов вершины
-            int location = CentralizedShaders.ObjectShader.GetAttribLocation("aPosition");
+            int location = CentralizedShaders.GetAttribLocation(ShaderName.ObjectShader, "aPosition");
             GL.VertexAttribPointer(location, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 0);
             GL.EnableVertexAttribArray(location);
 
-            int texCordLocation = CentralizedShaders.ObjectShader.GetAttribLocation("aTexCoord");
+            int texCordLocation = CentralizedShaders.GetAttribLocation(ShaderName.ObjectShader, "aTexCoord");
             GL.VertexAttribPointer(texCordLocation, 2, VertexAttribPointerType.Float, false, 8 * sizeof(float), 3 * sizeof(float));
             GL.EnableVertexAttribArray(texCordLocation);
 
-            int normCordLocation = CentralizedShaders.ObjectShader.GetAttribLocation("aNormal");
+            int normCordLocation = CentralizedShaders.GetAttribLocation(ShaderName.ObjectShader, "aNormal");
             GL.VertexAttribPointer(normCordLocation, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 5 * sizeof(float));
             GL.EnableVertexAttribArray(normCordLocation);
 
@@ -74,7 +74,7 @@ namespace game_2.Brain.ObjectFolder
 
         public virtual void Draw(Matrix4 matrix)
         {
-            CentralizedShaders.ObjectShader.setMatrices(matrix);
+            CentralizedShaders.SetValue(ShaderName.ObjectShader, matrix);
             GL.BindVertexArray(VAO);
             UseTextures();
             GL.DrawElements(BeginMode.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);
@@ -82,21 +82,10 @@ namespace game_2.Brain.ObjectFolder
 
         public virtual void Draw(Matrix4 matrix, Matrix4 cameraPos, Matrix4 cameraRot, Matrix4 PersProj)
         {
-            CentralizedShaders.ObjectShader.setMatrices(matrix, cameraPos, cameraRot, PersProj);
+            CentralizedShaders.SetValue(ShaderName.ObjectShader, matrix, cameraPos, cameraRot, PersProj);
             GL.BindVertexArray(VAO);
             UseTextures();
             GL.DrawElements(BeginMode.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);
-        }
-
-        public virtual void Draw(Matrix4 matrix, bool check)
-        {
-            if (check)
-            {
-                UseTextures();
-                GL.BindVertexArray(VAO);
-                CentralizedShaders.ObjectShader.setMatrices(matrix);
-                GL.DrawElements(BeginMode.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);
-            }
         }
 
         protected virtual void UseTextures() => texture.Use();

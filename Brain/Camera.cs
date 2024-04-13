@@ -186,7 +186,7 @@ namespace game_2.Brain
 
             Update();
 
-            CameraTranslation.InitTranslationTransform(-Pos.x, -Pos.y, -Pos.z);
+            CameraTranslation.InitTranslationTransform(-Pos);
             CameraRotation.InitCameraTransform(Target, Up);
         }
 
