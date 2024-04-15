@@ -1,4 +1,5 @@
-﻿using OpenTK.Graphics.OpenGL4;
+﻿using game_2.MathFolder;
+using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using System.Runtime.InteropServices;
 
@@ -47,27 +48,10 @@ namespace game_2.Brain.NewAssimpFolder
             indicesCount = Indices.Count;
         }
 
-        public void Draw(Matrix4 world, Matrix4 wvp)
+        public void Draw(Shader shader, Matrix4 world, Matrix4 view, Matrix4 pers)
         {
-            CentralizedShaders.SetValue(ShaderName.AssimpShader, "world", world);
-            CentralizedShaders.SetValue(ShaderName.AssimpShader, "wvp", wvp);
-            VAO.Bind();
-            material.Use();
-            GL.DrawElements(BeginMode.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);
-        }
-
-        public void Draw(ShaderName shader, Matrix4 wvp)
-        {
-            CentralizedShaders.SetValue(shader, "wvp", wvp);
-            VAO.Bind();
-            material.Use();
-            GL.DrawElements(BeginMode.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);
-        }
-        public void Draw(ShaderName shader, Matrix4 wvp, Matrix4 light_wvp, Matrix4 world)
-        {
-            CentralizedShaders.SetValue(shader, "wvp", wvp);
-            CentralizedShaders.SetValue(shader, "light_wvp", light_wvp);
-            CentralizedShaders.SetValue(shader, "world", world);
+            shader.setValue("wvp", world * view * pers);
+            shader.setValue("world", world);
             VAO.Bind();
             material.Use();
             GL.DrawElements(BeginMode.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);

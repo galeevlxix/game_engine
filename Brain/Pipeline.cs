@@ -121,6 +121,13 @@ namespace game_2.Brain
             PositionVector.z = PosZ;
         }
 
+        public void SetPosition(vector3f position)
+        {
+            PositionVector.x = position.x;
+            PositionVector.y = position.y;
+            PositionVector.z = position.z;
+        }
+
         public void SetPositionX(float PosX)
         {
             PositionVector.x = PosX;

@@ -37,12 +37,8 @@ namespace game_2.Brain.Lights
             counter += deltaTime;
             DrawLamps(deltaTime);
             lightConfig.SetCameraPosition(Camera.Pos);
- /*           pointLights[0].Position += new vector3f(math3d.sin(counter) * 5 * deltaTime, math3d.sin(counter * 3) * 3 * deltaTime, -math3d.cos(counter) * 5 * deltaTime);
-            pointLights[1].Position += new vector3f(-math3d.sin(counter) * 5 * deltaTime, math3d.sin(counter * 3) * 3 * deltaTime, math3d.cos(counter) * 5 * deltaTime);*/
             spotlights[1].Direction = -Camera.Target;
             spotlights[1].PointLight.Position = Camera.Pos;
-
-            spotlights[0].PointLight.Position = proj.pipeline.PositionVector;
 
             UpdateLightsConfiguration();
         }
@@ -92,7 +88,7 @@ namespace game_2.Brain.Lights
 
         private static void ConfigureSpotlights()
         {
-            spotlights[0].PointLight.Position = new vector3f(5, 3, 0);
+            spotlights[0].PointLight.Position = new vector3f(9, 1, 0);
             spotlights[0].PointLight.BaseLight.Color = new vector3f(1, 1, 0);
             spotlights[0].PointLight.BaseLight.Intensity = 2;
             spotlights[0].PointLight.Attenuation.Constant = 1;
@@ -142,9 +138,14 @@ namespace game_2.Brain.Lights
             blueLamp.pipeline.MoveZ(math3d.cos(counter) * 5, deltaTime);
             blueLamp.Draw();*/
 
-            proj.pipeline.MoveY(math3d.sin(counter), deltaTime);
-            proj.pipeline.MoveZ(-math3d.cos(counter) * 5, deltaTime);
-            //spotlights[0].Direction = new vector3f(math3d.sin(counter), 0, math3d.cos(counter));
+            var posX = spotlights[0].PointLight.Position.x;
+            var posY = spotlights[0].PointLight.Position.y;
+            var posZ = spotlights[0].PointLight.Position.z;
+            //spotlights[0].PointLight.Position.y += math3d.sin(counter) * deltaTime;
+            //spotlights[0].PointLight.Position.z += -math3d.cos(counter) * 5 * deltaTime;
+
+            proj.pipeline.SetPosition(spotlights[0].PointLight.Position);
+            //spotlights[0].Direction = new vector3f(math3d.abs(math3d.sin(counter)), 0, math3d.abs(math3d.cos(counter)));
             proj.Draw();
         }
 

@@ -29,7 +29,8 @@ namespace game_2
 
         private readonly Color4 BackGroundColor;
 
-        int shadow_size = 1024;
+        int shadow_size_x = 1024;
+        int shadow_size_y = 1024;
 
         public GameEngine(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings) : base(gameWindowSettings, nativeWindowSettings) 
         {
@@ -55,6 +56,9 @@ namespace game_2
             base.OnLoad();
             GL.ClearColor(BackGroundColor);
             GL.Enable(EnableCap.DepthTest);
+            GL.Enable(EnableCap.CullFace);
+            GL.CullFace(CullFaceMode.Back);
+           GL.FrontFace(FrontFaceDirection.Ccw);
 
             base.CursorGrabbed = true;
 
@@ -72,7 +76,6 @@ namespace game_2
 
             Console.WriteLine("Загрузка моделей (assimp)...");
             //ObjectArray.Init();
-            CentralizedShaders.SetValue(ShaderName.ShadowShader, "gShadowMap", 0);
             CentralizedShaders.SetValue(ShaderName.AssimpShader, "gMaterial.DiffuseMap", 0);
             CentralizedShaders.SetValue(ShaderName.AssimpShader, "gMaterial.NormalMap", 1);
             CentralizedShaders.SetValue(ShaderName.AssimpShader, "gMaterial.SpecularMap", 2);
@@ -84,11 +87,11 @@ namespace game_2
             back.SetPosition(12, 5, 0);
             back.SetScale(5);
 
-            ball.SetPosition(13, 1, 0);
+            ball.SetPosition(15, 1, 0);
             ball.SetAngle(0, 90, 0);
             ball.SetScale(5);
 
-            shadowMap = new ShadowMapFBO(shadow_size, shadow_size);
+            shadowMap = new ShadowMapFBO(shadow_size_x, shadow_size_y);
 
             Console.WriteLine("Загрузка скайбокса...");
             skybox = new Skybox();
@@ -116,60 +119,64 @@ namespace game_2
             InputCallbacks(args.Time);
             Camera.OnRender((float)args.Time);
 
-            ////// RENDER SHADOW //////////////////
+
+
+            ////// PARAMETERS //////////////////
+
+            var p = new matrix4f();
+            p.InitPersProjTransform(120, shadow_size_x, shadow_size_y, 0.1f, 100);
+            Matrix4 projMatrixFromLight = p.ToOpenTK();
+            //projMatrixFromLight.Transpose();
+            Matrix4 projMatrix = mPersProj.PersProjMatrix.ToOpenTK();
             
-            //GL.CullFace(CullFaceMode.Front);    
-            GL.ClearColor(BackGroundColor);
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+            //projMatrix.Transpose();
 
-            matrix4f viewMat = new matrix4f(), posMat = new matrix4f(), persMat = new matrix4f();
-            viewMat.InitCameraTransform(-LightningManager.spotlights[0].Direction, vector3f.Up);
             vector3f pos = LightningManager.spotlights[0].PointLight.Position;
-            posMat.InitTranslationTransform(-pos.x, -pos.y, -pos.z);
-            persMat.InitPersProjTransform(45, shadow_size, shadow_size, 0.01f, 100);
-            Matrix4 LightSpaceMatrix = (posMat * viewMat * persMat).ToOpenTK();
+            vector3f tar = LightningManager.spotlights[0].Direction;
+            tar = new vector3f(tar.x, tar.y, tar.z);
 
-            CentralizedShaders.UseShader(ShaderName.ShadowShader);
+            matrix4f LightSpacePos = new matrix4f();
+            LightSpacePos.InitTranslationTransform(-pos);
+            matrix4f LightSpaceTarget = new matrix4f();
+            LightSpaceTarget.InitCameraTransform(-tar, vector3f.Up);
 
-            GL.Viewport(0, 0, shadow_size, shadow_size);
+            Matrix4 viewMatrixFromLight = (LightSpacePos * LightSpaceTarget).ToOpenTK();
+            //viewMatrixFromLight.Transpose();
+            Matrix4 viewMatrix = (Camera.CameraTranslation * Camera.CameraRotation).ToOpenTK();
+
+            Shader shadowShader = CentralizedShaders.GetShader(ShaderName.ShadowShader);
+            Shader normalShader = CentralizedShaders.GetShader(ShaderName.AssimpShader);
+
+            ////// RENDER SHADOW //////////////////
+
+            //GL.CullFace(CullFaceMode.Front);
             shadowMap.BindForWriting();
+            GL.Viewport(0, 0, shadow_size_x, shadow_size_y);
             GL.Clear(ClearBufferMask.DepthBufferBit);
 
-            //BALL
-            Matrix4 world_ball = ball._pipeline.getWorld();
-            Matrix4 ball_light_wvp = world_ball * LightSpaceMatrix;
-            ball.Draw(ShaderName.ShadowShader, ball_light_wvp);
+            shadowShader.Use();
+            
+            Draw(shadowShader, ball, viewMatrixFromLight, projMatrixFromLight);
+            Draw(shadowShader, back, viewMatrixFromLight, projMatrixFromLight);
 
-            //BACK
-            Matrix4 world_back = back._pipeline.getWorld();
-            Matrix4 back_light_wvp = world_back * LightSpaceMatrix;
-            back.Draw(ShaderName.ShadowShader, back_light_wvp);
-
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+            Matrix4 mvpMatrixFromLight_ball = ball._pipeline.getWorld() * viewMatrixFromLight * projMatrixFromLight;
+            Matrix4 mvpMatrixFromLight_back = back._pipeline.getWorld() * viewMatrixFromLight * projMatrixFromLight;
 
             ////// RENDER SCENE //////////////////////////
-
             //GL.CullFace(CullFaceMode.Back);
-            // reset viewport
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
             GL.Viewport(0, 0, WindowWidth, WindowHeight);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            CentralizedShaders.UseShader(ShaderName.AssimpShader);
-
-            persMat = mPersProj.PersProjMatrix;
-            viewMat.InitCameraTransform(Camera.Target, Camera.Up);
-            posMat.InitTranslationTransform(-Camera.Pos);
-            Matrix4 SpaceMatrix = (posMat * viewMat * persMat).ToOpenTK();
+            normalShader.Use();
             shadowMap.BindForReading(TextureUnit.Texture3);
 
-            //BALL
-            Matrix4 wvp = world_ball * SpaceMatrix;
-            ball.Draw(ShaderName.AssimpShader, wvp, ball_light_wvp, world_ball);
-
-            //BACK
-            wvp = world_back * SpaceMatrix;
-            back.Draw(ShaderName.AssimpShader, wvp, back_light_wvp, world_back);
-
+            normalShader.setValue("light_wvp", mvpMatrixFromLight_ball);
+            //viewMatrix, projMatrix
+            //viewMatrixFromLight, projMatrixFromLight
+            Draw(normalShader, ball, viewMatrix, projMatrix);
+            normalShader.setValue("light_wvp", mvpMatrixFromLight_back);
+            Draw(normalShader, back, viewMatrix, projMatrix);
             skybox.Draw();
 
             aim.Draw();
@@ -181,6 +188,11 @@ namespace game_2
             ConsoleCompiler.Execute();            
             SwapBuffers();
             GLFW.PollEvents();
+        }
+
+        private void Draw(Shader program, AObject o, Matrix4 viewMatrix, Matrix4 projMatrix)
+        {
+            o.Draw(program, viewMatrix, projMatrix);
         }
 
         private void InputCallbacks(double Time)
@@ -200,14 +212,14 @@ namespace game_2
         {
             base.OnMouseDown(e);
             if (!isMouseDown && e.Button == MouseButton.Button1) isMouseDown = true;
-            if (e.Button == MouseButton.Button2) LightningManager.spotlights[1].PointLight.BaseLight.Intensity = 2;
+            if (e.Button == MouseButton.Button2) LightningManager.spotlights[0].PointLight.BaseLight.Intensity = 0;
         }
 
         protected override void OnMouseUp(MouseButtonEventArgs e)
         {
             base.OnMouseUp(e);
             if (isMouseDown && e.Button == MouseButton.Button1) isMouseDown = false;
-            if (e.Button == MouseButton.Button2) LightningManager.spotlights[1].PointLight.BaseLight.Intensity = 0;
+            if (e.Button == MouseButton.Button2) LightningManager.spotlights[0].PointLight.BaseLight.Intensity = 2;
         }
 
         protected override void OnResize(ResizeEventArgs e)

@@ -117,12 +117,16 @@ namespace game_2.Brain
 
         public void setValue(string name, Matrix4 data)
         {
-            GL.UniformMatrix4(_uniformLocations[name], true, ref data);
+            if (_uniformLocations.ContainsKey(name))
+            {
+                GL.UniformMatrix4(_uniformLocations[name], true, ref data);
+            }
         }
 
         public void setValue(string name, int data)
         {
-            GL.Uniform1(_uniformLocations[name], data);
+            //if (_uniformLocations.ContainsKey(name))
+                GL.Uniform1(_uniformLocations[name], data);
         }
         
         public void setDiffuseMap()
@@ -142,12 +146,14 @@ namespace game_2.Brain
 
         public void setValue(string name, float data)
         {
-            GL.Uniform1(_uniformLocations[name], data);
+            //if (_uniformLocations.ContainsKey(name))
+                GL.Uniform1(_uniformLocations[name], data);
         }
         
         public void setValue(string name, vector3f data)
         {
-            GL.Uniform3(_uniformLocations[name], data.x, data.y, data.z);
+            //if (_uniformLocations.ContainsKey(name))
+                GL.Uniform3(_uniformLocations[name], data.x, data.y, data.z);
         }
 
         public void Use() => GL.UseProgram(Handle);

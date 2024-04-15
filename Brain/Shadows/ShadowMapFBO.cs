@@ -39,7 +39,7 @@ namespace game_2.Brain.Shadows
             GL.TexImage2D(
                 TextureTarget.Texture2D, 
                 0, 
-                PixelInternalFormat.DepthComponent,
+                PixelInternalFormat.DepthComponent32,
                 m_shadowWidth,
                 m_shadowHeight, 
                 0, 
@@ -47,18 +47,18 @@ namespace game_2.Brain.Shadows
                 PixelType.Float, 
                 IntPtr.Zero);
 
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
 
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
-            //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapR, (int)TextureWrapMode.Repeat);
+            //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapR, (int)TextureWrapMode.ClampToBorder);
 
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, m_fbo);
             GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, TextureTarget.Texture2D, m_shadowMap, 0);
 
-            //GL.DrawBuffer(DrawBufferMode.None);
-            //GL.ReadBuffer(ReadBufferMode.None);
+            GL.DrawBuffer(DrawBufferMode.None);
+            GL.ReadBuffer(ReadBufferMode.None);
 
             var status = GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer);
             if (status != FramebufferErrorCode.FramebufferComplete)
@@ -70,7 +70,7 @@ namespace game_2.Brain.Shadows
 
         public void BindForWriting()
         {
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, m_fbo); // or draw framebuffer
+            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, m_fbo); // or draw framebuffer
         }
 
         public void BindForReading(TextureUnit unit) 

@@ -1,5 +1,6 @@
 ﻿using Assimp;
 using game_2.Brain.Lights.LightStructures;
+using game_2.MathFolder;
 using OpenTK.Mathematics;
 using System.Xml.Linq;
 
@@ -143,19 +144,10 @@ namespace game_2.Brain.NewAssimpFolder
             return texturesPath;
         }
 
-        public void Draw()
+        //вынести ввод матриц в шейдеры сюда (на будущее)
+        public void Draw(Shader shader, Matrix4 view, Matrix4 pers)
         {
-            foreach (AEntry item in _entries) item.Draw(_pipeline.getWorld(), _pipeline.getWVP());
-        }
-
-        public void Draw(ShaderName shader, Matrix4 matrix)
-        {
-            foreach (AEntry item in _entries) item.Draw(shader, matrix);
-        }
-
-        public void Draw(ShaderName shader, Matrix4 wvp, Matrix4 light_wvp, Matrix4 world)
-        {
-            foreach (AEntry item in _entries) item.Draw(shader, wvp, light_wvp, world);
+            foreach (AEntry item in _entries) item.Draw(shader, _pipeline.getWorld(), view, pers);
         }
 
         public void OnDelete()

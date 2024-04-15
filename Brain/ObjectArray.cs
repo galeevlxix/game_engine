@@ -103,7 +103,7 @@ namespace game_2.Brain
         {
             foreach(AObject obj in obj_list.Values)
             {
-                obj.Draw();
+                //obj.Draw();
             }
         }
         public static void Reset()

@@ -78,7 +78,7 @@ namespace game_2.Brain
             m_shaders[shaderName].setValue(world, c_rot, p);
         }
 
-        public static void SetValue(ShaderName shaderName, Matrix4 c_pos, Matrix4 world, Matrix4 c_rot, Matrix4 p)
+        public static void SetValue(ShaderName shaderName, Matrix4 world, Matrix4 c_pos, Matrix4 c_rot, Matrix4 p)
         {
             UseShader(shaderName);
             m_shaders[shaderName].setValue(world, c_pos, c_rot, p);
@@ -101,6 +101,11 @@ namespace game_2.Brain
         {
             UseShader(shaderName);
             return m_shaders[shaderName].GetUniformLocation(uniformName);
+        }
+
+        public static Shader GetShader(ShaderName shaderName)
+        {
+            return m_shaders[shaderName];
         }
     }
     public enum ShaderName

@@ -1,4 +1,4 @@
-#version 330
+#version 330 core
 out vec4 outputColor;
 
 in vec2 texCoord;
@@ -108,11 +108,11 @@ float CalcShadowFactor(vec4 LightSpacePos)
     // transform to [0,1] range
     ProjCoords = 0.5 * ProjCoords + 0.5;
     // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
-    float Depth = texture2D(gShadowMap, ProjCoords.xy).x;
+    float Depth = texture2D(gShadowMap, ProjCoords.xy).r;
     // get depth of current fragment from light's perspective
     // check whether current frag pos is in shadow
-    if (Depth < ProjCoords.z)
-        return 0.1;
+    if (Depth + 0.0005 < ProjCoords.z)
+        return 0;
     else
         return 1.0;
 }
