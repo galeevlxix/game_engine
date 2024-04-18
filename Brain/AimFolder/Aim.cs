@@ -15,7 +15,7 @@ namespace game_2.Brain.AimFolder
 
         public override void Draw()
         {
-            base.Draw();
+            mesh.Draw(pipeline.getWorld());
         }
 
         public override void OnDelete()

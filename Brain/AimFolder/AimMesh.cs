@@ -17,9 +17,9 @@ namespace game_2.Brain.AimFolder
             Load(AimVertices.Vertices, AimVertices.Indices);
         }
 
-        public override void Draw(Matrix4 matrix)
+        public override void Draw(Matrix4 world)
         {
-            CentralizedShaders.SetValue(ShaderName.ScreenShader, matrix, pers_proj);
+            CentralizedShaders.SetValue(ShaderName.ScreenShader, world, pers_proj);
             GL.BindVertexArray(VAO);
             UseTextures();
             GL.DrawElements(PrimitiveType.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);

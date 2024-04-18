@@ -78,8 +78,7 @@ float CalcShadowFactor(vec4 LightSpacePos);
 void main()
 {
     vec3 Normal = CalcBumpedNormal();
-    float shadowFactor = CalcShadowFactor(LightPos0);
-    //Normal = normalize(Normal0);
+    float shadowFactor = 0;
     
     vec4 texel = texture2D(gMaterial.DiffuseMap, texCoord.xy);
 
@@ -95,7 +94,15 @@ void main()
         TotalLight += CalcPointLight(gPointLights[i], Normal);
     }
     
-    TotalLight += shadowFactor * CalcSpotLight(gSpotLights[0], Normal);
+    if (gSpotLights[0].Base.Base.Intensity > 0)
+    {
+        shadowFactor = CalcShadowFactor(LightPos0);
+    }
+    
+    if (shadowFactor != 0)
+    {
+        TotalLight += CalcSpotLight(gSpotLights[0], Normal);
+    }
     TotalLight += CalcSpotLight(gSpotLights[1], Normal);
     
     outputColor = texel * TotalLight;
@@ -111,7 +118,8 @@ float CalcShadowFactor(vec4 LightSpacePos)
     float Depth = texture2D(gShadowMap, ProjCoords.xy).r;
     // get depth of current fragment from light's perspective
     // check whether current frag pos is in shadow
-    if (Depth + 0.0005 < ProjCoords.z)
+    //float bias = max(0.05 * (1.0 - dot(Normal, lightDir)), 0.005);
+    if (Depth + 0.0001 < ProjCoords.z)
         return 0;
     else
         return 1.0;
@@ -148,11 +156,10 @@ vec4 CalcLightInternal(BaseLight Light, vec3 pLightDirection, vec3 Normal)
         vec3 VertexToEye = normalize(gCameraPos - WorldPos0);
         vec3 LightReflect = normalize(reflect(LightDirection, Normal));
         float SpecularFactor = dot(VertexToEye, LightReflect);
-        SpecularFactor = pow(SpecularFactor, gMaterial.SpecularPower);
-        
 
         if (SpecularFactor > 0) 
         {
+            SpecularFactor = pow(SpecularFactor, gMaterial.SpecularPower);
             SpecularColor = vec4(Light.Color, 1.0f) * Light.Intensity * SpecularFactor * texture2D(gMaterial.SpecularMap, texCoord.xy);
         }
     }

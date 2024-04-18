@@ -1,5 +1,5 @@
 ﻿newmtl mymtl
-	Ns 32.000000
+	Ns 64.000000
 	Ka 1.000000 1.000000 1.000000
 	Kd 0.800000 0.800000 0.800000
 	Ks 0.500000 0.500000 0.500000
@@ -9,4 +9,4 @@
 	illum 2
 	map_Kd container2.png
 	map_Ks container2_specular.png
-	map_Kn strong-empty-normal-map2.jpg
+	map_Kn strong-empty-normal-map3.jpg

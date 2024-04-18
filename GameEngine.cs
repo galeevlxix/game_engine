@@ -82,14 +82,20 @@ namespace game_2
             CentralizedShaders.SetValue(ShaderName.AssimpShader, "gShadowMap", 3);
             back = new AObject(ModelFolderPath + "obj_files\\background\\cube.obj");
             ball = new AObject(ModelFolderPath + "obj_files\\Ball\\ball1.obj");
+            boxes = new AObject(ModelFolderPath + "obj_files\\Wooden_Boxes\\Models\\Wooden Boxes.obj");
+
 
             back.SetAngle(0, -90, 0);
             back.SetPosition(12, 5, 0);
-            back.SetScale(5);
+            back.SetScale(10);
 
             ball.SetPosition(15, 1, 0);
             ball.SetAngle(0, 90, 0);
             ball.SetScale(5);
+
+            boxes.SetPosition(15, -3, 0);
+            boxes.SetAngle(0, 0, 0);
+            boxes.SetScale(2);
 
             shadowMap = new ShadowMapFBO(shadow_size_x, shadow_size_y);
 
@@ -108,6 +114,7 @@ namespace game_2
         private static string ModelFolderPath = "..\\..\\..\\Files\\Models\\";
         private AObject back;
         private AObject ball;
+        private AObject boxes;
 
         // Рендер окна
         protected override void OnRenderFrame(FrameEventArgs args)
@@ -119,6 +126,7 @@ namespace game_2
             InputCallbacks(args.Time);
             Camera.OnRender((float)args.Time);
 
+            boxes.Rotate(0, 45, 0, (float)args.Time);
 
 
             ////// PARAMETERS //////////////////
@@ -141,7 +149,6 @@ namespace game_2
             LightSpaceTarget.InitCameraTransform(-tar, vector3f.Up);
 
             Matrix4 viewMatrixFromLight = (LightSpacePos * LightSpaceTarget).ToOpenTK();
-            //viewMatrixFromLight.Transpose();
             Matrix4 viewMatrix = (Camera.CameraTranslation * Camera.CameraRotation).ToOpenTK();
 
             Shader shadowShader = CentralizedShaders.GetShader(ShaderName.ShadowShader);
@@ -149,7 +156,7 @@ namespace game_2
 
             ////// RENDER SHADOW //////////////////
 
-            //GL.CullFace(CullFaceMode.Front);
+            GL.CullFace(CullFaceMode.Front);
             shadowMap.BindForWriting();
             GL.Viewport(0, 0, shadow_size_x, shadow_size_y);
             GL.Clear(ClearBufferMask.DepthBufferBit);
@@ -158,12 +165,14 @@ namespace game_2
             
             Draw(shadowShader, ball, viewMatrixFromLight, projMatrixFromLight);
             Draw(shadowShader, back, viewMatrixFromLight, projMatrixFromLight);
+            Draw(shadowShader, boxes, viewMatrixFromLight, projMatrixFromLight);
 
             Matrix4 mvpMatrixFromLight_ball = ball._pipeline.getWorld() * viewMatrixFromLight * projMatrixFromLight;
             Matrix4 mvpMatrixFromLight_back = back._pipeline.getWorld() * viewMatrixFromLight * projMatrixFromLight;
+            Matrix4 mvpMatrixFromLight_monkey = boxes._pipeline.getWorld() * viewMatrixFromLight * projMatrixFromLight;
 
             ////// RENDER SCENE //////////////////////////
-            //GL.CullFace(CullFaceMode.Back);
+            GL.CullFace(CullFaceMode.Back);
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
             GL.Viewport(0, 0, WindowWidth, WindowHeight);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
@@ -177,6 +186,10 @@ namespace game_2
             Draw(normalShader, ball, viewMatrix, projMatrix);
             normalShader.setValue("light_wvp", mvpMatrixFromLight_back);
             Draw(normalShader, back, viewMatrix, projMatrix);
+            normalShader.setValue("light_wvp", mvpMatrixFromLight_monkey);
+            Draw(normalShader, boxes, viewMatrix, projMatrix);
+
+
             skybox.Draw();
 
             aim.Draw();

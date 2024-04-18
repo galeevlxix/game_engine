@@ -125,7 +125,7 @@ namespace game_2.Brain
 
         public void setValue(string name, int data)
         {
-            //if (_uniformLocations.ContainsKey(name))
+            if (_uniformLocations.ContainsKey(name))
                 GL.Uniform1(_uniformLocations[name], data);
         }
         
@@ -146,13 +146,13 @@ namespace game_2.Brain
 
         public void setValue(string name, float data)
         {
-            //if (_uniformLocations.ContainsKey(name))
+            if (_uniformLocations.ContainsKey(name))
                 GL.Uniform1(_uniformLocations[name], data);
         }
         
         public void setValue(string name, vector3f data)
         {
-            //if (_uniformLocations.ContainsKey(name))
+            if (_uniformLocations.ContainsKey(name))
                 GL.Uniform3(_uniformLocations[name], data.x, data.y, data.z);
         }
 

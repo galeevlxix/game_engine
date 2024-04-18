@@ -141,8 +141,8 @@ namespace game_2.Brain.Lights
             var posX = spotlights[0].PointLight.Position.x;
             var posY = spotlights[0].PointLight.Position.y;
             var posZ = spotlights[0].PointLight.Position.z;
-            //spotlights[0].PointLight.Position.y += math3d.sin(counter) * deltaTime;
-            //spotlights[0].PointLight.Position.z += -math3d.cos(counter) * 5 * deltaTime;
+            spotlights[0].PointLight.Position.y += math3d.sin(counter) * deltaTime;
+            spotlights[0].PointLight.Position.z += -math3d.cos(counter) * 5 * deltaTime;
 
             proj.pipeline.SetPosition(spotlights[0].PointLight.Position);
             //spotlights[0].Direction = new vector3f(math3d.abs(math3d.sin(counter)), 0, math3d.abs(math3d.cos(counter)));

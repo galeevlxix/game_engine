@@ -101,7 +101,7 @@ namespace game_2.MathFolder
             float Rw = CosHalfAngle;
             Quaternion RotationQ = new Quaternion(Rx, Ry, Rz, Rw);
             Quaternion ConjugateQ = RotationQ.Conjugate();
-            Quaternion W = RotationQ * (this) * ConjugateQ;
+            Quaternion W = RotationQ * this * ConjugateQ;
 
             x = W.x;
             y = W.y;
