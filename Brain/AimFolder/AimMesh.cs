@@ -17,7 +17,7 @@ namespace game_2.Brain.AimFolder
             Load(AimVertices.Vertices, AimVertices.Indices);
         }
 
-        public override void Draw(Matrix4 world)
+         public override void Draw(Matrix4 world)
         {
             CentralizedShaders.SetValue(ShaderName.ScreenShader, world, pers_proj);
             GL.BindVertexArray(VAO);

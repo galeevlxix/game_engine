@@ -212,7 +212,7 @@ namespace game_2.Brain
             return (scaleTrans * rotateTrans * translationTrans).ToOpenTK();
         }
 
-        public Matrix4 getWVP()
+        public Matrix4 getMVP()
         {
             matrix4f scaleTrans = new matrix4f();
             matrix4f rotateTrans = new matrix4f();
@@ -224,6 +224,27 @@ namespace game_2.Brain
             matrix4f pers = mPersProj.PersProjMatrix;
             matrix4f c_pos = Camera.CameraTranslation;
             matrix4f c_rot = Camera.CameraRotation;
+
+            return (scaleTrans * rotateTrans * translationTrans * c_pos * c_rot * pers).ToOpenTK();
+        }
+
+        public Matrix4 getMVP(Spotlight spotlight)
+        {
+            matrix4f scaleTrans = new matrix4f();
+            matrix4f rotateTrans = new matrix4f();
+            matrix4f translationTrans = new matrix4f();
+
+            scaleTrans.InitScaleTransform(ScaleVector.x, ScaleVector.y, ScaleVector.z);
+            rotateTrans.Rotate(RotateVector.x, RotateVector.y, RotateVector.z);
+            translationTrans.InitTranslationTransform(PositionVector.x, PositionVector.y, PositionVector.z);
+
+            matrix4f pers = new matrix4f();
+            matrix4f c_pos = new matrix4f();
+            matrix4f c_rot = new matrix4f();
+
+            pers.InitPersProjTransform(150, ObjectArray.shadow_size_x, ObjectArray.shadow_size_y, 0.1f, 100);
+            c_pos.InitTranslationTransform(-spotlight.PointLight.Position);
+            c_rot.InitCameraTransform(-spotlight.Direction, vector3f.Up);
 
             return (scaleTrans * rotateTrans * translationTrans * c_pos * c_rot * pers).ToOpenTK();
         }

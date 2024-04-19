@@ -15,8 +15,8 @@ namespace game_2.Brain.Lights
         public static PointLight[] pointLights = new PointLight[2];
         public static Spotlight[] spotlights = new Spotlight[2];
 
-        //private static MonochromeObject redLamp;
-        //private static MonochromeObject blueLamp;
+        private static MonochromeObject redLamp;
+        private static MonochromeObject blueLamp;
 
         private static MonochromeObject proj;
 
@@ -27,7 +27,7 @@ namespace game_2.Brain.Lights
             lightConfig.SetSpecular(Camera.Pos, 32);
             ConfigureBaseLight();
             ConfigureDirectionalLight();
-            ConfigurePointLights();
+            //ConfigurePointLights();
             ConfigureSpotlights();
         }
 
@@ -69,7 +69,7 @@ namespace game_2.Brain.Lights
 
         private static void ConfigurePointLights()
         {
-            /*pointLights[0].Position = new vector3f(-5, 2, 0);
+            pointLights[0].Position = new vector3f(-5, 2, 0);
             pointLights[0].Attenuation.Exp = 0.032f;
             pointLights[0].Attenuation.Linear = 0.09f;
             pointLights[0].Attenuation.Constant = 1;
@@ -83,14 +83,14 @@ namespace game_2.Brain.Lights
             pointLights[1].BaseLight.Color = new vector3f(0, 1, 1);
             pointLights[1].BaseLight.Intensity = 1f;
 
-            lightConfig.SetPointLights(pointLights);*/
+            lightConfig.SetPointLights(pointLights);
         }
 
         private static void ConfigureSpotlights()
         {
-            spotlights[0].PointLight.Position = new vector3f(9, 1, 0);
+            spotlights[0].PointLight.Position = new vector3f(9, 5, 9);
             spotlights[0].PointLight.BaseLight.Color = new vector3f(1, 1, 0);
-            spotlights[0].PointLight.BaseLight.Intensity = 2;
+            spotlights[0].PointLight.BaseLight.Intensity = 3;
             spotlights[0].PointLight.Attenuation.Constant = 1;
             spotlights[0].PointLight.Attenuation.Linear = 0.027f;
             spotlights[0].PointLight.Attenuation.Exp = 0.0028f;
@@ -141,8 +141,8 @@ namespace game_2.Brain.Lights
             var posX = spotlights[0].PointLight.Position.x;
             var posY = spotlights[0].PointLight.Position.y;
             var posZ = spotlights[0].PointLight.Position.z;
-            spotlights[0].PointLight.Position.y += math3d.sin(counter) * deltaTime;
-            spotlights[0].PointLight.Position.z += -math3d.cos(counter) * 5 * deltaTime;
+            //spotlights[0].PointLight.Position.y += math3d.sin(counter) * deltaTime;
+            //spotlights[0].PointLight.Position.z += -math3d.cos(counter) * 5 * deltaTime;
 
             proj.pipeline.SetPosition(spotlights[0].PointLight.Position);
             //spotlights[0].Direction = new vector3f(math3d.abs(math3d.sin(counter)), 0, math3d.abs(math3d.cos(counter)));

@@ -8,6 +8,7 @@ namespace game_2.Brain.MonochromeObjectFolder
     {
         private vector3f Color = new vector3f(1, 1, 1);
         private vector3f Light = new vector3f(1, 1, 1);
+
         public MonochromeObject(vector3f Color, vector3f Light)
         {
             mesh = new MonochromeObjectMesh();
@@ -22,7 +23,7 @@ namespace game_2.Brain.MonochromeObjectFolder
             CentralizedShaders.SetValue(ShaderName.MonochromeShader, "color", Color);
             CentralizedShaders.SetValue(ShaderName.MonochromeShader, "light", Light);
 
-            base.Draw();
+            mesh.Draw(pipeline.getWorld());
         }
 
         public void SetColor(vector3f Color)

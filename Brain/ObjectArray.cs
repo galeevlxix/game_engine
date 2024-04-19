@@ -1,7 +1,9 @@
 ﻿using game_2.Brain.Lights.LightStructures;
 using game_2.Brain.NewAssimpFolder;
 using game_2.Brain.ObjectFolder;
+using game_2.Brain.Shadows;
 using game_2.MathFolder;
+using OpenTK.Graphics.OpenGL;
 
 namespace game_2.Brain
 {
@@ -12,17 +14,23 @@ namespace game_2.Brain
         private static string ModelFolderPath = "..\\..\\..\\Files\\Models\\";
         private static string TextureFolderPath = "..\\..\\..\\Files\\Textures\\";
 
+        private static ShadowMapFBO shadowMap;
+        public static int shadow_size_x = 1024;
+        public static int shadow_size_y = 1024;
+
+        public static int window_size_x;
+        public static int window_size_y;
+
         public static void Init()
         {
             obj_list = new Dictionary<string, AObject>();
-
-            //Add("back", new AObject(ModelFolderPath + "obj_files\\background\\cube.obj"));
+            shadowMap = new ShadowMapFBO(shadow_size_x, shadow_size_y);
 
             //Add("ball", new AObject(ModelFolderPath + "obj_files\\Ball\\ball1.obj"));
 
             //Add("de_dust", new AObject(ModelFolderPath + "obj_files\\de_dust\\source\\new_de_dust2_comp.obj"));
-            //Add("monkey", new AObject(ModelFolderPath + "obj_files\\monkey\\monkey.obj"));
-            //Add("pika", new AObject("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\obj_files\\pika-girl\\WithPika2.obj"));
+            Add("monkey", new AObject(ModelFolderPath + "obj_files\\monkey\\monkey.obj"));
+            Add("pika", new AObject("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\obj_files\\pika-girl\\WithPika2.obj"));
             
             
             //Add("ball", new AObject("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\obj_files\\Ball\\ball1.obj"));
@@ -43,11 +51,11 @@ namespace game_2.Brain
             //SetAngle("de_dust", 90, 0, 0);
             //SetPosition("de_dust", -20, 0, 0);
 
-            //SetPosition("monkey", 0, 4, 0);
-            //SetScale("monkey", 0.8f);
+            SetPosition("monkey", 0, 4, 0);
+            SetScale("monkey", 0.8f);
 
-            //SetPosition("pika", 12, 7.5f, 12);
-            //SetAngle("pika", 0, 90, 0);
+            SetPosition("pika", 12, 7.5f, 12);
+            SetAngle("pika", 0, 90, 0);
 
             //SetScale("ball", 12);
             //SetPosition("ball", -5, 4, 10);
@@ -101,11 +109,24 @@ namespace game_2.Brain
 
         public static void Draw()
         {
-            foreach(AObject obj in obj_list.Values)
+            shadowMap.BindForReading(TextureUnit.Texture3);
+
+            foreach (AObject obj in obj_list.Values)
             {
-                //obj.Draw();
+                obj.Draw();
             }
         }
+
+        public static void DrawShadows(Spotlight spotlight)
+        {
+            shadowMap.BindForWriting();
+
+            foreach (AObject obj in obj_list.Values)
+            {
+                obj.Draw(spotlight);
+            }
+        }
+
         public static void Reset()
         {
             foreach (AObject obj in obj_list.Values)

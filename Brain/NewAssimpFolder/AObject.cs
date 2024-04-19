@@ -16,6 +16,8 @@ namespace game_2.Brain.NewAssimpFolder
 
         public Pipeline _pipeline;
 
+        public Matrix4 light_wvp = new Matrix4();
+
         public AObject(string ModelFilePath) 
         {
             _modelFilePath = ModelFilePath;
@@ -145,9 +147,29 @@ namespace game_2.Brain.NewAssimpFolder
         }
 
         //вынести ввод матриц в шейдеры сюда (на будущее)
-        public void Draw(Shader shader, Matrix4 view, Matrix4 pers)
+
+        public void Draw()
         {
-            foreach (AEntry item in _entries) item.Draw(shader, _pipeline.getWorld(), view, pers);
+            CentralizedShaders.SetValue(ShaderName.AssimpShader, "light_wvp", light_wvp);
+            CentralizedShaders.SetValue(ShaderName.AssimpShader, "wvp", _pipeline.getMVP());
+            CentralizedShaders.SetValue(ShaderName.AssimpShader, "world", _pipeline.getWorld());
+
+            foreach (AEntry item in _entries)
+            {
+                item.Draw();
+            }
+        }
+
+        public void Draw(Spotlight light)
+        {
+            light_wvp = _pipeline.getMVP(light);
+
+            CentralizedShaders.SetValue(ShaderName.ShadowShader, "wvp", light_wvp);
+
+            foreach (AEntry item in _entries)
+            { 
+                item.Draw();
+            }
         }
 
         public void OnDelete()

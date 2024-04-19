@@ -78,12 +78,6 @@ namespace game_2.Brain
             m_shaders[shaderName].setValue(world, c_rot, p);
         }
 
-        public static void SetValue(ShaderName shaderName, Matrix4 world, Matrix4 c_pos, Matrix4 c_rot, Matrix4 p)
-        {
-            UseShader(shaderName);
-            m_shaders[shaderName].setValue(world, c_pos, c_rot, p);
-        }
-
         public static void UseShader(ShaderName shaderName)
         {
             if (shaderName == activeShader) return;

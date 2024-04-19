@@ -78,6 +78,7 @@ float CalcShadowFactor(vec4 LightSpacePos);
 void main()
 {
     vec3 Normal = CalcBumpedNormal();
+    Normal = normalize(Normal0);
     float shadowFactor = 0;
     
     vec4 texel = texture2D(gMaterial.DiffuseMap, texCoord.xy);

@@ -48,10 +48,8 @@ namespace game_2.Brain.NewAssimpFolder
             indicesCount = Indices.Count;
         }
 
-        public void Draw(Shader shader, Matrix4 world, Matrix4 view, Matrix4 pers)
+        public void Draw()
         {
-            shader.setValue("wvp", world * view * pers);
-            shader.setValue("world", world);
             VAO.Bind();
             material.Use();
             GL.DrawElements(BeginMode.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);

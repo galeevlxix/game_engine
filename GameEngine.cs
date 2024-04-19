@@ -25,12 +25,7 @@ namespace game_2
         private Skybox skybox;
         private Aim aim;
 
-        private ShadowMapFBO shadowMap;
-
         private readonly Color4 BackGroundColor;
-
-        int shadow_size_x = 1024;
-        int shadow_size_y = 1024;
 
         public GameEngine(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings) : base(gameWindowSettings, nativeWindowSettings) 
         {
@@ -58,7 +53,7 @@ namespace game_2
             GL.Enable(EnableCap.DepthTest);
             GL.Enable(EnableCap.CullFace);
             GL.CullFace(CullFaceMode.Back);
-           GL.FrontFace(FrontFaceDirection.Ccw);
+            GL.FrontFace(FrontFaceDirection.Ccw);
 
             base.CursorGrabbed = true;
 
@@ -67,6 +62,7 @@ namespace game_2
             Console.WriteLine("Загрузка камеры...");
             Camera.InitCamera();
             Camera.SetCameraPosition(8, 3, -10);
+            
 
             Console.WriteLine("Загрузка шейдеров...");
             CentralizedShaders.Load();
@@ -75,29 +71,14 @@ namespace game_2
             aim = new Aim();
 
             Console.WriteLine("Загрузка моделей (assimp)...");
-            //ObjectArray.Init();
+            ObjectArray.Init();
+            ObjectArray.window_size_x = WindowWidth;
+            ObjectArray.shadow_size_y = WindowHeight;
+
             CentralizedShaders.SetValue(ShaderName.AssimpShader, "gMaterial.DiffuseMap", 0);
             CentralizedShaders.SetValue(ShaderName.AssimpShader, "gMaterial.NormalMap", 1);
             CentralizedShaders.SetValue(ShaderName.AssimpShader, "gMaterial.SpecularMap", 2);
             CentralizedShaders.SetValue(ShaderName.AssimpShader, "gShadowMap", 3);
-            back = new AObject(ModelFolderPath + "obj_files\\background\\cube.obj");
-            ball = new AObject(ModelFolderPath + "obj_files\\Ball\\ball1.obj");
-            boxes = new AObject(ModelFolderPath + "obj_files\\Wooden_Boxes\\Models\\Wooden Boxes.obj");
-
-
-            back.SetAngle(0, -90, 0);
-            back.SetPosition(12, 5, 0);
-            back.SetScale(10);
-
-            ball.SetPosition(15, 1, 0);
-            ball.SetAngle(0, 90, 0);
-            ball.SetScale(5);
-
-            boxes.SetPosition(15, -3, 0);
-            boxes.SetAngle(0, 0, 0);
-            boxes.SetScale(2);
-
-            shadowMap = new ShadowMapFBO(shadow_size_x, shadow_size_y);
 
             Console.WriteLine("Загрузка скайбокса...");
             skybox = new Skybox();
@@ -111,10 +92,6 @@ namespace game_2
             await Task.Run(() => ConsoleCompiler.Run());
 
         }
-        private static string ModelFolderPath = "..\\..\\..\\Files\\Models\\";
-        private AObject back;
-        private AObject ball;
-        private AObject boxes;
 
         // Рендер окна
         protected override void OnRenderFrame(FrameEventArgs args)
@@ -126,69 +103,16 @@ namespace game_2
             InputCallbacks(args.Time);
             Camera.OnRender((float)args.Time);
 
-            boxes.Rotate(0, 45, 0, (float)args.Time);
-
-
-            ////// PARAMETERS //////////////////
-
-            var p = new matrix4f();
-            p.InitPersProjTransform(120, shadow_size_x, shadow_size_y, 0.1f, 100);
-            Matrix4 projMatrixFromLight = p.ToOpenTK();
-            //projMatrixFromLight.Transpose();
-            Matrix4 projMatrix = mPersProj.PersProjMatrix.ToOpenTK();
-            
-            //projMatrix.Transpose();
-
-            vector3f pos = LightningManager.spotlights[0].PointLight.Position;
-            vector3f tar = LightningManager.spotlights[0].Direction;
-            tar = new vector3f(tar.x, tar.y, tar.z);
-
-            matrix4f LightSpacePos = new matrix4f();
-            LightSpacePos.InitTranslationTransform(-pos);
-            matrix4f LightSpaceTarget = new matrix4f();
-            LightSpaceTarget.InitCameraTransform(-tar, vector3f.Up);
-
-            Matrix4 viewMatrixFromLight = (LightSpacePos * LightSpaceTarget).ToOpenTK();
-            Matrix4 viewMatrix = (Camera.CameraTranslation * Camera.CameraRotation).ToOpenTK();
-
-            Shader shadowShader = CentralizedShaders.GetShader(ShaderName.ShadowShader);
-            Shader normalShader = CentralizedShaders.GetShader(ShaderName.AssimpShader);
-
-            ////// RENDER SHADOW //////////////////
-
             GL.CullFace(CullFaceMode.Front);
-            shadowMap.BindForWriting();
-            GL.Viewport(0, 0, shadow_size_x, shadow_size_y);
+            GL.Viewport(0, 0, ObjectArray.shadow_size_x, ObjectArray.shadow_size_y);
             GL.Clear(ClearBufferMask.DepthBufferBit);
+            ObjectArray.DrawShadows(LightningManager.spotlights[0]);
 
-            shadowShader.Use();
-            
-            Draw(shadowShader, ball, viewMatrixFromLight, projMatrixFromLight);
-            Draw(shadowShader, back, viewMatrixFromLight, projMatrixFromLight);
-            Draw(shadowShader, boxes, viewMatrixFromLight, projMatrixFromLight);
-
-            Matrix4 mvpMatrixFromLight_ball = ball._pipeline.getWorld() * viewMatrixFromLight * projMatrixFromLight;
-            Matrix4 mvpMatrixFromLight_back = back._pipeline.getWorld() * viewMatrixFromLight * projMatrixFromLight;
-            Matrix4 mvpMatrixFromLight_monkey = boxes._pipeline.getWorld() * viewMatrixFromLight * projMatrixFromLight;
-
-            ////// RENDER SCENE //////////////////////////
             GL.CullFace(CullFaceMode.Back);
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
             GL.Viewport(0, 0, WindowWidth, WindowHeight);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
-            normalShader.Use();
-            shadowMap.BindForReading(TextureUnit.Texture3);
-
-            normalShader.setValue("light_wvp", mvpMatrixFromLight_ball);
-            //viewMatrix, projMatrix
-            //viewMatrixFromLight, projMatrixFromLight
-            Draw(normalShader, ball, viewMatrix, projMatrix);
-            normalShader.setValue("light_wvp", mvpMatrixFromLight_back);
-            Draw(normalShader, back, viewMatrix, projMatrix);
-            normalShader.setValue("light_wvp", mvpMatrixFromLight_monkey);
-            Draw(normalShader, boxes, viewMatrix, projMatrix);
-
+            ObjectArray.Draw();
 
             skybox.Draw();
 
@@ -201,11 +125,6 @@ namespace game_2
             ConsoleCompiler.Execute();            
             SwapBuffers();
             GLFW.PollEvents();
-        }
-
-        private void Draw(Shader program, AObject o, Matrix4 viewMatrix, Matrix4 projMatrix)
-        {
-            o.Draw(program, viewMatrix, projMatrix);
         }
 
         private void InputCallbacks(double Time)
@@ -246,7 +165,7 @@ namespace game_2
 
         protected override void OnClosed()
         {
-           // ObjectArray.Clear();
+            ObjectArray.Clear();
             skybox.OnDelete();
             aim.OnDelete();
             //info.OnClear();

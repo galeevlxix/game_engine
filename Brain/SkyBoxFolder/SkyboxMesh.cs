@@ -47,7 +47,7 @@ namespace game_2.Brain.SkyBoxFolder
             indicesCount = Indices.Length;
         }
 
-        public override void Draw(Matrix4 matrix)
+         public override void Draw(Matrix4 matrix)
         {
             CentralizedShaders.SetValue(ShaderName.SkyBoxShader, matrix, Camera.CameraRotation.ToOpenTK(), mPersProj.PersProjMatrix.ToOpenTK());
             GL.BindVertexArray(VAO);

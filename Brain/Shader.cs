@@ -117,7 +117,7 @@ namespace game_2.Brain
 
         public void setValue(string name, Matrix4 data)
         {
-            if (_uniformLocations.ContainsKey(name))
+            //if (_uniformLocations.ContainsKey(name))
             {
                 GL.UniformMatrix4(_uniformLocations[name], true, ref data);
             }
@@ -125,34 +125,19 @@ namespace game_2.Brain
 
         public void setValue(string name, int data)
         {
-            if (_uniformLocations.ContainsKey(name))
+            //if (_uniformLocations.ContainsKey(name))
                 GL.Uniform1(_uniformLocations[name], data);
-        }
-        
-        public void setDiffuseMap()
-        {
-            GL.Uniform1(_uniformLocations["gMaterial.DiffuseMap"], 0);
-        }
-
-        public void setNormalMap()
-        {
-            GL.Uniform1(_uniformLocations["gMaterial.NormalMap"], 1);
-        }
-
-        public void setSpecularMap()
-        {
-            GL.Uniform1(_uniformLocations["gMaterial.SpecularMap"], 2);
         }
 
         public void setValue(string name, float data)
         {
-            if (_uniformLocations.ContainsKey(name))
+            //if (_uniformLocations.ContainsKey(name))
                 GL.Uniform1(_uniformLocations[name], data);
         }
         
         public void setValue(string name, vector3f data)
         {
-            if (_uniformLocations.ContainsKey(name))
+            //if (_uniformLocations.ContainsKey(name))
                 GL.Uniform3(_uniformLocations[name], data.x, data.y, data.z);
         }
 
