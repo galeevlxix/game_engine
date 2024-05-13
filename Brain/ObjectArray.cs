@@ -1,78 +1,77 @@
-﻿using game_2.Brain.Lights.LightStructures;
+﻿using game_2.Brain.Lights;
+using game_2.Brain.Lights.LightStructures;
 using game_2.Brain.NewAssimpFolder;
 using game_2.Brain.ObjectFolder;
+using game_2.Brain.Shadows;
 using game_2.MathFolder;
+using OpenTK.Mathematics;
+using OpenTK.Graphics.OpenGL;
 
 namespace game_2.Brain
 {
     public static class ObjectArray
     {
         private static Dictionary<string, AObject> obj_list;
+        private static Dictionary<string, Matrix4> mvpMatrixFromLight;
 
         private static string ModelFolderPath = "..\\..\\..\\Files\\Models\\";
         private static string TextureFolderPath = "..\\..\\..\\Files\\Textures\\";
 
+        private static ShadowMapFBO shadowMap;
+
+        private static Shader shadowShader;
+        private static Shader normalShader;
+
+        private static int shadow_size_x = 2048;
+        private static int shadow_size_y = 2048;
+
         public static void Init()
         {
+            Console.WriteLine("Загрузка моделей (assimp)...");
+
             obj_list = new Dictionary<string, AObject>();
+            mvpMatrixFromLight = new Dictionary<string, Matrix4>();
 
-            //Add("back", new AObject(ModelFolderPath + "obj_files\\background\\cube.obj"));
+            Add("museum", "Museums\\VR_Gallery\\VR_Gallery_comp.obj");
+            Add("table", "Museums\\museum_table\\OPM0032.fbx");
+            Add("sculpt", "Museums\\bull\\bull3.obj");
 
-            //Add("ball", new AObject(ModelFolderPath + "obj_files\\Ball\\ball1.obj"));
+            shadowMap = new ShadowMapFBO(shadow_size_x, shadow_size_y);
 
-            //Add("de_dust", new AObject(ModelFolderPath + "obj_files\\de_dust\\source\\new_de_dust2_comp.obj"));
-            //Add("monkey", new AObject(ModelFolderPath + "obj_files\\monkey\\monkey.obj"));
-            //Add("pika", new AObject("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\obj_files\\pika-girl\\WithPika2.obj"));
-            
-            
-            //Add("ball", new AObject("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\obj_files\\Ball\\ball1.obj"));
-            //Add("dingel", new AObject("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\fbx_files\\Dingel\\source\\Dingel_comp.obj"));
-            //Add("mococo", new AObject("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\fbx_files\\Mococo\\Mococo_pose.fbx"));
-            //Add("sphere", new AObject("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\fbx_files\\stylized-organic-red\\source\\Stylizedground_sphere_comp.obj"));
+            shadowShader = CentralizedShaders.GetShader(ShaderName.ShadowShader);
+            normalShader = CentralizedShaders.GetShader(ShaderName.AssimpShader);
 
             SetProperties();
         }
 
         private static void SetProperties()
         {
-            //SetAngle("back", 0, -90, 0);
-            //SetPosition("back", 12, 5, 0);
-            //SetScale("back", 5);
+            SetAngle("museum", 0, 0, 0);
+            SetPosition("museum", 20, 0, 0);
+            SetScale("museum", 0.01f);
 
-            //SetScale("de_dust", 0.05f);
-            //SetAngle("de_dust", 90, 0, 0);
-            //SetPosition("de_dust", -20, 0, 0);
+            SetAngle("table", 90, 0, 90);
+            SetPosition("table", 43, -8.8f, 0);
+            SetScale("table", 4);
 
-            //SetPosition("monkey", 0, 4, 0);
-            //SetScale("monkey", 0.8f);
-
-            //SetPosition("pika", 12, 7.5f, 12);
-            //SetAngle("pika", 0, 90, 0);
-
-            //SetScale("ball", 12);
-            //SetPosition("ball", -5, 4, 10);
-
-            //SetPosition("ball", 13, 1, 0);
-            //SetAngle("ball", 0, 90, 0);
-            //SetScale("ball", 0);
-
-            //SetPosition("mococo", 10, 0, -5);
-            //SetAngle("mococo", 0, -90, 0);
-            //SetScale("mococo", 0.8f);
-
-            //SetScale("sphere", 0.05f);
-            //SetPosition("sphere", -9, 5, 0);
+            SetAngle("sculpt", 0, 180, 0);
+            SetPosition("sculpt", 42.8f, -5.75f, -0.5f);
+            SetScale("sculpt", 0.15f);
         }
 
-        private static float rot_speed = 45;
+        private static float bull_speedY = 0;
         public static void OnRender(float deltaTime)
         {
-            //Rotate("monkey", 0, rot_speed, 0, deltaTime);
+            bull_speedY += 3 * deltaTime;
+            if (bull_speedY >= 2 * math3d.PI)
+                bull_speedY = 0;
+
+            Move("sculpt", 0, math3d.sin(bull_speedY) / 2, 0, deltaTime);
         }
 
-        public static void Add(string name, AObject gameObj)
+        public static void Add(string name, string filepath)
         {
-            obj_list.Add(name, gameObj);
+            obj_list.Add(name, new AObject(ModelFolderPath + filepath));
             Console.WriteLine("     Загружена модель " + name);
         }
 
@@ -84,28 +83,61 @@ namespace game_2.Brain
 
         public static void Clear()
         {
-            foreach(AObject obj in obj_list.Values)
+            foreach (AObject obj in obj_list.Values)
             {
                 obj.OnDelete();
             }
             obj_list.Clear();
         }
 
-        public static int Count 
-        { 
-            get 
-            { 
-                return obj_list.Count; 
-            } 
-        }
-
-        public static void Draw()
+        public static int Count
         {
-            foreach(AObject obj in obj_list.Values)
+            get
             {
-                //obj.Draw();
+                return obj_list.Count;
             }
         }
+
+        public static void DrawShadows()
+        {
+            // CREATE MATRICES
+            Matrix4 projMatrixFromLight = matrix4f.GetInitPersProjTransform(170, shadow_size_x, shadow_size_y, 0.01f, 100).ToOpenTK();
+            vector3f pos = LightningManager.spotlights[0].PointLight.Position;
+            vector3f tar = LightningManager.spotlights[0].Direction;
+            Matrix4 viewMatrixFromLight = (matrix4f.GetInitTranslationTransform(-pos) * matrix4f.GetInitCameraTransform(-tar, vector3f.Up)).ToOpenTK();
+
+            // RENDER SHADOWS 
+            shadowMap.BindForWriting();
+
+            GL.Viewport(0, 0, shadow_size_x, shadow_size_y);
+            GL.Clear(ClearBufferMask.DepthBufferBit);
+
+            shadowShader.Use();
+
+            if (mvpMatrixFromLight.Count > 0)
+                mvpMatrixFromLight.Clear();
+
+            foreach (string obj_name in obj_list.Keys)
+            {
+                obj_list[obj_name].Draw(shadowShader, viewMatrixFromLight, projMatrixFromLight);
+                mvpMatrixFromLight.Add(obj_name, obj_list[obj_name]._pipeline.getWorld() * viewMatrixFromLight * projMatrixFromLight);
+            }
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+        }
+
+        public static void DrawScene()
+        {
+            normalShader.Use();
+            shadowMap.BindForReading(TextureUnit.Texture3);
+
+            foreach (string obj_name in obj_list.Keys)
+            {
+                if (mvpMatrixFromLight.Count > 0)
+                    normalShader.setValue("light_wvp", mvpMatrixFromLight[obj_name]);
+                obj_list[obj_name].Draw(normalShader);
+            }
+        }
+
         public static void Reset()
         {
             foreach (AObject obj in obj_list.Values)

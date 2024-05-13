@@ -13,9 +13,11 @@ namespace game_2
             NativeWindowSettings windowSettings = NativeWindowSettings.Default;
 
             windowSettings.WindowState = OpenTK.Windowing.Common.WindowState.Normal;
-            windowSettings.Size = new OpenTK.Mathematics.Vector2i(800, 600);
+            windowSettings.Size = new OpenTK.Mathematics.Vector2i(1920, 1080);
 
             windowSettings.Title = "Game";
+
+            //addNormalsToObjFile("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\obj_files\\sculpt1\\MCh_S_12_Rzezba_Popiersie_Rozy_Loewenfeld.OBJ", "C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\obj_files\\sculpt1\\MCh_S_12_Rzezba_Popiersie_Rozy_Loewenfeld_normals.OBJ");
 
             GameEngine engine = new GameEngine(settings, windowSettings);
             engine.Init();
@@ -115,12 +117,25 @@ namespace game_2
             List<string> old_text_cords = new List<string>();
             List<string> old_normals = new List<string>();
 
+            float lines_count = File.ReadAllLines(oldFilePath).Length;
+
             using (TextReader reader = new StreamReader(oldFilePath))
             {
                 bool exit = false;
+                float current_line = 1;
+                int persent = 0;
                 while ((line = reader.ReadLine()) != null)
                 {
                     if (exit) break;
+                    
+                    int current_persent = (int)(current_line / lines_count * 100);
+                    if (current_persent > persent)
+                    {
+                        Console.Clear();
+                        persent = (int)(current_line / lines_count * 100);
+                        Console.WriteLine("Чтение вершин из файла: " + persent + "%");
+                    }
+                    current_line++;
 
                     line = line.Trim();
                     line = line.Replace("  ", " ");
@@ -148,6 +163,8 @@ namespace game_2
             Dictionary<string, int> text = new Dictionary<string, int>();
             Dictionary<string, int> norm = new Dictionary<string, int>();
 
+            Console.Clear();
+            Console.WriteLine("Сохранение вершин");
             int i = 1;
             foreach (string vert_line in old_vertices)
             {
@@ -177,8 +194,19 @@ namespace game_2
 
             using (TextReader reader = new StreamReader(oldFilePath))
             {
+                float current_line = 1;
+                int persent = 0;
                 while ((line = reader.ReadLine()) != null)
                 {
+                    int current_persent = (int)(current_line / lines_count * 100);
+                    if (current_persent > persent)
+                    {
+                        Console.Clear();
+                        persent = (int)(current_line / lines_count * 100);
+                        Console.WriteLine("Чтение поверхностей из файла: " + persent + "%");
+                    }
+                    current_line++;
+
                     line = line.Trim();
                     string[] parts = line.Split(' ');
                     switch (parts[0])
@@ -218,6 +246,9 @@ namespace game_2
             }
 
             File.Delete(newFilePath);
+
+            Console.Clear();
+            Console.WriteLine("Запись в новый файл");
 
             using (StreamWriter sw = new StreamWriter(newFilePath))
             {

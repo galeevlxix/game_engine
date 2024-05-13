@@ -144,10 +144,24 @@ namespace game_2.Brain.NewAssimpFolder
             return texturesPath;
         }
 
-        //вынести ввод матриц в шейдеры сюда (на будущее)
         public void Draw(Shader shader, Matrix4 view, Matrix4 pers)
         {
-            foreach (AEntry item in _entries) item.Draw(shader, _pipeline.getWorld(), view, pers);
+            // ввод матриц WVP и WORLD в шейдер
+            shader.setValue("wvp", _pipeline.getWorld() * view * pers);
+            shader.setValue("world", _pipeline.getWorld());
+
+            // рисуем мэши объекта
+            foreach (AEntry item in _entries) item.Draw();
+        }
+
+        public void Draw(Shader shader)
+        {
+            // ввод матриц WVP и WORLD в шейдер
+            shader.setValue("wvp", _pipeline.getWVP());
+            shader.setValue("world", _pipeline.getWorld());
+
+            // рисуем мэши объекта
+            foreach (AEntry item in _entries) item.Draw();
         }
 
         public void OnDelete()

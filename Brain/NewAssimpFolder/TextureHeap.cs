@@ -8,7 +8,10 @@ namespace game_2.Brain.NewAssimpFolder
 
         public static string empty_normal_map = "..\\..\\..\\Files\\Textures\\EmptyNormalMap.png";
         
-        public static string empty_specular_map = "..\\..\\..\\Files\\Textures\\white_list2.bmp";
+        public static string empty_specular_map = "..\\..\\..\\Files\\Textures\\EmptySpecularMap.png";
+
+        public static string empty_diffuse_map = "..\\..\\..\\Files\\Textures\\EmptyDiffuseMap.png";
+
         public static void Add(string file_path, TextureUnit unit = TextureUnit.Texture0, PixelInternalFormat format = PixelInternalFormat.Rgba)
         {
             if (!_textureHeap.ContainsKey(file_path))

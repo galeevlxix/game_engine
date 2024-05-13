@@ -128,6 +128,19 @@ namespace game_2.MathFolder
             this.Trans();
         }
 
+        public static matrix4f GetInitTranslationTransform(vector3f vec)
+        {
+            matrix4f m = new matrix4f();
+
+            m[0, 0] = 1.0f; m[0, 1] = 0.0f; m[0, 2] = 0.0f; m[0, 3] = vec.x;
+            m[1, 0] = 0.0f; m[1, 1] = 1.0f; m[1, 2] = 0.0f; m[1, 3] = vec.y;
+            m[2, 0] = 0.0f; m[2, 1] = 0.0f; m[2, 2] = 1.0f; m[2, 3] = vec.z;
+            m[3, 0] = 0.0f; m[3, 1] = 0.0f; m[3, 2] = 0.0f; m[3, 3] = 1.0f;
+
+            m.Trans();
+            return m;
+        }
+
         public void InitScaleTransform(float x, float y, float z)
         {
             m[0, 0] = x;        m[0, 1] = 0.0f;     m[0, 2] = 0.0f;     m[0, 3] = 0.0f;
@@ -153,6 +166,27 @@ namespace game_2.MathFolder
             this.Trans();
         }
 
+        public static matrix4f GetInitCameraTransform(vector3f Target, vector3f Up)
+        {
+            matrix4f m = new matrix4f();
+
+            vector3f N = Target;
+            N = vector3f.Normalize(N);
+            vector3f U = Up;
+            U = vector3f.Normalize(U);
+            U = vector3f.Cross(U, N);
+            vector3f V = vector3f.Cross(N, U);
+
+            m[0, 0] = U.x; m[0, 1] = U.y; m[0, 2] = U.z; m[0, 3] = 0.0f;
+            m[1, 0] = V.x; m[1, 1] = V.y; m[1, 2] = V.z; m[1, 3] = 0.0f;
+            m[2, 0] = N.x; m[2, 1] = N.y; m[2, 2] = N.z; m[2, 3] = 0.0f;
+            m[3, 0] = 0.0f; m[3, 1] = 0.0f; m[3, 2] = 0.0f; m[3, 3] = 1.0f;
+
+            m.Trans();
+            
+            return m;
+        }
+
         public void InitPersProjTransform(float FOV, float Width, float Height, float zNear, float zFar)
         {
             float ar = Width / Height;
@@ -164,6 +198,23 @@ namespace game_2.MathFolder
             m[2, 0] = 0.0f;                         m[2, 1] = 0.0f;                 m[2, 2] = (zNear + zFar) / zRange;  m[2, 3] = 2.0f * zFar * zNear / zRange;
             m[3, 0] = 0.0f;                         m[3, 1] = 0.0f;                 m[3, 2] = -1.0f;                    m[3, 3] = 0;
             this.Trans();
+        }
+
+        public static matrix4f GetInitPersProjTransform(float FOV, float Width, float Height, float zNear, float zFar)
+        {
+            matrix4f m = new matrix4f();
+
+            float ar = Width / Height;
+            float zRange = zNear - zFar;
+            float tanHalfFOV = math3d.tan(math3d.ToRadian(FOV) * 0.5f);
+
+            m[0, 0] = 1.0f / (tanHalfFOV * ar); m[0, 1] = 0.0f; m[0, 2] = 0.0f; m[0, 3] = 0;
+            m[1, 0] = 0.0f; m[1, 1] = 1.0f / tanHalfFOV; m[1, 2] = 0.0f; m[1, 3] = 0;
+            m[2, 0] = 0.0f; m[2, 1] = 0.0f; m[2, 2] = (zNear + zFar) / zRange; m[2, 3] = 2.0f * zFar * zNear / zRange;
+            m[3, 0] = 0.0f; m[3, 1] = 0.0f; m[3, 2] = -1.0f; m[3, 3] = 0;
+            m.Trans();
+
+            return m;
         }
 
         public void Trans()

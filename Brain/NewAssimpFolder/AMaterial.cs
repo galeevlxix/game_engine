@@ -38,6 +38,7 @@ namespace game_2.Brain.NewAssimpFolder
             //missing maps
             if (m_paths._NormalPath == string.Empty) m_paths._NormalPath = TextureHeap.empty_normal_map;
             if (m_paths._SpecularPath == string.Empty) m_paths._SpecularPath = TextureHeap.empty_specular_map;
+            if (m_paths._DiffusePath == string.Empty) m_paths._DiffusePath = TextureHeap.empty_diffuse_map;
 
             //add
             TextureHeap.Add(m_paths._DiffusePath);

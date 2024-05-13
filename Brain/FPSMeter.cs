@@ -9,7 +9,7 @@
         {
             get
             {
-                return (int)(int)fps;
+                return (int)fps;
             }
         }
 

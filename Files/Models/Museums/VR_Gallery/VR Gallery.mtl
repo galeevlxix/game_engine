@@ -1,0 +1,96 @@
+# MTL file - created by a modified js OBJExporter
+
+newmtl Structure
+Tr 0.0000
+Tf 1.0000 1.0000 1.0000
+illum 1
+Pr 0.5
+Pds 1
+Pl 1
+Ka 1 1 1
+Kd 0.800000011920929 0.800000011920929 0.800000011920929
+Ke 10 10 10
+map_Kd textures\\Structure_d.png
+map_Kn textures\\Structure_n.png
+
+newmtl Backwall
+Tr 0.0000
+Tf 1.0000 1.0000 1.0000
+illum 1
+Pr 0.5
+Pds 1
+Pl 1
+Ka 1 1 1
+Kd 0.800000011920929 0.800000011920929 0.800000011920929
+Ke 0 0 0
+map_Kd textures\\Backwall_d.png
+map_Kn textures\\Backwall_n.png
+map_Ks textures\\Backwall_r.png
+
+newmtl Benches
+Tr 0.0000
+Tf 1.0000 1.0000 1.0000
+illum 1
+Pr 0.5
+Pds 1
+Pl 1
+Ka 1 1 1
+Kd 0.800000011920929 0.800000011920929 0.800000011920929
+Ke 0 0 0
+map_Kd textures\\Benches_d.png
+map_Kn textures\\Benches_n.png
+map_Ks textures\\Benches_r.png
+
+newmtl Chrome
+Tr 0.0000
+Tf 1.0000 1.0000 1.0000
+illum 1
+Pds 1
+Pl 1
+Ns 255
+Ka 1 1 1
+Kd 1 1 1
+Ke 0 0 0
+map_Kd textures\\MetalDiffuseMap.png
+map_Ks textures\\MetalSpecularMap.png
+
+newmtl Podiums
+Tr 0.0000
+Tf 1.0000 1.0000 1.0000
+illum 1
+Pr 0.5
+Pds 1
+Pl 1
+Ka 1 1 1
+Kd 0.800000011920929 0.800000011920929 0.800000011920929
+Ke 0 0 0
+map_Kd textures\\Podiums_d.png
+map_Kn textures\\Podiums_n.png
+map_Ks textures\\Podiums_r.png
+
+newmtl PaintingFrame
+Tr 0.0000
+Tf 1.0000 1.0000 1.0000
+illum 1
+Pr 0.2734082341194153
+Pds 1
+Pl 1
+Ns 255
+Ka 1 1 1
+Kd 0.8025827407836914 0.6914951205253601 0.5834991335868835
+Ke 0 0 0
+map_Kd textures\\MetalDiffuseMap.png
+map_Ks textures\\MetalSpecularMap.png
+
+newmtl Portraits
+Tr 0.0000
+Tf 1.0000 1.0000 1.0000
+illum 1
+Pr 0.3999999761581421
+Pds 1
+Pl 1
+Ka 1 1 1
+Kd 0.800000011920929 0.800000011920929 0.800000011920929
+Ke 0 0 0
+map_Kd textures\\PortraitUV.png
+map_Kn textures\\PortraitNorm.png

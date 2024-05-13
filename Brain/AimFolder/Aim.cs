@@ -1,4 +1,5 @@
 ﻿using game_2.Brain.ObjectFolder;
+using game_2.MathFolder;
 
 namespace game_2.Brain.AimFolder
 {
@@ -6,7 +7,9 @@ namespace game_2.Brain.AimFolder
     {
         public Aim()
         {
+            Console.WriteLine("Загрузка прицела...");
             mesh = new AimMesh();
+
             pipeline = new Pipeline();
 
             pipeline.SetPosition(0f, 0f, -1f);

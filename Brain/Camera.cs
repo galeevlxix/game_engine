@@ -45,6 +45,8 @@ namespace game_2.Brain
 
         public static void InitCamera()
         {
+            Console.WriteLine("Загрузка камеры...");
+
             Pos = vector3f.Zero;
             Target = new vector3f (0, 0 , -1);
             Target.Normalize();

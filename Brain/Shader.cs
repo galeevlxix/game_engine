@@ -88,31 +88,31 @@ namespace game_2.Brain
 
         public void setValue(Matrix4 world)
         {
-            Matrix4 p = mPersProj.PersProjMatrix.ToOpenTK();
+            Matrix4 pers = mPersProj.PersProjMatrix.ToOpenTK();
             Matrix4 c_pos = Camera.CameraTranslation.ToOpenTK();
             Matrix4 c_rot = Camera.CameraRotation.ToOpenTK();
 
             setValue("world", world);
-            setValue("wvp", world * c_pos * c_rot * p);
+            setValue("wvp", world * c_pos * c_rot * pers);
         }
 
-        public void setValue(Matrix4 world, Matrix4 c_pos, Matrix4 c_rot, Matrix4 p)
+        public void setValue(Matrix4 world, Matrix4 pers)
         {
             setValue("world", world);
-            setValue("wvp", world * c_pos * c_rot * p);
+            setValue("pers", pers);
         }
 
-        public void setValue(Matrix4 world, Matrix4 c_rot, Matrix4 p)
+        public void setValue(Matrix4 world, Matrix4 c_rot, Matrix4 pers)
         {
             setValue("world", world);
-            setValue("pers", p);
+            setValue("pers", pers);
             setValue("camrot", c_rot);
         }
 
-        public void setValue(Matrix4 world, Matrix4 p)
+        public void setValue(Matrix4 world, Matrix4 c_pos, Matrix4 c_rot, Matrix4 pers)
         {
             setValue("world", world);
-            setValue("pers", p);
+            setValue("wvp", world * c_pos * c_rot * pers);
         }
 
         public void setValue(string name, Matrix4 data)

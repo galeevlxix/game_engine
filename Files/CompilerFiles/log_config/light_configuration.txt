@@ -1,5 +1,5 @@
-alter light spotlight 0 intensity 2
+alter light spotlight 0 position 35 -7 3
+alter light spotlight 0 direction 1 0 -1
 alter light spotlight 0 color 1 1 1
+alter light spotlight 0 intensity 0.5
 
-alter light baselight intensity 0.05
-alter light directionallight intensity 0.1

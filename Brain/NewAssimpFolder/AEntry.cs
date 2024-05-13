@@ -14,9 +14,9 @@ namespace game_2.Brain.NewAssimpFolder
             _mesh = new AMesh(Vertices, Indices, material);
         }
 
-        public void Draw(Shader shader, Matrix4 world, Matrix4 view, Matrix4 pers)
+        public void Draw()
         {
-            _mesh.Draw(shader, world, view , pers);
+            _mesh.Draw();
         }
 
         public void OnDelete() => _mesh.Dispose();

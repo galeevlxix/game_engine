@@ -3,12 +3,13 @@ using game_2.Storage;
 using OpenTK.Mathematics;
 using OpenTK.Graphics.OpenGL4;
 using game_2.MathFolder;
-using game_2.FileManagers;
 
 namespace game_2.Brain.AimFolder
 {
     public class AimMesh : SkyboxMesh
     {
+        public Matrix4 pers_proj;
+
         public AimMesh()
         {
             texture = Texture.Load(AimVertices.TexturePath);
@@ -25,8 +26,6 @@ namespace game_2.Brain.AimFolder
             GL.DrawElements(PrimitiveType.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);
         }
 
-        protected Matrix4 pers_proj;
-
         protected Matrix4 pers_mat()
         {
             float FOV = 50;
@@ -35,10 +34,18 @@ namespace game_2.Brain.AimFolder
             float zNear = 1f;
             float zFar = 200;
 
-            matrix4f pers = new matrix4f();
-            pers.InitPersProjTransform(FOV, width, height, zNear, zFar);
+            return matrix4f.GetInitPersProjTransform(FOV, width, height, zNear, zFar).ToOpenTK();
+        }
 
-            return pers.ToOpenTK();
+        public void ResizeWindow(int WindowWidth, int WindowHeigth)
+        {
+            float FOV = 50;
+            float width = WindowWidth;
+            float height = WindowHeigth;
+            float zNear = 1f;
+            float zFar = 200;
+
+            pers_proj = matrix4f.GetInitPersProjTransform(FOV, width, height, zNear, zFar).ToOpenTK();
         }
 
         public override void Dispose()

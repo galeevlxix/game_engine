@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <Folder Include="Files\Models\fbx_files\stylized-organic-red\textures\" />
+    <Folder Include="Files\Models\Museums\bull\" />
   </ItemGroup>
 
 </Project>

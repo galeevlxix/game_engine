@@ -19,8 +19,8 @@ void main()
 {        
 	texCoord = aTexCoord;
     gl_Position = vec4(aPosition, 1.0) * wvp;
-    Normal0 = (vec4(aNormal, 0.0) * world).xyz;
-    Tangent0 = (vec4(aTangent, 0.0) * world).xyz;
+    Normal0 = normalize((vec4(aNormal, 0.0) * world).xyz);
+    Tangent0 = normalize((vec4(aTangent, 0.0) * world).xyz);
 	WorldPos0 = (vec4(aPosition, 1.0) * world).xyz;
     LightPos0 = vec4(aPosition, 1.0) * light_wvp;
 }

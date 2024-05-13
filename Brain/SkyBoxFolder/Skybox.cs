@@ -6,6 +6,8 @@ namespace game_2.Brain.SkyBoxFolder
     {
         public Skybox()
         {
+            Console.WriteLine("Загрузка скайбокса...");
+
             mesh = new SkyboxMesh();
             pipeline = new Pipeline();
 

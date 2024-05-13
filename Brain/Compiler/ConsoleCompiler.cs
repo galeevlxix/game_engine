@@ -88,6 +88,8 @@ namespace game_2.Brain.Compiler
                     return LoadChoice(parts);
                 case "compress":
                     return CompressObjFile(parts[1], parts[2]);
+                case "#":
+                    return "";
                 case "help":
                     return helper.PrintCommands(parts);
             }
