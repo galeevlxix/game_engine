@@ -522,23 +522,23 @@ namespace game_2.Brain.Compiler
                     float x = float.Parse(parts[5], CultureInfo.InvariantCulture);
                     float y = float.Parse(parts[6], CultureInfo.InvariantCulture);
                     float z = float.Parse(parts[7], CultureInfo.InvariantCulture);
-                    LightningManager.pointLights[index].Position = new vector3f(x, y, z);
+                    LightningManager.pointLights[index].SetPosition(x, y, z);
                     return "1#4#1#" + index + "# Позиция точечного света " + index + " изменена на Position(" + x + ", " + y + ", " + z + ")";
                 case "move":
                     float x1 = float.Parse(parts[5], CultureInfo.InvariantCulture);
                     float y1 = float.Parse(parts[6], CultureInfo.InvariantCulture);
                     float z1 = float.Parse(parts[7], CultureInfo.InvariantCulture);
-                    LightningManager.pointLights[index].Position += new vector3f(x1, y1, z1);
+                    LightningManager.pointLights[index].Move(x1, y1, z1);
                     return "1#4#2#" + index + "# Позиция точечного света " + index + " смещена на +Position(" + x1 + ", " + y1 + ", " + z1 + ")";
                 case "color":
                     float red = float.Parse(parts[5], CultureInfo.InvariantCulture);
                     float green = float.Parse(parts[6], CultureInfo.InvariantCulture);
                     float blue = float.Parse(parts[7], CultureInfo.InvariantCulture);
-                    LightningManager.pointLights[index].BaseLight.Color = new vector3f(red, green, blue);
+                    LightningManager.pointLights[index].SetColor(red, green, blue);
                     return "1#4#3#" + index + "# Цвет точечного света " + index + " изменен на Color(" + red + ", " + green + ", " + blue + ")";
                 case "intensity":
                     float intensity = float.Parse(parts[5], CultureInfo.InvariantCulture);
-                    LightningManager.pointLights[index].BaseLight.Intensity = intensity;
+                    LightningManager.pointLights[index].SetIntensity(intensity);
                     return "1#4#4#" + index + "# Интенсивность точечного света " + index + " изменена на " + intensity;
                 case "constant":
                     float constant = float.Parse(parts[5], CultureInfo.InvariantCulture);
@@ -567,23 +567,23 @@ namespace game_2.Brain.Compiler
                     float x = float.Parse(parts[5], CultureInfo.InvariantCulture);
                     float y = float.Parse(parts[6], CultureInfo.InvariantCulture);
                     float z = float.Parse(parts[7], CultureInfo.InvariantCulture);
-                    LightningManager.spotlights[index].PointLight.Position = new vector3f(x, y, z);
+                    LightningManager.spotlights[index].PointLight.SetPosition(x, y, z);
                     return "1#5#1#" + index + "# Позиция прожекторного света " + index + " изменена на Position(" + x + ", " + y + ", " + z + ")";
                 case "move":
                     float x1 = float.Parse(parts[5], CultureInfo.InvariantCulture);
                     float y1 = float.Parse(parts[6], CultureInfo.InvariantCulture);
                     float z1 = float.Parse(parts[7], CultureInfo.InvariantCulture);
-                    LightningManager.spotlights[index].PointLight.Position += new vector3f(x1, y1, z1);
+                    LightningManager.spotlights[index].PointLight.Move(x1, y1, z1);
                     return "1#5#2#" + index + "# Позиция прожекторного света " + index + " смещена на +Position(" + x1 + ", " + y1 + ", " + z1 + ")";
                 case "color":
                     float red = float.Parse(parts[5], CultureInfo.InvariantCulture);
                     float green = float.Parse(parts[6], CultureInfo.InvariantCulture);
                     float blue = float.Parse(parts[7], CultureInfo.InvariantCulture);
-                    LightningManager.spotlights[index].PointLight.BaseLight.Color = new vector3f(red, green, blue);
+                    LightningManager.spotlights[index].PointLight.SetColor(red, green, blue);
                     return "1#5#3#" + index + "# Цвет прожекторного света " + index + " изменен на Color(" + red + ", " + green + ", " + blue + ")";
                 case "intensity":
                     float intensity = float.Parse(parts[5], CultureInfo.InvariantCulture);
-                    LightningManager.spotlights[index].PointLight.BaseLight.Intensity = intensity;
+                    LightningManager.spotlights[index].PointLight.SetIntensity(intensity);
                     return "1#5#4#" + index + "# Интенсивность прожекторного света " + index + " изменена на " + intensity;
                 case "constant":
                     float constant = float.Parse(parts[5], CultureInfo.InvariantCulture);

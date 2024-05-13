@@ -207,12 +207,12 @@ namespace game_2.Brain.Lights
             {
                 GL.Uniform3(
                     _pointLightLocations[i].BaseLightLocations.Color, 
-                    pointLights[i].BaseLight.Color.x, 
-                    pointLights[i].BaseLight.Color.y, 
-                    pointLights[i].BaseLight.Color.z);
+                    pointLights[i].Color.x, 
+                    pointLights[i].Color.y, 
+                    pointLights[i].Color.z);
                 GL.Uniform1(
                     _pointLightLocations[i].BaseLightLocations.Intensity, 
-                    pointLights[i].BaseLight.Intensity);
+                    pointLights[i].Intensity);
                 GL.Uniform3(
                     _pointLightLocations[i].Position, 
                     pointLights[i].Position.x, 
@@ -240,12 +240,12 @@ namespace game_2.Brain.Lights
             {
                 GL.Uniform3(
                     _spotlightLocations[i].PointLightLocations.BaseLightLocations.Color, 
-                    spotLights[i].PointLight.BaseLight.Color.x, 
-                    spotLights[i].PointLight.BaseLight.Color.y, 
-                    spotLights[i].PointLight.BaseLight.Color.z);
+                    spotLights[i].PointLight.Color.x, 
+                    spotLights[i].PointLight.Color.y, 
+                    spotLights[i].PointLight.Color.z);
                 GL.Uniform1(
                     _spotlightLocations[i].PointLightLocations.BaseLightLocations.Intensity,
-                    spotLights[i].PointLight.BaseLight.Intensity);
+                    spotLights[i].PointLight.Intensity);
                 GL.Uniform3(
                     _spotlightLocations[i].PointLightLocations.Position,
                     spotLights[i].PointLight.Position.x,

@@ -125,10 +125,53 @@ namespace game_2.Brain
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
         }
 
+        public static void DrawShadows2()
+        {
+            shadowShader.Use();
+
+            foreach (Spotlight spotlight in LightningManager.spotlights)
+            {
+                // CREATE MATRICES
+                Matrix4 projMatrixFromLight = matrix4f.GetInitPersProjTransform(170, shadow_size_x, shadow_size_y, 0.01f, 100).ToOpenTK();
+                vector3f pos = spotlight.PointLight.Position;
+                vector3f tar = spotlight.Direction;
+                Matrix4 viewMatrixFromLight = (matrix4f.GetInitTranslationTransform(-pos) * matrix4f.GetInitCameraTransform(-tar, vector3f.Up)).ToOpenTK();
+
+                // RENDER SHADOWS 
+                spotlight.ShadowMapSpotlight.BindForWriting();
+
+                GL.Viewport(0, 0, shadow_size_x, shadow_size_y);
+                GL.Clear(ClearBufferMask.DepthBufferBit);
+                
+                if (mvpMatrixFromLight.Count > 0)
+                    mvpMatrixFromLight.Clear();
+
+                foreach (string obj_name in obj_list.Keys)
+                {
+                    obj_list[obj_name].Draw(shadowShader, viewMatrixFromLight, projMatrixFromLight);
+                    mvpMatrixFromLight.Add(obj_name, obj_list[obj_name]._pipeline.getWorld() * viewMatrixFromLight * projMatrixFromLight);
+                }
+                GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+            }
+        }
+
         public static void DrawScene()
         {
             normalShader.Use();
             shadowMap.BindForReading(TextureUnit.Texture3);
+
+            foreach (string obj_name in obj_list.Keys)
+            {
+                if (mvpMatrixFromLight.Count > 0)
+                    normalShader.setValue("light_wvp", mvpMatrixFromLight[obj_name]);
+                obj_list[obj_name].Draw(normalShader);
+            }
+        }
+
+        public static void DrawScene2()
+        {
+            normalShader.Use();
+            LightningManager.spotlights[0].ShadowMapSpotlight.BindForReading(TextureUnit.Texture3);
 
             foreach (string obj_name in obj_list.Keys)
             {

@@ -129,14 +129,14 @@ namespace game_2
         {
             base.OnMouseDown(e);
             if (!isMouseDown && e.Button == MouseButton.Button1) isMouseDown = true;
-            if (e.Button == MouseButton.Button2) LightningManager.spotlights[1].PointLight.BaseLight.Intensity = 1;
+            if (e.Button == MouseButton.Button2) LightningManager.spotlights[1].PointLight.SetIntensity(0);
         }
 
         protected override void OnMouseUp(MouseButtonEventArgs e)
         {
             base.OnMouseUp(e);
             if (isMouseDown && e.Button == MouseButton.Button1) isMouseDown = false;
-            if (e.Button == MouseButton.Button2) LightningManager.spotlights[1].PointLight.BaseLight.Intensity = 0;
+            if (e.Button == MouseButton.Button2) LightningManager.spotlights[1].PointLight.SetIntensity(1);
         }
 
         protected override void OnResize(ResizeEventArgs e)
