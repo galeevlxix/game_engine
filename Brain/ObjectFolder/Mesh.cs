@@ -81,14 +81,6 @@ namespace game_2.Brain.ObjectFolder
             GL.DrawElements(BeginMode.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);
         }
 
-        public virtual void Draw(Matrix4 matrix, Matrix4 cameraPos, Matrix4 cameraRot, Matrix4 PersProj)
-        {
-            CentralizedShaders.SetValue(ShaderName.ObjectShader, matrix, cameraPos, cameraRot, PersProj);
-            GL.BindVertexArray(VAO);
-            UseTextures();
-            GL.DrawElements(BeginMode.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);
-        }
-
         protected virtual void UseTextures() => texture.Use();
 
         public virtual void Dispose()

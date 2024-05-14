@@ -8,7 +8,6 @@ using game_2.Brain.SkyBoxFolder;
 using game_2.Brain.AimFolder;
 using game_2.Brain.Lights;
 using game_2.Brain.Compiler;
-using game_2.Brain.InfoPanelFolder;
 
 namespace game_2
 {
@@ -47,6 +46,7 @@ namespace game_2
         protected override async void OnLoad()
         {
             base.OnLoad();
+
             GL.ClearColor(BackGroundColor);
             GL.Enable(EnableCap.DepthTest);
             GL.Enable(EnableCap.CullFace);
@@ -118,7 +118,7 @@ namespace game_2
             if (input.IsKeyDown(Keys.Escape)) Close();
 
             if (isMouseDown) mPersProj.ChangeFOV(25);
-            else mPersProj.ChangeFOV(50);
+            else mPersProj.ChangeFOV(50);       //ОПТИМИЗИРОВАТЬ
 
             Camera.OnMouse(-MouseState.Delta.X, -MouseState.Delta.Y);
             Camera.OnKeyboard(KeyboardState, Time);
@@ -136,7 +136,7 @@ namespace game_2
         {
             base.OnMouseUp(e);
             if (isMouseDown && e.Button == MouseButton.Button1) isMouseDown = false;
-            if (e.Button == MouseButton.Button2) LightningManager.spotlights[1].PointLight.SetIntensity(1);
+            if (e.Button == MouseButton.Button2) LightningManager.spotlights[1].PointLight.SetIntensity(4);
         }
 
         protected override void OnResize(ResizeEventArgs e)

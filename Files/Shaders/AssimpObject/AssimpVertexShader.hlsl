@@ -10,17 +10,17 @@ out vec3 Normal0;
 out vec3 WorldPos0;
 out vec3 Tangent0;
 out vec4 LightPos0;
+out vec4 Position0;
 
 uniform mat4 world;
-uniform mat4 light_wvp;
 uniform mat4 wvp;
 
 void main()                                            
 {        
 	texCoord = aTexCoord;
+    Position0 = vec4(aPosition, 1.0);
     gl_Position = vec4(aPosition, 1.0) * wvp;
     Normal0 = normalize((vec4(aNormal, 0.0) * world).xyz);
     Tangent0 = normalize((vec4(aTangent, 0.0) * world).xyz);
 	WorldPos0 = (vec4(aPosition, 1.0) * world).xyz;
-    LightPos0 = vec4(aPosition, 1.0) * light_wvp;
 }

@@ -36,6 +36,7 @@ namespace game_2.Brain.Lights.LightStructures
         public void SetIntensity(float intensity)
         {
             BaseLight.Intensity = intensity;
+            intensity = intensity > 1 ? 1 : intensity;
             vector3f intens = new vector3f(intensity, intensity, intensity);
             Lamp.SetLight(intens);
         }

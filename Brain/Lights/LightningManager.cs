@@ -1,8 +1,5 @@
 ﻿using game_2.Brain.Lights.LightStructures;
-using game_2.Brain.MonochromeObjectFolder;
-using game_2.Brain.Shadows;
 using game_2.MathFolder;
-using OpenTK.Mathematics;
 
 namespace game_2.Brain.Lights
 {
@@ -67,7 +64,7 @@ namespace game_2.Brain.Lights
         private static void ConfigurePointlights()
         {
             pointLights[0] = new PointLight();
-            pointLights[0].SetPosition(-5, 2, 0);
+            pointLights[0].SetPosition(10, 2, 0);
             pointLights[0].Attenuation.Exp = 0.032f;
             pointLights[0].Attenuation.Linear = 0.09f;
             pointLights[0].Attenuation.Constant = 1;
@@ -89,23 +86,25 @@ namespace game_2.Brain.Lights
         {
             spotlights[0] = new Spotlight();
             spotlights[0].PointLight.SetPosition(35, -7, 3);
-            spotlights[0].PointLight.SetIntensity(1);
+            spotlights[0].PointLight.SetIntensity(3);
             spotlights[0].PointLight.SetColor(1, 1, 1);
             spotlights[0].PointLight.Attenuation.Constant = 1;
-            spotlights[0].PointLight.Attenuation.Linear = 0.027f;
-            spotlights[0].PointLight.Attenuation.Exp = 0.0028f;
+            spotlights[0].PointLight.Attenuation.Linear = 0.09f;
+            spotlights[0].PointLight.Attenuation.Exp = 0.032f;
             spotlights[0].Direction = new vector3f(1, 0, -1);
-            spotlights[0].Cutoff1 = 0.20f;
+            spotlights[0].Direction.Normalize();
+            spotlights[0].Cutoff1 = 0.7f;
 
             spotlights[1] = new Spotlight();
             spotlights[1].PointLight.SetPosition(44.3f, -3.7f, -2.7f);
-            spotlights[1].PointLight.SetIntensity(1);
+            spotlights[1].PointLight.SetIntensity(3);
             spotlights[1].PointLight.SetColor(1, 0.5f, 0.5f);
             spotlights[1].PointLight.Attenuation.Constant = 1;
-            spotlights[1].PointLight.Attenuation.Linear = 0.027f;
-            spotlights[1].PointLight.Attenuation.Exp = 0.0028f;
+            spotlights[1].PointLight.Attenuation.Linear = 0.09f;
+            spotlights[1].PointLight.Attenuation.Exp = 0.032f;
             spotlights[1].Direction = new vector3f(-1, 0, 1);
-            spotlights[1].Cutoff1 = 0.8f;
+            spotlights[1].Direction.Normalize();
+            spotlights[1].Cutoff1 = 0.90f;
 
             lightConfig.SetSpotLights(spotlights);
         }

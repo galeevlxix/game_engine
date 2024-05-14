@@ -1,4 +1,5 @@
-﻿using game_2.FileManagers;
+﻿using game_2.Brain.Lights;
+using game_2.FileManagers;
 using game_2.MathFolder;
 using OpenTK.Mathematics;
 using System.Reflection.Metadata;
@@ -63,7 +64,11 @@ namespace game_2.Brain
             SetValue(ShaderName.AssimpShader, "gMaterial.DiffuseMap", 0);
             SetValue(ShaderName.AssimpShader, "gMaterial.NormalMap", 1);
             SetValue(ShaderName.AssimpShader, "gMaterial.SpecularMap", 2);
-            SetValue(ShaderName.AssimpShader, "gShadowMap", 3);
+            
+            for (int i = 0; i < LightningManager.SpotlightsCount; i++)
+            {
+                SetValue(ShaderName.AssimpShader, "gSpotLights[" + i + "].gShadowMap", 10 + i);
+            }
         }
 
         public static void Dispose()
@@ -119,13 +124,6 @@ namespace game_2.Brain
         {
             UseShader(shaderName);
             m_shaders[shaderName].setValue(world, c_rot, p);
-        }
-
-        // 
-        public static void SetValue(ShaderName shaderName, Matrix4 world, Matrix4 c_pos, Matrix4 c_rot, Matrix4 p)
-        {
-            UseShader(shaderName);
-            m_shaders[shaderName].setValue(world, c_pos, c_rot, p);
         }
 
         public static void UseShader(ShaderName shaderName)

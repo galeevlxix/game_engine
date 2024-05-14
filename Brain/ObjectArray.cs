@@ -1,8 +1,6 @@
 ﻿using game_2.Brain.Lights;
 using game_2.Brain.Lights.LightStructures;
 using game_2.Brain.NewAssimpFolder;
-using game_2.Brain.ObjectFolder;
-using game_2.Brain.Shadows;
 using game_2.MathFolder;
 using OpenTK.Mathematics;
 using OpenTK.Graphics.OpenGL;
@@ -12,15 +10,11 @@ namespace game_2.Brain
     public static class ObjectArray
     {
         private static Dictionary<string, AObject> obj_list;
-        private static Dictionary<string, Matrix4> mvpMatrixFromLight;
 
         private static string ModelFolderPath = "..\\..\\..\\Files\\Models\\";
-        private static string TextureFolderPath = "..\\..\\..\\Files\\Textures\\";
 
-        private static ShadowMapFBO shadowMap;
-
-        private static Shader shadowShader;
-        private static Shader normalShader;
+        private static Shader? shadowShader = CentralizedShaders.GetShader(ShaderName.ShadowShader);
+        private static Shader? normalShader = CentralizedShaders.GetShader(ShaderName.AssimpShader);
 
         private static int shadow_size_x = 2048;
         private static int shadow_size_y = 2048;
@@ -30,16 +24,10 @@ namespace game_2.Brain
             Console.WriteLine("Загрузка моделей (assimp)...");
 
             obj_list = new Dictionary<string, AObject>();
-            mvpMatrixFromLight = new Dictionary<string, Matrix4>();
 
             Add("museum", "Museums\\VR_Gallery\\VR_Gallery_comp.obj");
             Add("table", "Museums\\museum_table\\OPM0032.fbx");
             Add("sculpt", "Museums\\bull\\bull3.obj");
-
-            shadowMap = new ShadowMapFBO(shadow_size_x, shadow_size_y);
-
-            shadowShader = CentralizedShaders.GetShader(ShaderName.ShadowShader);
-            normalShader = CentralizedShaders.GetShader(ShaderName.AssimpShader);
 
             SetProperties();
         }
@@ -90,49 +78,19 @@ namespace game_2.Brain
             obj_list.Clear();
         }
 
-        public static int Count
+        public static int Count 
         {
-            get
-            {
-                return obj_list.Count;
-            }
+            get => obj_list.Count;
         }
 
         public static void DrawShadows()
-        {
-            // CREATE MATRICES
-            Matrix4 projMatrixFromLight = matrix4f.GetInitPersProjTransform(170, shadow_size_x, shadow_size_y, 0.01f, 100).ToOpenTK();
-            vector3f pos = LightningManager.spotlights[0].PointLight.Position;
-            vector3f tar = LightningManager.spotlights[0].Direction;
-            Matrix4 viewMatrixFromLight = (matrix4f.GetInitTranslationTransform(-pos) * matrix4f.GetInitCameraTransform(-tar, vector3f.Up)).ToOpenTK();
-
-            // RENDER SHADOWS 
-            shadowMap.BindForWriting();
-
-            GL.Viewport(0, 0, shadow_size_x, shadow_size_y);
-            GL.Clear(ClearBufferMask.DepthBufferBit);
-
-            shadowShader.Use();
-
-            if (mvpMatrixFromLight.Count > 0)
-                mvpMatrixFromLight.Clear();
-
-            foreach (string obj_name in obj_list.Keys)
-            {
-                obj_list[obj_name].Draw(shadowShader, viewMatrixFromLight, projMatrixFromLight);
-                mvpMatrixFromLight.Add(obj_name, obj_list[obj_name]._pipeline.getWorld() * viewMatrixFromLight * projMatrixFromLight);
-            }
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
-        }
-
-        public static void DrawShadows2()
         {
             shadowShader.Use();
 
             foreach (Spotlight spotlight in LightningManager.spotlights)
             {
                 // CREATE MATRICES
-                Matrix4 projMatrixFromLight = matrix4f.GetInitPersProjTransform(170, shadow_size_x, shadow_size_y, 0.01f, 100).ToOpenTK();
+                Matrix4 projMatrixFromLight = matrix4f.GetInitPersProjTransform(100, shadow_size_x, shadow_size_y, 0.1f, 100).ToOpenTK();
                 vector3f pos = spotlight.PointLight.Position;
                 vector3f tar = spotlight.Direction;
                 Matrix4 viewMatrixFromLight = (matrix4f.GetInitTranslationTransform(-pos) * matrix4f.GetInitCameraTransform(-tar, vector3f.Up)).ToOpenTK();
@@ -143,14 +101,15 @@ namespace game_2.Brain
                 GL.Viewport(0, 0, shadow_size_x, shadow_size_y);
                 GL.Clear(ClearBufferMask.DepthBufferBit);
                 
-                if (mvpMatrixFromLight.Count > 0)
-                    mvpMatrixFromLight.Clear();
+                if (spotlight.mvpMatrixFromLight.Count > 0)
+                    spotlight.mvpMatrixFromLight.Clear();
 
                 foreach (string obj_name in obj_list.Keys)
                 {
                     obj_list[obj_name].Draw(shadowShader, viewMatrixFromLight, projMatrixFromLight);
-                    mvpMatrixFromLight.Add(obj_name, obj_list[obj_name]._pipeline.getWorld() * viewMatrixFromLight * projMatrixFromLight);
+                    spotlight.mvpMatrixFromLight.Add(obj_name, obj_list[obj_name]._pipeline.getWorld() * viewMatrixFromLight * projMatrixFromLight);
                 }
+
                 GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
             }
         }
@@ -158,25 +117,21 @@ namespace game_2.Brain
         public static void DrawScene()
         {
             normalShader.Use();
-            shadowMap.BindForReading(TextureUnit.Texture3);
 
-            foreach (string obj_name in obj_list.Keys)
+            for (int i = 0; i < LightningManager.SpotlightsCount; i++)
             {
-                if (mvpMatrixFromLight.Count > 0)
-                    normalShader.setValue("light_wvp", mvpMatrixFromLight[obj_name]);
-                obj_list[obj_name].Draw(normalShader);
+                LightningManager.spotlights[i].ShadowMapSpotlight.BindForReading(TextureUnit.Texture10 + i);
             }
-        }
-
-        public static void DrawScene2()
-        {
-            normalShader.Use();
-            LightningManager.spotlights[0].ShadowMapSpotlight.BindForReading(TextureUnit.Texture3);
 
             foreach (string obj_name in obj_list.Keys)
             {
-                if (mvpMatrixFromLight.Count > 0)
-                    normalShader.setValue("light_wvp", mvpMatrixFromLight[obj_name]);
+                for (int i = 0; i < LightningManager.SpotlightsCount; i++)       //ОПТИМИЗИРОВАТЬ
+                {
+                    if (LightningManager.spotlights[i].mvpMatrixFromLight.Count > 0)
+                        normalShader.setValue(
+                            "gSpotLights[" + i + "].LightWVP",
+                            LightningManager.spotlights[i].mvpMatrixFromLight[obj_name]);
+                }
                 obj_list[obj_name].Draw(normalShader);
             }
         }

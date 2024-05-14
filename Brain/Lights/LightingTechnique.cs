@@ -269,8 +269,8 @@ namespace game_2.Brain.Lights
                     _spotlightLocations[i].Cutoff1,
                     spotLights[i].Cutoff1);
                 GL.Uniform1(
-                _spotlightLocations[i].Cutoff2,
-                spotLights[i].Cutoff2);
+                    _spotlightLocations[i].Cutoff2,
+                    spotLights[i].Cutoff2);
             }
         }
 
