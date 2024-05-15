@@ -11,7 +11,7 @@ namespace game_2.Brain.Shadows
 
         public ShadowMapFBO()
         {
-            m_shadowSize = 512;
+            m_shadowSize = 2048;
 
             m_fbo = 0; 
             m_shadowMap = 0;
@@ -46,8 +46,8 @@ namespace game_2.Brain.Shadows
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureCompareFunc, (int)DepthFunction.Lequal);
 
 
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToBorder);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToBorder);
 
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, m_fbo);
             GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, TextureTarget.Texture2D, m_shadowMap, 0);

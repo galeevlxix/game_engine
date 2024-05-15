@@ -1,6 +1,7 @@
 ﻿using game_2.MathFolder;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
+using System.Xml.Linq;
 
 namespace game_2.Brain
 {
@@ -193,6 +194,12 @@ namespace game_2.Brain
         public int GetUniformLocation(string uniformName)
         {
             return GL.GetUniformLocation(Handle, uniformName);
+        }
+
+        public int GetUniform(string uniformName)
+        {
+            GL.GetUniform(Handle, _uniformLocations[uniformName], out int param);
+            return param;
         }
     }
 }

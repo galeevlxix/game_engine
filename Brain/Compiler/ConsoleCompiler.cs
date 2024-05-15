@@ -122,7 +122,7 @@ namespace game_2.Brain.Compiler
                 case "position":
                     return Camera.Pos.ToStr();
                 case "target":
-                    return Camera.Target.ToStr();
+                    return (-Camera.Target).ToStr();
                 case "up":
                     return Camera.Up.ToStr();
                 case "persproj":
@@ -602,6 +602,7 @@ namespace game_2.Brain.Compiler
                     float y2 = float.Parse(parts[6], CultureInfo.InvariantCulture);
                     float z2 = float.Parse(parts[7], CultureInfo.InvariantCulture);
                     vector3f dir = new vector3f(x2, y2, z2);
+                    dir.Normalize();
                     LightningManager.spotlights[index].Direction = dir;
                     return "1#5#8#" + index + "# Направление прожекторного света изменено на Direction(" + x2 + ", " + y2 + ", " + z2 + ")";
                 case "cutoff":

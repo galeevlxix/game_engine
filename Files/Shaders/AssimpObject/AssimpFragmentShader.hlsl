@@ -67,6 +67,10 @@ uniform SpotLight gSpotLights[MAX_SPOT_LIGHTS];
 uniform int gNumSpotLights;
 
 uniform vec3 gCameraPos;
+uniform vec3 gCameraTarget;
+float min = 10000;
+uniform int current_obj;
+int selected_obj = 0;
 
 uniform Material gMaterial;
 
@@ -107,6 +111,25 @@ void main()
     outputColor = texel * TotalLight;
 }
 
+void SelectObject()
+{
+    vec3 cPos = gCameraPos;
+    vec3 cTar = cPos + gCameraTarget;
+    vec3 pixel = WorldPos0;
+    
+    //maybe 0.001    
+    if ((pixel.x - cPos.x) * (cTar.y - cPos.y) == (cTar.x - cPos.x) * (pixel.y - cPos.y) &&
+        (pixel.y - cPos.y) * (cTar.z - cPos.z) == (cTar.y - cPos.y) * (pixel.z - cPos.z) &&
+        (pixel.x - cPos.x) * (cTar.z - cPos.z) == (cTar.x - cPos.x) * (pixel.z - cPos.z) &&
+        length(cPos - pixel) <= min &&
+        length(cPos - pixel) > length(cTar - pixel) &&
+        selected_obj != current_obj)
+    {
+        min = length(cPos - pixel);
+        selected_obj = current_obj;
+    }
+}
+
 int PSF_Power = 1;
 
 float CalcShadowFactor(vec4 LightSpacePos, sampler2D ShadowMap)
@@ -122,7 +145,7 @@ float CalcShadowFactor(vec4 LightSpacePos, sampler2D ShadowMap)
         for (int y = -PSF_Power; y <= PSF_Power; ++y)
         {
             float pcfDepth = texture(ShadowMap, ProjCoords.xy + vec2(x, y) * texSize).r;
-            shadow += ProjCoords.z - 0.0001 > pcfDepth ? 1.0 : 0.0;
+            shadow += ProjCoords.z - 0.00001 > pcfDepth ? 1.0 : 0.0;
         }
     }
     shadow /= ((PSF_Power * 2 + 1) * (PSF_Power * 2 + 1));
@@ -131,12 +154,6 @@ float CalcShadowFactor(vec4 LightSpacePos, sampler2D ShadowMap)
         shadow = 0.0;
         
     return (1 - shadow);
-    
-    /*float Depth = texture2D(ShadowMap, ProjCoords.xy).r;
-    if (Depth + 0.0001 < ProjCoords.z)
-        return 0;
-    else
-        return 1.0;*/
 }
 
 vec3 CalcBumpedNormal()

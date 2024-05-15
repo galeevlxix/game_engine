@@ -51,7 +51,7 @@ namespace game_2.Brain
             if (bull_speedY >= 2 * math3d.PI)
                 bull_speedY = 0;
 
-            Move("sculpt", 0, math3d.sin(bull_speedY) / 2, 0, deltaTime);
+            Move("sculpt", -math3d.sin(bull_speedY) * 3, 0, 0, deltaTime);
         }
 
         public static void Add(string name, string filepath)
@@ -132,6 +132,7 @@ namespace game_2.Brain
                             LightningManager.spotlights[i].mvpMatrixFromLight[obj_name]);
                 }
                 obj_list[obj_name].Draw(normalShader);
+
             }
         }
 
