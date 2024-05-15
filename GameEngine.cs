@@ -89,9 +89,9 @@ namespace game_2
 
             // не нарушать последовательность !!!
             ObjectArray.OnRender(deltaTime);
-                        
+
             ObjectArray.DrawShadows();
-                        
+
             GL.Viewport(0, 0, WindowWidth, WindowHeight);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 

@@ -107,15 +107,36 @@ void main()
     outputColor = texel * TotalLight;
 }
 
+int PSF_Power = 1;
+
 float CalcShadowFactor(vec4 LightSpacePos, sampler2D ShadowMap)
 {
     vec3 ProjCoords = LightSpacePos.xyz / LightSpacePos.w;
     ProjCoords = 0.5 * ProjCoords + 0.5;
-    float Depth = texture2D(ShadowMap, ProjCoords.xy).r;
+    
+    float shadow = 0.0;
+    vec2 texSize = 1.0 / textureSize(ShadowMap, 0);
+    
+    for (int x = -PSF_Power; x <= PSF_Power; ++x)
+    {
+        for (int y = -PSF_Power; y <= PSF_Power; ++y)
+        {
+            float pcfDepth = texture(ShadowMap, ProjCoords.xy + vec2(x, y) * texSize).r;
+            shadow += ProjCoords.z - 0.0001 > pcfDepth ? 1.0 : 0.0;
+        }
+    }
+    shadow /= ((PSF_Power * 2 + 1) * (PSF_Power * 2 + 1));
+    
+    if (ProjCoords.z > 1.0)
+        shadow = 0.0;
+        
+    return (1 - shadow);
+    
+    /*float Depth = texture2D(ShadowMap, ProjCoords.xy).r;
     if (Depth + 0.0001 < ProjCoords.z)
         return 0;
     else
-        return 1.0;
+        return 1.0;*/
 }
 
 vec3 CalcBumpedNormal()
@@ -181,7 +202,6 @@ vec4 CalcSpotLight(SpotLight sLight, vec3 Normal)
 {
     vec3 LightToPixel = normalize(WorldPos0 - sLight.Base.Position);
     float SpotFactor = dot(LightToPixel, sLight.Direction);
-
     if (SpotFactor > sLight.Cutoff1)
     {
         vec4 Color = CalcPointLight(sLight.Base, Normal);

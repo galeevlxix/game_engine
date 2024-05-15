@@ -1,25 +1,17 @@
-﻿using game_2.MathFolder;
-using OpenTK.Graphics.OpenGL;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using OpenTK.Graphics.OpenGL;
 
 namespace game_2.Brain.Shadows
 {
     public class ShadowMapFBO
     {
-        private int m_shadowWidth;
-        private int m_shadowHeight;
+        private int m_shadowSize;
 
         private int m_fbo;
         private int m_shadowMap; //файтический буфер глубены
 
-        public ShadowMapFBO(int width = 0, int height = 0)
+        public ShadowMapFBO()
         {
-            m_shadowWidth = width;
-            m_shadowHeight = height;
+            m_shadowSize = 512;
 
             m_fbo = 0; 
             m_shadowMap = 0;
@@ -40,8 +32,8 @@ namespace game_2.Brain.Shadows
                 TextureTarget.Texture2D, 
                 0, 
                 PixelInternalFormat.DepthComponent32,
-                m_shadowWidth,
-                m_shadowHeight, 
+                m_shadowSize,
+                m_shadowSize, 
                 0, 
                 PixelFormat.DepthComponent, 
                 PixelType.Float, 
@@ -50,9 +42,12 @@ namespace game_2.Brain.Shadows
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
 
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToBorder);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToBorder);
-            //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapR, (int)TextureWrapMode.ClampToBorder);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureCompareMode, (int)TextureCompareMode.CompareRefToTexture);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureCompareFunc, (int)DepthFunction.Lequal);
+
+
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
 
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, m_fbo);
             GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, TextureTarget.Texture2D, m_shadowMap, 0);
@@ -83,5 +78,7 @@ namespace game_2.Brain.Shadows
         {
             GL.DeleteTexture(m_shadowMap);
         }
+
+        public int Size => m_shadowSize;
     }
 }

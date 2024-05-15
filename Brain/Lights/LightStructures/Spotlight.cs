@@ -1,5 +1,4 @@
-﻿using game_2.Brain.MonochromeObjectFolder;
-using game_2.Brain.Shadows;
+﻿using game_2.Brain.Shadows;
 using game_2.MathFolder;
 using OpenTK.Mathematics;
 
@@ -22,7 +21,7 @@ namespace game_2.Brain.Lights.LightStructures
             Cutoff2 = 1;
             PointLight = new PointLight();
 
-            ShadowMapSpotlight = new ShadowMapFBO(2048, 2048);
+            ShadowMapSpotlight = new ShadowMapFBO();
             mvpMatrixFromLight = new Dictionary<string, Matrix4>();
         }
     }

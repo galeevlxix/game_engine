@@ -16,9 +16,6 @@ namespace game_2.Brain
         private static Shader? shadowShader = CentralizedShaders.GetShader(ShaderName.ShadowShader);
         private static Shader? normalShader = CentralizedShaders.GetShader(ShaderName.AssimpShader);
 
-        private static int shadow_size_x = 2048;
-        private static int shadow_size_y = 2048;
-
         public static void Init()
         {
             Console.WriteLine("Загрузка моделей (assimp)...");
@@ -89,8 +86,10 @@ namespace game_2.Brain
 
             foreach (Spotlight spotlight in LightningManager.spotlights)
             {
+                int shadowMapSize = spotlight.ShadowMapSpotlight.Size;
+
                 // CREATE MATRICES
-                Matrix4 projMatrixFromLight = matrix4f.GetInitPersProjTransform(100, shadow_size_x, shadow_size_y, 0.1f, 100).ToOpenTK();
+                Matrix4 projMatrixFromLight = matrix4f.GetInitPersProjTransform(100, shadowMapSize, shadowMapSize, 0.1f, 100).ToOpenTK();
                 vector3f pos = spotlight.PointLight.Position;
                 vector3f tar = spotlight.Direction;
                 Matrix4 viewMatrixFromLight = (matrix4f.GetInitTranslationTransform(-pos) * matrix4f.GetInitCameraTransform(-tar, vector3f.Up)).ToOpenTK();
@@ -98,7 +97,7 @@ namespace game_2.Brain
                 // RENDER SHADOWS 
                 spotlight.ShadowMapSpotlight.BindForWriting();
 
-                GL.Viewport(0, 0, shadow_size_x, shadow_size_y);
+                GL.Viewport(0, 0, shadowMapSize, shadowMapSize);
                 GL.Clear(ClearBufferMask.DepthBufferBit);
                 
                 if (spotlight.mvpMatrixFromLight.Count > 0)
