@@ -2,6 +2,7 @@
 using game_2.MathFolder;
 using OpenTK.Windowing.Desktop;
 using System.Globalization;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace game_2
 {
@@ -11,6 +12,10 @@ namespace game_2
         {
             GameWindowSettings settings = GameWindowSettings.Default;
             NativeWindowSettings windowSettings = NativeWindowSettings.Default;
+
+            NormalizeObjectCenter(
+                "C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\Museums\\bull\\bull3.obj",
+                "C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\Museums\\bull\\bull4.obj");
 
             windowSettings.WindowState = OpenTK.Windowing.Common.WindowState.Normal;
             windowSettings.Size = new OpenTK.Mathematics.Vector2i(1920, 1080);
@@ -277,11 +282,9 @@ namespace game_2
         {
             List<vector3f> vertices = new List<vector3f>();
 
-            TextReader reader = new StreamReader(oldfile);
             string? line;
 
-            File.Delete(newfile);
-            using (StreamWriter sw = new StreamWriter(newfile))
+            using (TextReader reader = new StreamReader(oldfile))
             {
                 while ((line = reader.ReadLine()) != null)
                 {
@@ -294,20 +297,67 @@ namespace game_2
                         vertices.Add(new vector3f(
                                 float.Parse(parts[1], CultureInfo.InvariantCulture),
                                 float.Parse(parts[2], CultureInfo.InvariantCulture),
-                                float.Parse(parts[3], CultureInfo.InvariantCulture) ));
+                                float.Parse(parts[3], CultureInfo.InvariantCulture)));
                     }
                 }
             }
 
-            vector3f sum = new vector3f();
+            vector3f max = new vector3f(-1000, -1000, -1000);
+            vector3f min = new vector3f(1000, 1000, 1000);
+
+            vector3f mean = new vector3f();
+
             for (int i = 0; i < vertices.Count; i++)
             {
-                sum += vertices[i];
+                if (vertices[i].x > max.x) max.x = vertices[i].x;
+                if (vertices[i].y > max.y) max.y = vertices[i].y;
+                if (vertices[i].z > max.z) max.z = vertices[i].z;
+
+                if (vertices[i].x < min.x) min.x = vertices[i].x;
+                if (vertices[i].y < min.y) min.y = vertices[i].y;
+                if (vertices[i].z < min.z) min.z = vertices[i].z;
             }
 
-            sum /= vertices.Count;
+            mean = (max + min) / 2;
 
+            File.Delete(newfile);
 
+            using (StreamWriter sw = new StreamWriter(newfile))
+            {
+                using (TextReader reader = new StreamReader(oldfile))
+                {
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        line = line.Replace("  ", " ");
+                        line = line.Trim();
+                        string[] parts = line.Split(' ');
+
+                        int vert_ind = 0;
+
+                        switch(parts[0])
+                        {
+                            case "v":
+                                vector3f output_vector = new vector3f(
+                                    float.Parse(parts[1], CultureInfo.InvariantCulture),
+                                    float.Parse(parts[2], CultureInfo.InvariantCulture),
+                                    float.Parse(parts[3], CultureInfo.InvariantCulture));
+                                output_vector -= mean;
+
+                                string output_line = 
+                                    "v " + 
+                                    output_vector.x.ToString("0.000000", CultureInfo.InvariantCulture) + " " + 
+                                    output_vector.y.ToString("0.000000", CultureInfo.InvariantCulture) + " " + 
+                                    output_vector.z.ToString("0.000000", CultureInfo.InvariantCulture);
+
+                                sw.WriteLine(output_line);
+                                break;
+                            default:
+                                sw.WriteLine(line);
+                                break;
+                        }
+                    }
+                }
+            }
         }
     }
 }

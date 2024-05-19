@@ -45,7 +45,7 @@ namespace game_2.Brain
             obj_list = new Dictionary<string, AObject>();
 
             Add("museum", "Museums\\VR_Gallery\\VR_Gallery_comp.obj");
-            Add("bull", "Museums\\bull\\bull3.obj");
+            Add("bull", "Museums\\bull\\bull4.obj");
             Add("table", "Museums\\museum_table\\OPM0032.fbx");
 
             WindowWidth = Width;
@@ -234,7 +234,7 @@ namespace game_2.Brain
                 // включение режима взаимодействия: установить специальные свойства и свет
                 if (obj_list[obj_name].isSculpture && sculpt_object_index == picked_object_index && pick_mode)
                 {
-                    SetPosition(obj_name, Camera.Pos.x - Camera.Target.x / 2, Camera.Pos.y - Camera.Target.y / 2 - ScaleOfPickedObject * 10, Camera.Pos.z - Camera.Target.z / 2);
+                    SetPosition(obj_name, Camera.Pos.x - Camera.Target.x / 2, Camera.Pos.y - Camera.Target.y / 2, Camera.Pos.z - Camera.Target.z / 2);
                     SetScale(obj_name, ScaleOfPickedObject);
                     SetAngle(obj_name, 0, AngularX, AngularY);
 
@@ -285,7 +285,7 @@ namespace game_2.Brain
             if (dX != 0 || dY != 0)
             {
                 AngularX += dX / 8;
-                AngularY += dY / 32;
+                //AngularY += dY / 32;
             }
         }
 
