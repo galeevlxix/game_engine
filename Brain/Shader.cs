@@ -9,12 +9,15 @@ namespace game_2.Brain
     {
         protected int Handle;
 
+        public ShaderName name;
+
         private Dictionary<string, int> _uniformLocations;
         private int numberOfUniforms;
 
-        public Shader(string vs, string fs)
+        public Shader(string vs, string fs, ShaderName name)
         {
             Init(vs, fs);
+            this.name = name;
         }
 
         private void Init(string vs, string fs)
@@ -129,7 +132,7 @@ namespace game_2.Brain
             if (_uniformLocations.ContainsKey(name))
                 GL.Uniform1(_uniformLocations[name], data);
         }
-        
+
         public void setDiffuseMap()
         {
             GL.Uniform1(_uniformLocations["gMaterial.DiffuseMap"], 0);

@@ -17,8 +17,6 @@ namespace game_2
 
             windowSettings.Title = "Game";
 
-            //addNormalsToObjFile("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\obj_files\\sculpt1\\MCh_S_12_Rzezba_Popiersie_Rozy_Loewenfeld.OBJ", "C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\obj_files\\sculpt1\\MCh_S_12_Rzezba_Popiersie_Rozy_Loewenfeld_normals.OBJ");
-
             GameEngine engine = new GameEngine(settings, windowSettings);
             engine.Init();
             engine.Run();

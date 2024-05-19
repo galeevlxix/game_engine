@@ -4,6 +4,7 @@ using game_2.Brain.NewAssimpFolder;
 using game_2.MathFolder;
 using OpenTK.Mathematics;
 using OpenTK.Graphics.OpenGL;
+using game_2.Brain.Selecting;
 
 namespace game_2.Brain
 {
@@ -13,18 +14,32 @@ namespace game_2.Brain
 
         private static string ModelFolderPath = "..\\..\\..\\Files\\Models\\";
 
-        private static Shader? shadowShader = CentralizedShaders.GetShader(ShaderName.ShadowShader);
-        private static Shader? normalShader = CentralizedShaders.GetShader(ShaderName.AssimpShader);
+        private static Shader? shadowShader;
+        private static Shader? normalShader;
+        private static Shader? selectingShader;
 
-        public static void Init()
+        private static SelectingMapFBO selectMap = new SelectingMapFBO();
+
+        public static int WindowWidth, WindowHeight;
+
+        public static void Init(int Width, int Height)
         {
+            shadowShader = CentralizedShaders.GetShader(ShaderName.ShadowShader);
+            normalShader = CentralizedShaders.GetShader(ShaderName.AssimpShader);
+            selectingShader = CentralizedShaders.GetShader(ShaderName.SelectingShader);
+
             Console.WriteLine("Загрузка моделей (assimp)...");
 
             obj_list = new Dictionary<string, AObject>();
 
             Add("museum", "Museums\\VR_Gallery\\VR_Gallery_comp.obj");
-            Add("table", "Museums\\museum_table\\OPM0032.fbx");
             Add("sculpt", "Museums\\bull\\bull3.obj");
+            Add("table", "Museums\\museum_table\\OPM0032.fbx");
+
+            WindowWidth = Width;
+            WindowHeight = Height;
+
+            selectMap.Init(WindowWidth, WindowHeight);
 
             SetProperties();
         }
@@ -51,7 +66,7 @@ namespace game_2.Brain
             if (bull_speedY >= 2 * math3d.PI)
                 bull_speedY = 0;
 
-            Move("sculpt", -math3d.sin(bull_speedY) * 3, 0, 0, deltaTime);
+            //Move("sculpt", -math3d.sin(bull_speedY) * 3, 0, 0, deltaTime);
         }
 
         public static void Add(string name, string filepath)
@@ -80,6 +95,24 @@ namespace game_2.Brain
             get => obj_list.Count;
         }
 
+        public static void SelectObjects()
+        {
+            selectingShader.Use();
+
+            selectMap.Enable();
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+
+            int i = 0;
+            foreach (AObject obj in obj_list.Values)
+            {
+                selectingShader.setValue("gObjectIndex", i);
+                i++;
+                obj.Draw(selectingShader);
+            }
+
+            selectMap.Disable();
+        }
+
         public static void DrawShadows()
         {
             shadowShader.Use();
@@ -95,7 +128,7 @@ namespace game_2.Brain
                 Matrix4 viewMatrixFromLight = (matrix4f.GetInitTranslationTransform(-pos) * matrix4f.GetInitCameraTransform(-tar, vector3f.Up)).ToOpenTK();
 
                 // RENDER SHADOWS 
-                spotlight.ShadowMapSpotlight.BindForWriting();
+                spotlight.ShadowMapSpotlight.BindForWriting(); 
 
                 GL.Viewport(0, 0, shadowMapSize, shadowMapSize);
                 GL.Clear(ClearBufferMask.DepthBufferBit);
@@ -113,8 +146,32 @@ namespace game_2.Brain
             }
         }
 
-        public static void DrawScene()
+        public static void DrawScene(bool isPressed)
         {
+
+            if (isPressed)
+            {
+                SelectingMapFBO.PixelInfo pixel = selectMap.ReadPixel(WindowWidth / 2, WindowHeight / 2);
+
+                if (pixel.PrimID != 0)
+                {
+                    switch(pixel.ObjectID)
+                    {
+                        case 0:
+                            Console.WriteLine("Музей");
+                            break;
+                        case 1:
+                            Console.WriteLine("Скульптура");
+                            break;
+                        case 2:
+                            Console.WriteLine("Стол");
+                            break;
+                    }
+                }
+            }
+            GL.Viewport(0, 0, WindowWidth, WindowHeight);
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+
             normalShader.Use();
 
             for (int i = 0; i < LightningManager.SpotlightsCount; i++)
@@ -132,7 +189,6 @@ namespace game_2.Brain
                             LightningManager.spotlights[i].mvpMatrixFromLight[obj_name]);
                 }
                 obj_list[obj_name].Draw(normalShader);
-
             }
         }
 
@@ -210,6 +266,14 @@ namespace game_2.Brain
         private static void Expand(string name, float speedVal, float time)
         {
             obj_list[name].Expand(speedVal, time);
+        }
+
+        public static void Resize(int width, int height)
+        {
+            WindowWidth = width;
+            WindowHeight = height;
+
+            selectMap.Init(width, height);
         }
     }
 }

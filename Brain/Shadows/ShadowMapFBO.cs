@@ -31,7 +31,7 @@ namespace game_2.Brain.Shadows
             GL.TexImage2D(
                 TextureTarget.Texture2D, 
                 0, 
-                PixelInternalFormat.DepthComponent32,
+                PixelInternalFormat.DepthComponent,
                 m_shadowSize,
                 m_shadowSize, 
                 0, 
@@ -44,7 +44,6 @@ namespace game_2.Brain.Shadows
 
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureCompareMode, (int)TextureCompareMode.CompareRefToTexture);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureCompareFunc, (int)DepthFunction.Lequal);
-
 
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToBorder);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToBorder);

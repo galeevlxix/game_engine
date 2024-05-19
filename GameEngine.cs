@@ -13,7 +13,9 @@ namespace game_2
 {
     public class GameEngine : GameWindow
     {
-        private bool isMouseDown;
+        private bool isMouseDown = false;
+        private bool isHolding = false;
+
         private bool isLoaded = false;
 
         private int WindowWidth;
@@ -62,7 +64,7 @@ namespace game_2
             
             aim = new Aim();
 
-            ObjectArray.Init();
+            ObjectArray.Init(WindowWidth, WindowHeight);
 
             skybox = new Skybox();
 
@@ -90,12 +92,12 @@ namespace game_2
             // не нарушать последовательность !!!
             ObjectArray.OnRender(deltaTime);
 
+
             ObjectArray.DrawShadows();
 
-            GL.Viewport(0, 0, WindowWidth, WindowHeight);
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+            ObjectArray.SelectObjects();
 
-            ObjectArray.DrawScene();
+            ObjectArray.DrawScene(isMouseDown);
 
             skybox.Draw();
 
@@ -117,8 +119,8 @@ namespace game_2
             KeyboardState input = KeyboardState;
             if (input.IsKeyDown(Keys.Escape)) Close();
 
-            if (isMouseDown) mPersProj.ChangeFOV(25);
-            else mPersProj.ChangeFOV(50);       //ОПТИМИЗИРОВАТЬ
+            //if (isMouseDown) mPersProj.ChangeFOV(25);
+            //else mPersProj.ChangeFOV(50);       //ОПТИМИЗИРОВАТЬ
 
             Camera.OnMouse(-MouseState.Delta.X, -MouseState.Delta.Y);
             Camera.OnKeyboard(KeyboardState, Time);
@@ -127,16 +129,31 @@ namespace game_2
         // Callbacks
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
-            base.OnMouseDown(e);
-            if (!isMouseDown && e.Button == MouseButton.Button1) isMouseDown = true;
-            if (e.Button == MouseButton.Button2) LightningManager.spotlights[1].PointLight.SetIntensity(0);
+            if (e.Button == MouseButton.Button1)
+            {
+                if (!isMouseDown && !isHolding)
+                {
+                    isMouseDown = true;
+                    isHolding = true;
+                }
+                else if (isMouseDown && isHolding)
+                {
+                    isMouseDown = false;
+                }
+            }
         }
 
         protected override void OnMouseUp(MouseButtonEventArgs e)
         {
             base.OnMouseUp(e);
-            if (isMouseDown && e.Button == MouseButton.Button1) isMouseDown = false;
-            if (e.Button == MouseButton.Button2) LightningManager.spotlights[1].PointLight.SetIntensity(4);
+            if (e.Button == MouseButton.Button1)
+            {
+                if (isHolding || isMouseDown)
+                {
+                    isMouseDown = false;
+                    isHolding = false;
+                }
+            }
         }
 
         protected override void OnResize(ResizeEventArgs e)
@@ -146,6 +163,9 @@ namespace game_2
             WindowHeight = e.Height;
 
             if (isLoaded) mPersProj.ChangeWindowSize(WindowWidth, WindowHeight);
+            ObjectArray.WindowWidth = WindowWidth;
+            ObjectArray.WindowHeight = WindowHeight;
+            ObjectArray.Resize(WindowWidth, WindowHeight);
         }
 
         protected override void OnClosed()

@@ -161,7 +161,23 @@ namespace game_2.Brain.NewAssimpFolder
             shader.setValue("world", _pipeline.getWorld());
 
             // рисуем мэши объекта
-            foreach (AEntry item in _entries) item.Draw();
+            if (shader.name == ShaderName.SelectingShader)
+            {
+                int i = 0;
+                foreach (AEntry item in _entries)
+                {
+                    shader.setValue("gDrawIndex", i);
+                    i++;
+                    item.Draw();
+                }
+            }
+            else
+            {
+                foreach (AEntry item in _entries)
+                {
+                    item.Draw();
+                }
+            }
         }
 
         public void OnDelete()

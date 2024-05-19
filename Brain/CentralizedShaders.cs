@@ -22,37 +22,50 @@ namespace game_2.Brain
                     ShaderName.ObjectShader,
                     new Shader(
                         ShaderLoader.LoadVertexShader(),
-                        ShaderLoader.LoadFragmentShader())
+                        ShaderLoader.LoadFragmentShader(),
+                        ShaderName.ObjectShader)
                 },
                 {   // SKYBOX SHADER
                     ShaderName.SkyBoxShader,
                     new Shader(
                         ShaderLoader.LoadShader(FolderPath + "Skybox\\SkyboxVetexShader.hlsl"),
-                        ShaderLoader.LoadShader(FolderPath + "Skybox\\SkyboxFragShader.hlsl"))
+                        ShaderLoader.LoadShader(FolderPath + "Skybox\\SkyboxFragShader.hlsl"),
+                        ShaderName.SkyBoxShader)
                 },
                 {   // STATIC SCREEN SHADER
                     ShaderName.ScreenShader,
                     new Shader(
                         ShaderLoader.LoadShader(FolderPath + "ScreenStatic\\ScreenStaticVertexShader.hlsl"),
-                        ShaderLoader.LoadShader(FolderPath + "ScreenStatic\\ScreenStaticFragmentShader.hlsl"))
+                        ShaderLoader.LoadShader(FolderPath + "ScreenStatic\\ScreenStaticFragmentShader.hlsl"),
+                        ShaderName.ScreenShader)
                 },
                 {   // MONOCHROME OBJECT SHADER
                     ShaderName.MonochromeShader,
                     new Shader(
                         ShaderLoader.LoadShader(FolderPath + "MonochromeObject\\MonoVertexShader.hlsl"),
-                        ShaderLoader.LoadShader(FolderPath + "MonochromeObject\\MonoFragmentShader.hlsl"))
+                        ShaderLoader.LoadShader(FolderPath + "MonochromeObject\\MonoFragmentShader.hlsl"),
+                        ShaderName.MonochromeShader)
                 },
                 {   // ASSIMP OBJECT SHADER
                     ShaderName.AssimpShader,
                     new Shader(
                         ShaderLoader.LoadShader(FolderPath + "AssimpObject\\AssimpVertexShader.hlsl"),
-                        ShaderLoader.LoadShader(FolderPath + "AssimpObject\\AssimpFragmentShader.hlsl"))
+                        ShaderLoader.LoadShader(FolderPath + "AssimpObject\\AssimpFragmentShader.hlsl"),
+                        ShaderName.AssimpShader)
                 },
                 {   // SHADOW MAP SHADER
                     ShaderName.ShadowShader,
                     new Shader(
                         ShaderLoader.LoadShader(FolderPath + "Shadow\\ShadowVertexShader.hlsl"), 
-                        ShaderLoader.LoadShader(FolderPath + "Shadow\\ShadowFragmentShader.hlsl"))
+                        ShaderLoader.LoadShader(FolderPath + "Shadow\\ShadowFragmentShader.hlsl"),
+                        ShaderName.ShadowShader)
+                },
+                {   // SELECTING MAP SHADER
+                    ShaderName.SelectingShader,
+                    new Shader(
+                        ShaderLoader.LoadShader(FolderPath + "Select\\SelectVertexSahder.hlsl"),
+                        ShaderLoader.LoadShader(FolderPath + "Select\\SelectFragmentSahder.hlsl"),
+                        ShaderName.SelectingShader)
                 }
             };
 
@@ -157,6 +170,7 @@ namespace game_2.Brain
         ScreenShader,
         MonochromeShader,
         AssimpShader,
-        ShadowShader
+        ShadowShader,
+        SelectingShader
     }
 }
