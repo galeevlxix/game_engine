@@ -49,7 +49,7 @@ namespace game_2.MathFolder
             return new vector3f(l.x * f, l.y * f, l.z * f);
         }
 
-        public static vector3f operator /(float l, vector3f f)
+        public static vector3f operator /(vector3f f, float l)
         {
             return new vector3f(f.x / l, f.y / l, f.z / l);
         }
@@ -92,7 +92,7 @@ namespace game_2.MathFolder
 
         public void Rotate(float Angle, vector3f Axe)
         {
-            float SinHalfAngle = (float)Math.Sin(math3d.ToRadian(Angle / 2));
+            float SinHalfAngle = (float)math3d.sin(math3d.ToRadian(Angle / 2));
             float CosHalfAngle = math3d.cos(math3d.ToRadian(Angle / 2));
 
             float Rx = Axe.x * SinHalfAngle;

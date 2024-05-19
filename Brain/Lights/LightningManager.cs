@@ -7,8 +7,8 @@ namespace game_2.Brain.Lights
     {
         public static LightingTechnique lightConfig;
 
-        private static BaseLight baseLight;
-        private static DirectionalLight directionalLight;
+        public static BaseLight baseLight;
+        public static DirectionalLight directionalLight;
 
         public static PointLight[] pointLights = new PointLight[2];
 

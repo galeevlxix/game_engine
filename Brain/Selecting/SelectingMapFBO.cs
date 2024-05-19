@@ -116,9 +116,9 @@ namespace game_2.Brain.Selecting
 
         public struct PixelInfo
         {
-            public uint ObjectID;
-            public uint DrawID;
-            public uint PrimID;
+            public int ObjectID;
+            public int DrawID;
+            public int PrimID;
 
             public PixelInfo()
             {

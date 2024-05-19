@@ -8,13 +8,13 @@ using game_2.Brain.SkyBoxFolder;
 using game_2.Brain.AimFolder;
 using game_2.Brain.Lights;
 using game_2.Brain.Compiler;
+using System.Security.Cryptography.X509Certificates;
 
 namespace game_2
 {
     public class GameEngine : GameWindow
     {
         private bool isMouseDown = false;
-        private bool isHolding = false;
 
         private bool isLoaded = false;
 
@@ -51,14 +51,14 @@ namespace game_2
 
             GL.ClearColor(BackGroundColor);
             GL.Enable(EnableCap.DepthTest);
+
             GL.Enable(EnableCap.CullFace);
             GL.FrontFace(FrontFaceDirection.Ccw);
             GL.CullFace(CullFaceMode.Back);
 
-            CursorGrabbed = true;
-
             Camera.InitCamera();
             Camera.SetCameraPosition(8, 3, -10);
+            CursorGrabbed = true;
 
             CentralizedShaders.Load();
             
@@ -84,44 +84,56 @@ namespace game_2
             deltaTime = (float)args.Time;
 
             FPSMeter.Update(args.Time);
+            InputCallbacks(deltaTime);
 
             // управление камерой
-            InputCallbacks(deltaTime);
-            Camera.OnRender(deltaTime);
+            if (!ObjectArray.pick_mode)
+            {
+                InputCallbacksCamera(deltaTime);
+                Camera.OnRender(deltaTime);
+            }
 
             // не нарушать последовательность !!!
             ObjectArray.OnRender(deltaTime);
 
-
             ObjectArray.DrawShadows();
 
-            ObjectArray.GetSelectedPixel();
+            ObjectArray.GetObservedObject();
 
-            ObjectArray.DrawScene(isMouseDown);
+            ObjectArray.GetPickedObject(mouse_shooter);
+
+            ObjectArray.DrawScene();
 
             skybox.Draw();
 
             GL.CullFace(CullFaceMode.Front);
 
-            aim.Draw();
+            if (!ObjectArray.pick_mode) aim.Draw();
 
             GL.CullFace(CullFaceMode.Back);
 
             LightningManager.Render(deltaTime);
 
-            ConsoleCompiler.Execute();            
+            ConsoleCompiler.Execute();
             SwapBuffers();
             GLFW.PollEvents();
         }
 
+        short mouse_shooter;
+
         private void InputCallbacks(float Time)
         {
-            KeyboardState input = KeyboardState;
-            if (input.IsKeyDown(Keys.Escape)) Close();
+            if (KeyboardState.IsKeyDown(Keys.Escape)) Close();
+            if (isMouseDown && mouse_shooter <= 1) mouse_shooter++;
 
-            //if (isMouseDown) mPersProj.ChangeFOV(25);
-            //else mPersProj.ChangeFOV(50);       //ОПТИМИЗИРОВАТЬ
+            if (ObjectArray.pick_mode)
+            {
+                ObjectArray.RotatePickedObject(MouseState.Delta.X, MouseState.Delta.Y);
+            }
+        }
 
+        private void InputCallbacksCamera(float Time)
+        {
             Camera.OnMouse(-MouseState.Delta.X, -MouseState.Delta.Y);
             Camera.OnKeyboard(KeyboardState, Time);
         }
@@ -129,16 +141,13 @@ namespace game_2
         // Callbacks
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
+            base.OnMouseDown(e);
             if (e.Button == MouseButton.Button1)
             {
-                if (!isMouseDown && !isHolding)
+                if (!isMouseDown)
                 {
+                    mouse_shooter = 0;
                     isMouseDown = true;
-                    isHolding = true;
-                }
-                else if (isMouseDown && isHolding)
-                {
-                    isMouseDown = false;
                 }
             }
         }
@@ -148,12 +157,32 @@ namespace game_2
             base.OnMouseUp(e);
             if (e.Button == MouseButton.Button1)
             {
-                if (isHolding || isMouseDown)
+                if (isMouseDown)
                 {
                     isMouseDown = false;
-                    isHolding = false;
                 }
             }
+        }
+
+        float prevWheelPos = 0;
+        protected override void OnMouseWheel(MouseWheelEventArgs e)
+        {
+            base.OnMouseWheel(e);
+
+            if (ObjectArray.pick_mode)
+            {
+                if (e.OffsetY - prevWheelPos > 0)
+                {
+                    ObjectArray.ScaleOfPickedObject += 0.001f;
+                }
+                else
+                {
+                    if (ObjectArray.ScaleOfPickedObject - 0.001f >= 0)
+                        ObjectArray.ScaleOfPickedObject -= 0.001f;
+                }
+            }
+
+            prevWheelPos = e.OffsetY;
         }
 
         protected override void OnResize(ResizeEventArgs e)

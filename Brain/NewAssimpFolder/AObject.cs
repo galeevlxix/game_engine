@@ -14,6 +14,8 @@ namespace game_2.Brain.NewAssimpFolder
         private string _modelFilePath;
         private string _modelDirectoryPath;
 
+        public bool isSculpture = false;
+
         public Pipeline _pipeline;
 
         public AObject(string ModelFilePath) 

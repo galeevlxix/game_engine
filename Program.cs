@@ -272,5 +272,42 @@ namespace game_2
                 sw.Close();
             }
         }
+
+        public static void NormalizeObjectCenter(string oldfile, string newfile)
+        {
+            List<vector3f> vertices = new List<vector3f>();
+
+            TextReader reader = new StreamReader(oldfile);
+            string? line;
+
+            File.Delete(newfile);
+            using (StreamWriter sw = new StreamWriter(newfile))
+            {
+                while ((line = reader.ReadLine()) != null)
+                {
+                    line = line.Replace("  ", " ");
+                    line = line.Trim();
+                    string[] parts = line.Split(' ');
+
+                    if (parts[0] == "v")
+                    {
+                        vertices.Add(new vector3f(
+                                float.Parse(parts[1], CultureInfo.InvariantCulture),
+                                float.Parse(parts[2], CultureInfo.InvariantCulture),
+                                float.Parse(parts[3], CultureInfo.InvariantCulture) ));
+                    }
+                }
+            }
+
+            vector3f sum = new vector3f();
+            for (int i = 0; i < vertices.Count; i++)
+            {
+                sum += vertices[i];
+            }
+
+            sum /= vertices.Count;
+
+
+        }
     }
 }
