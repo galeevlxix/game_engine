@@ -95,11 +95,12 @@ namespace game_2.Brain
             get => obj_list.Count;
         }
 
-        public static void SelectObjects()
+        public static SelectingMapFBO.PixelInfo GetSelectedPixel()
         {
             selectingShader.Use();
 
             selectMap.Enable();
+            GL.Viewport(0, 0, WindowWidth, WindowHeight);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             int i = 0;
@@ -111,6 +112,8 @@ namespace game_2.Brain
             }
 
             selectMap.Disable();
+
+            return selectMap.ReadPixel(WindowWidth / 2, WindowHeight / 2);
         }
 
         public static void DrawShadows()
@@ -151,11 +154,11 @@ namespace game_2.Brain
 
             if (isPressed)
             {
-                SelectingMapFBO.PixelInfo pixel = selectMap.ReadPixel(WindowWidth / 2, WindowHeight / 2);
+                SelectingMapFBO.PixelInfo pixel = GetSelectedPixel();
 
                 if (pixel.PrimID != 0)
                 {
-                    switch(pixel.ObjectID)
+                    switch(pixel.ObjectID)      //логика
                     {
                         case 0:
                             Console.WriteLine("Музей");
@@ -169,6 +172,7 @@ namespace game_2.Brain
                     }
                 }
             }
+
             GL.Viewport(0, 0, WindowWidth, WindowHeight);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 

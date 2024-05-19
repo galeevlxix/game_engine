@@ -95,7 +95,7 @@ namespace game_2
 
             ObjectArray.DrawShadows();
 
-            ObjectArray.SelectObjects();
+            ObjectArray.GetSelectedPixel();
 
             ObjectArray.DrawScene(isMouseDown);
 
