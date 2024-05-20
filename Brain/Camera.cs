@@ -114,10 +114,13 @@ namespace game_2.Brain
             angularY = 0;
         }
 
+        private static bool isCrawl = false;
+
         public static void OnKeyboard(KeyboardState key, float deltaTime)
         {
             if (!key.IsAnyKeyDown) return;
 
+            // TODO оптимизировать
             if (key.IsKeyDown(Keys.RightControl) || key.IsKeyDown(Keys.LeftControl))
             {
                 velocity = fast_velocity;
@@ -129,11 +132,60 @@ namespace game_2.Brain
                 max_speed = max_normal_speed;
             }
 
+            if (key.IsKeyDown(Keys.Space))
+            {
+                isCrawl = false;
+            }
+            if (key.IsKeyDown(Keys.LeftShift))
+            {
+                isCrawl = true;
+            }
+
+            // перемещение в нескольких направлениях
+            // TODO: доделать с вертикальными направлениями (2 и 3 направления)
+
+            if (key.IsKeyDown(Keys.W) && key.IsKeyDown(Keys.D))
+            {
+                if ((speedX - velocity * deltaTime) * (speedX - velocity * deltaTime) + speedY * speedY + (speedZ - velocity * deltaTime) * (speedZ - velocity * deltaTime) <= max_speed * max_speed)
+                {
+                    speedZ -= velocity * deltaTime;
+                    speedX -= velocity * deltaTime;
+                }
+                return;
+            }
+            else if (key.IsKeyDown(Keys.W) && key.IsKeyDown(Keys.A))
+            {
+                if ((speedX + velocity * deltaTime) * (speedX + velocity * deltaTime) + speedY * speedY + (speedZ - velocity * deltaTime) * (speedZ - velocity * deltaTime) <= max_speed * max_speed)
+                {
+                    speedZ -= velocity * deltaTime;
+                    speedX += velocity * deltaTime;
+                }
+                return;
+            }
+            else if (key.IsKeyDown(Keys.S) && key.IsKeyDown(Keys.A))
+            {
+                if ((speedZ + velocity * deltaTime) * (speedZ + velocity * deltaTime) + speedY * speedY + (speedZ + velocity * deltaTime) * (speedZ + velocity * deltaTime) <= max_speed * max_speed)
+                {
+                    speedZ += velocity * deltaTime;
+                    speedX += velocity * deltaTime;
+                }
+                return;
+            }
+            else if (key.IsKeyDown(Keys.S) && key.IsKeyDown(Keys.D))
+            {
+                if ((speedX - velocity * deltaTime) * (speedX - velocity * deltaTime) + speedY * speedY + (speedZ + velocity * deltaTime) * (speedZ + velocity * deltaTime) <= max_speed * max_speed)
+                {
+                    speedZ += velocity * deltaTime;
+                    speedX -= velocity * deltaTime;
+                }
+                return;
+            }
+
             if (key.IsKeyDown(Keys.W))
             {
                 if (speedX * speedX + speedY * speedY + (speedZ - velocity * deltaTime) * (speedZ - velocity * deltaTime) <= max_speed * max_speed)
                     speedZ -= velocity * deltaTime;
-            }
+            } 
             if (key.IsKeyDown(Keys.S))
             {
                 if (speedX * speedX + speedY * speedY + (speedZ + velocity * deltaTime) * (speedZ + velocity * deltaTime) <= max_speed * max_speed)
@@ -149,7 +201,7 @@ namespace game_2.Brain
                 if ((speedX - velocity * deltaTime) * (speedX - velocity * deltaTime) + speedY * speedY + speedZ * speedZ <= max_speed * max_speed)
                     speedX -= velocity * deltaTime;
             }
-            if (key.IsKeyDown(Keys.Space))
+            /*if (key.IsKeyDown(Keys.Space))
             {
                 if (speedX * speedX + (speedY + velocity * deltaTime) * (speedY + velocity * deltaTime) + speedZ * speedZ <= max_speed * max_speed)
                     speedY += velocity * deltaTime;
@@ -158,13 +210,11 @@ namespace game_2.Brain
             {
                 if (speedX * speedX + (speedY - velocity * deltaTime) * (speedY - velocity * deltaTime) + speedZ * speedZ <= max_speed * max_speed)
                     speedY -= velocity * deltaTime;
-            }
+            }*/
         }
 
-        public static void OnMouse(float DeltaX, float DeltaY)       //сюда реальные координаты мыши, а не дельта
+        public static void OnMouse(float DeltaX, float DeltaY)
         {
-            //if ((DeltaX == 0) && (DeltaY == 0)) return;
-
             angularX += DeltaX * sensitivity;
             angularY += DeltaY * sensitivity;
         }
@@ -173,13 +223,22 @@ namespace game_2.Brain
         {
             Braking(deltaTime);
 
-            Pos += Target * speedZ * deltaTime;
+            Pos = SmartMoving(Pos, Target * speedZ * deltaTime);
 
             Left = vector3f.Cross(Target, Up);
             Left.Normalize();
-            Pos += Left * speedX * deltaTime;
+            Pos = SmartMoving(Pos, Left * speedX * deltaTime);
 
-            Pos += vector3f.Up * speedY * deltaTime;
+            Pos = SmartMoving(Pos, vector3f.Up * speedY * deltaTime);
+
+            if (isCrawl && player_height >= min_point.y)
+            {
+                MakeCrawl(deltaTime);
+            } 
+            else if (!isCrawl && player_height <= max_point.y)
+            {
+                MakeGetUp(deltaTime);
+            }
 
             angle_h += angularX * deltaTime;
 
@@ -190,6 +249,42 @@ namespace game_2.Brain
 
             CameraTranslation.InitTranslationTransform(-Pos);
             CameraRotation.InitCameraTransform(Target, Up);
+        }
+
+        // границы карты музея
+        private static vector3f min_point = new vector3f(-1f, -6f, -6f);
+        private static vector3f max_point = new vector3f(40.5f, -4f, 6f);
+        
+        // перемещение left в пределах границ 
+        private static vector3f SmartMoving(vector3f left, vector3f right)
+        {
+            vector3f res = left;
+
+            res.y = player_height;
+
+            if (left.x + right.x < max_point.x && left.x + right.x > min_point.x)
+            {
+                res.x = left.x + right.x;
+            }
+
+            if (left.z + right.z < max_point.z && left.z + right.z > min_point.z)
+            {
+                res.z = left.z + right.z;
+            }
+
+            return res;
+        }
+
+        private static float player_height = -4;
+
+        public static void MakeCrawl(float deltaTime)
+        {
+            player_height -= max_normal_speed * deltaTime;
+        }
+
+        public static void MakeGetUp(float deltaTime)
+        {
+            player_height += max_normal_speed * deltaTime;
         }
 
         private static void Braking(float deltaTime)

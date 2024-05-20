@@ -5,7 +5,6 @@ using game_2.MathFolder;
 using OpenTK.Mathematics;
 using OpenTK.Graphics.OpenGL;
 using game_2.Brain.Selecting;
-using System.Net;
 
 namespace game_2.Brain
 {
@@ -45,7 +44,7 @@ namespace game_2.Brain
             obj_list = new Dictionary<string, AObject>();
 
             Add("museum", "Museums\\VR_Gallery\\VR_Gallery_comp.obj");
-            Add("bull", "Museums\\bull\\bull4.obj");
+            Add("bull", "Museums\\bull\\bull5.obj");
             Add("table", "Museums\\museum_table\\OPM0032.fbx");
 
             WindowWidth = Width;
@@ -75,11 +74,14 @@ namespace game_2.Brain
             if (Exists("bull"))
             {
                 SculptureAngles.Add(new vector3f(0, 180, 0));
-                SetAngle("bull", 0, 180, 0);
-                SculpturePositions.Add(new vector3f(42.8f, -5.75f, -0.5f));
-                SetPosition("bull", 42.8f, -5.75f, -0.5f);
-                SculptureScales.Add(0.15f);
-                SetScale("bull", 0.15f);
+                SetAngle("bull", SculptureAngles[SculptureAngles.Count - 1]);
+
+                SculpturePositions.Add(new vector3f(42.85f, -4.53f, 0f));
+                SetPosition("bull", SculpturePositions[SculpturePositions.Count - 1]);
+
+                SculptureScales.Add(0.1f);
+                SetScale("bull", SculptureScales[SculptureScales.Count - 1]);
+
                 MakeSculpture("bull");
             }
         }

@@ -8,13 +8,13 @@ using game_2.Brain.SkyBoxFolder;
 using game_2.Brain.AimFolder;
 using game_2.Brain.Lights;
 using game_2.Brain.Compiler;
-using System.Security.Cryptography.X509Certificates;
 
 namespace game_2
 {
     public class GameEngine : GameWindow
     {
         private bool isMouseDown = false;
+        private bool isMouseDown2 = false;
 
         private bool isLoaded = false;
 
@@ -57,7 +57,7 @@ namespace game_2
             GL.CullFace(CullFaceMode.Back);
 
             Camera.InitCamera();
-            Camera.SetCameraPosition(8, 3, -10);
+            Camera.SetCameraPosition(21, -4, 0);
             CursorGrabbed = true;
 
             CentralizedShaders.Load();
@@ -150,6 +150,14 @@ namespace game_2
                     isMouseDown = true;
                 }
             }
+            if (e.Button == MouseButton.Button2)
+            {
+                if (!isMouseDown2)
+                {
+                    isMouseDown2 = true;
+                    mPersProj.ChangeFOV(30);
+                }
+            }
         }
 
         protected override void OnMouseUp(MouseButtonEventArgs e)
@@ -160,6 +168,14 @@ namespace game_2
                 if (isMouseDown)
                 {
                     isMouseDown = false;
+                }
+            }
+            if (e.Button == MouseButton.Button2)
+            {
+                if (isMouseDown2)
+                {
+                    isMouseDown2 = false;
+                    mPersProj.ChangeFOV(60);
                 }
             }
         }

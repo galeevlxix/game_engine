@@ -13,7 +13,7 @@ Kd 0.800000011920929 0.800000011920929 0.800000011920929
 Ke 10 10 10
 map_Kd textures\\Structure_d.png
 map_Kn textures\\Structure_n.png
-# map_Ks textures\\Structure_r.png
+map_Ks textures\\Structure_r.png
 # map_Ks textures\\MetalSpecularMap.png
 
 newmtl Backwall

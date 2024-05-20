@@ -2,7 +2,6 @@
 using game_2.MathFolder;
 using OpenTK.Windowing.Desktop;
 using System.Globalization;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace game_2
 {
@@ -12,10 +11,6 @@ namespace game_2
         {
             GameWindowSettings settings = GameWindowSettings.Default;
             NativeWindowSettings windowSettings = NativeWindowSettings.Default;
-
-            NormalizeObjectCenter(
-                "C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\Museums\\bull\\bull3.obj",
-                "C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\Museums\\bull\\bull4.obj");
 
             windowSettings.WindowState = OpenTK.Windowing.Common.WindowState.Normal;
             windowSettings.Size = new OpenTK.Mathematics.Vector2i(1920, 1080);
@@ -278,13 +273,17 @@ namespace game_2
             }
         }
 
-        public static void NormalizeObjectCenter(string oldfile, string newfile)
+        //функция для создания нового файла obj со смещенным центром в точку 0, 0, 0
+        public static void NormalizeObjectCenter(string oldFilePath, string newFilePath, out vector3f newmax)
         {
-            List<vector3f> vertices = new List<vector3f>();
+            //List<vector3f> vertices = new List<vector3f>();
+
+            vector3f max = new vector3f(-1000, -1000, -1000);
+            vector3f min = new vector3f(1000, 1000, 1000);
 
             string? line;
 
-            using (TextReader reader = new StreamReader(oldfile))
+            using (TextReader reader = new StreamReader(oldFilePath))
             {
                 while ((line = reader.ReadLine()) != null)
                 {
@@ -294,45 +293,36 @@ namespace game_2
 
                     if (parts[0] == "v")
                     {
-                        vertices.Add(new vector3f(
+                        vector3f current = new vector3f(
                                 float.Parse(parts[1], CultureInfo.InvariantCulture),
                                 float.Parse(parts[2], CultureInfo.InvariantCulture),
-                                float.Parse(parts[3], CultureInfo.InvariantCulture)));
+                                float.Parse(parts[3], CultureInfo.InvariantCulture));
+
+                        if (current.x > max.x) max.x = current.x;
+                        if (current.y > max.y) max.y = current.y;
+                        if (current.z > max.z) max.z = current.z;
+
+                        if (current.x < min.x) min.x = current.x;
+                        if (current.y < min.y) min.y = current.y;
+                        if (current.z < min.z) min.z = current.z;
                     }
                 }
             }
 
-            vector3f max = new vector3f(-1000, -1000, -1000);
-            vector3f min = new vector3f(1000, 1000, 1000);
+            vector3f mean = (max + min) / 2;
+            newmax = max - mean;
 
-            vector3f mean = new vector3f();
+            File.Delete(newFilePath);
 
-            for (int i = 0; i < vertices.Count; i++)
+            using (StreamWriter sw = new StreamWriter(newFilePath))
             {
-                if (vertices[i].x > max.x) max.x = vertices[i].x;
-                if (vertices[i].y > max.y) max.y = vertices[i].y;
-                if (vertices[i].z > max.z) max.z = vertices[i].z;
-
-                if (vertices[i].x < min.x) min.x = vertices[i].x;
-                if (vertices[i].y < min.y) min.y = vertices[i].y;
-                if (vertices[i].z < min.z) min.z = vertices[i].z;
-            }
-
-            mean = (max + min) / 2;
-
-            File.Delete(newfile);
-
-            using (StreamWriter sw = new StreamWriter(newfile))
-            {
-                using (TextReader reader = new StreamReader(oldfile))
+                using (TextReader reader = new StreamReader(oldFilePath))
                 {
                     while ((line = reader.ReadLine()) != null)
                     {
                         line = line.Replace("  ", " ");
                         line = line.Trim();
                         string[] parts = line.Split(' ');
-
-                        int vert_ind = 0;
 
                         switch(parts[0])
                         {
@@ -358,6 +348,58 @@ namespace game_2
                     }
                 }
             }
+        }
+
+        //функция для создания нового файла obj со смещенным центром в точку 0, 0, 0 и нормализованным размером
+        public static void NormalizeObjectSizeOnX(string oldFilePath, string newFilePath)
+        {
+            string tempFilePath = Path.GetDirectoryName(oldFilePath) + "\\tempFile.obj";
+
+            NormalizeObjectCenter(oldFilePath, tempFilePath, out vector3f newmax);
+
+            Console.WriteLine(newmax.ToStr());
+
+            File.Delete(newFilePath);
+            string? line;
+
+            float maxX = 10;
+            float rel = maxX / newmax.x;
+
+            using (StreamWriter sw = new StreamWriter(newFilePath))
+            {
+                using (TextReader reader = new StreamReader(tempFilePath))
+                {
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        line = line.Replace("  ", " ");
+                        line = line.Trim();
+                        string[] parts = line.Split(' ');
+
+                        switch (parts[0])
+                        {
+                            case "v":
+                                vector3f output_vector = new vector3f(
+                                    float.Parse(parts[1], CultureInfo.InvariantCulture),
+                                    float.Parse(parts[2], CultureInfo.InvariantCulture),
+                                    float.Parse(parts[3], CultureInfo.InvariantCulture));
+
+                                string output_line =
+                                    "v " +
+                                    (rel * output_vector.x).ToString("0.000000", CultureInfo.InvariantCulture) + " " +
+                                    (rel * output_vector.y).ToString("0.000000", CultureInfo.InvariantCulture) + " " +
+                                    (rel * output_vector.z).ToString("0.000000", CultureInfo.InvariantCulture);
+
+                                sw.WriteLine(output_line);
+                                break;
+                            default:
+                                sw.WriteLine(line);
+                                break;
+                        }
+                    }
+                }
+            }
+
+            File.Delete(tempFilePath);
         }
     }
 }
