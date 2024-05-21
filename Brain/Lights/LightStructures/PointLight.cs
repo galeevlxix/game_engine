@@ -1,6 +1,7 @@
 ﻿using game_2.Brain.MonochromeObjectFolder;
+using game_2.Brain.Shadows;
 using game_2.MathFolder;
-using System.Drawing;
+using OpenTK.Mathematics;
 
 namespace game_2.Brain.Lights.LightStructures
 {
@@ -12,6 +13,8 @@ namespace game_2.Brain.Lights.LightStructures
         public Attenuation Attenuation;
         public MonochromeObject Lamp;
 
+        public ShadowCubeMapFBO shadowCubeMap;
+
         public PointLight()
         {
             Pos = new vector3f();
@@ -19,6 +22,8 @@ namespace game_2.Brain.Lights.LightStructures
             BaseLight.Intensity = 0f;
             Attenuation = new Attenuation();
             Lamp = new MonochromeObject(new vector3f(1, 1, 1), new vector3f(1, 1, 1));
+
+            shadowCubeMap = new ShadowCubeMapFBO();
         }
 
         public void SetColor(vector3f color)

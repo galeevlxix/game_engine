@@ -11,8 +11,7 @@ namespace game_2.Brain.Lights.LightStructures
         public float Cutoff2;
         public PointLight PointLight;
 
-        public ShadowMapFBO ShadowMapSpotlight;
-        public Dictionary<string, Matrix4> mvpMatrixFromLight;
+        public ShadowPiece shadowPiece = new ShadowPiece();
 
         public Spotlight()
         {
@@ -21,8 +20,8 @@ namespace game_2.Brain.Lights.LightStructures
             Cutoff2 = 1;
             PointLight = new PointLight();
 
-            ShadowMapSpotlight = new ShadowMapFBO();
-            mvpMatrixFromLight = new Dictionary<string, Matrix4>();
+            shadowPiece.ShadowMap = new ShadowMapFBO();
+            shadowPiece.wvpMatricesFromLight = new Dictionary<string, Matrix4>();
         }
     }
 
@@ -32,5 +31,11 @@ namespace game_2.Brain.Lights.LightStructures
         public int Direction;
         public int Cutoff1;
         public int Cutoff2;
+    }
+
+    public struct ShadowPiece
+    {
+        public ShadowMapFBO ShadowMap;
+        public Dictionary<string, Matrix4> wvpMatricesFromLight;
     }
 }

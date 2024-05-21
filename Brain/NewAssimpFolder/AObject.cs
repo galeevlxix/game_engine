@@ -150,7 +150,8 @@ namespace game_2.Brain.NewAssimpFolder
         {
             // ввод матриц WVP и WORLD в шейдер
             shader.setValue("wvp", _pipeline.getWorld() * view * pers);
-            shader.setValue("world", _pipeline.getWorld());
+            if (shader.shName != ShaderName.ShadowShader)
+                shader.setValue("world", _pipeline.getWorld());
 
             // рисуем мэши объекта
             foreach (AEntry item in _entries) item.Draw();
@@ -160,10 +161,9 @@ namespace game_2.Brain.NewAssimpFolder
         {
             // ввод матриц WVP и WORLD в шейдер
             shader.setValue("wvp", _pipeline.getWVP());
-            shader.setValue("world", _pipeline.getWorld());
 
             // рисуем мэши объекта
-            if (shader.name == ShaderName.SelectingShader)
+            if (shader.shName == ShaderName.SelectingShader)
             {
                 int i = 0;
                 foreach (AEntry item in _entries)
@@ -175,6 +175,7 @@ namespace game_2.Brain.NewAssimpFolder
             }
             else
             {
+                shader.setValue("world", _pipeline.getWorld());
                 foreach (AEntry item in _entries)
                 {
                     item.Draw();

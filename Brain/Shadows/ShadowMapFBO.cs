@@ -11,7 +11,7 @@ namespace game_2.Brain.Shadows
 
         public ShadowMapFBO()
         {
-            m_shadowSize = 2048;
+            m_shadowSize = 1024;
 
             m_fbo = 0; 
             m_shadowMap = 0;

@@ -1,4 +1,5 @@
 ﻿using game_2.Brain.Lights;
+using game_2.Brain.Lights.LightStructures;
 using game_2.FileManagers;
 using game_2.MathFolder;
 using OpenTK.Mathematics;
@@ -56,7 +57,7 @@ namespace game_2.Brain
                 {   // SHADOW MAP SHADER
                     ShaderName.ShadowShader,
                     new Shader(
-                        ShaderLoader.LoadShader(FolderPath + "Shadow\\ShadowVertexShader.hlsl"), 
+                        ShaderLoader.LoadShader(FolderPath + "Shadow\\ShadowVertexShader.hlsl"),
                         ShaderLoader.LoadShader(FolderPath + "Shadow\\ShadowFragmentShader.hlsl"),
                         ShaderName.ShadowShader)
                 },
@@ -66,6 +67,14 @@ namespace game_2.Brain
                         ShaderLoader.LoadShader(FolderPath + "Select\\SelectVertexSahder.hlsl"),
                         ShaderLoader.LoadShader(FolderPath + "Select\\SelectFragmentSahder.hlsl"),
                         ShaderName.SelectingShader)
+                },
+                {
+                    //SHADOW CUBE MAP SHADER
+                    ShaderName.ShadowCubeMapShader,
+                    new Shader(
+                        ShaderLoader.LoadShader(FolderPath + "ShadowCube\\ShadowCubeVertexShader.hlsl"),
+                        ShaderLoader.LoadShader(FolderPath + "ShadowCube\\ShadowCubeFragmentShader.hlsl"),
+                        ShaderName.ShadowCubeMapShader)
                 }
             };
 
@@ -77,10 +86,11 @@ namespace game_2.Brain
             SetValue(ShaderName.AssimpShader, "gMaterial.DiffuseMap", 0);
             SetValue(ShaderName.AssimpShader, "gMaterial.NormalMap", 1);
             SetValue(ShaderName.AssimpShader, "gMaterial.SpecularMap", 2);
-            
+            SetValue(ShaderName.AssimpShader, "gCubeShadowMap", 3);
+
             for (int i = 0; i < LightningManager.SpotlightsCount; i++)
             {
-                SetValue(ShaderName.AssimpShader, "gSpotLights[" + i + "].gShadowMap", 10 + i);
+                SetValue(ShaderName.AssimpShader, "gSpotLights[" + i + "].gShadowMap", 4 + i);
             }
         }
 
@@ -171,6 +181,7 @@ namespace game_2.Brain
         MonochromeShader,
         AssimpShader,
         ShadowShader,
-        SelectingShader
+        SelectingShader,
+        ShadowCubeMapShader
     }
 }

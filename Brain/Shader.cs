@@ -9,7 +9,7 @@ namespace game_2.Brain
     {
         protected int Handle;
 
-        public ShaderName name;
+        public ShaderName shName;
 
         private Dictionary<string, int> _uniformLocations;
         private int numberOfUniforms;
@@ -17,7 +17,7 @@ namespace game_2.Brain
         public Shader(string vs, string fs, ShaderName name)
         {
             Init(vs, fs);
-            this.name = name;
+            this.shName = name;
         }
 
         private void Init(string vs, string fs)
@@ -121,15 +121,13 @@ namespace game_2.Brain
 
         public void setValue(string name, Matrix4 data)
         {
-            if (_uniformLocations.ContainsKey(name))
-            {
+            //if (_uniformLocations.ContainsKey(name))
                 GL.UniformMatrix4(_uniformLocations[name], true, ref data);
-            }
         }
 
         public void setValue(string name, int data)
         {
-            if (_uniformLocations.ContainsKey(name))
+            //if (_uniformLocations.ContainsKey(name))
                 GL.Uniform1(_uniformLocations[name], data);
         }
 
@@ -150,13 +148,13 @@ namespace game_2.Brain
 
         public void setValue(string name, float data)
         {
-            if (_uniformLocations.ContainsKey(name))
+            //if (_uniformLocations.ContainsKey(name))
                 GL.Uniform1(_uniformLocations[name], data);
         }
         
         public void setValue(string name, vector3f data)
         {
-            if (_uniformLocations.ContainsKey(name))
+            //if (_uniformLocations.ContainsKey(name))
                 GL.Uniform3(_uniformLocations[name], data.x, data.y, data.z);
         }
 

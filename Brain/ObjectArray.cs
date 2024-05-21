@@ -5,6 +5,7 @@ using game_2.MathFolder;
 using OpenTK.Mathematics;
 using OpenTK.Graphics.OpenGL;
 using game_2.Brain.Selecting;
+using game_2.Brain.Shadows;
 
 namespace game_2.Brain
 {
@@ -17,6 +18,7 @@ namespace game_2.Brain
         private static Shader? shadowShader;
         private static Shader? normalShader;
         private static Shader? selectingShader;
+        private static Shader? shadowCubeMapShader;
 
         private static SelectingMapFBO selectMap = new SelectingMapFBO();
 
@@ -38,6 +40,7 @@ namespace game_2.Brain
             shadowShader = CentralizedShaders.GetShader(ShaderName.ShadowShader);
             normalShader = CentralizedShaders.GetShader(ShaderName.AssimpShader);
             selectingShader = CentralizedShaders.GetShader(ShaderName.SelectingShader);
+            shadowCubeMapShader = CentralizedShaders.GetShader(ShaderName.ShadowCubeMapShader);
 
             Console.WriteLine("Загрузка моделей (assimp)...");
 
@@ -176,33 +179,68 @@ namespace game_2.Brain
                 picked_object_index = -1;
         }
 
-        public static void DrawShadows()
+        public static void DrawSpotlightShadows()
         {
             shadowShader.Use();
 
             foreach (Spotlight spotlight in LightningManager.spotlights)
             {
-                int shadowMapSize = spotlight.ShadowMapSpotlight.Size;
+                int shadowMapSize = spotlight.shadowPiece.ShadowMap.Size;
 
                 // CREATE MATRICES
-                Matrix4 projMatrixFromLight = matrix4f.GetInitPersProjTransform(100, shadowMapSize, shadowMapSize, 0.1f, 100).ToOpenTK();
+                Matrix4 projMatrixFromLight = matrix4f.GetInitPersProjTransform(90, shadowMapSize, shadowMapSize, 0.1f, 100).ToOpenTK();
                 vector3f pos = spotlight.PointLight.Position;
                 vector3f tar = spotlight.Direction;
-                Matrix4 viewMatrixFromLight = (matrix4f.GetInitTranslationTransform(-pos) * matrix4f.GetInitCameraTransform(-tar, vector3f.Up)).ToOpenTK();
+                vector3f up = vector3f.Cross(tar, vector3f.Right);
+                Matrix4 viewMatrixFromLight = (matrix4f.GetInitTranslationTransform(-pos) * matrix4f.GetInitCameraTransform(-tar, -up)).ToOpenTK();
 
                 // RENDER SHADOWS 
-                spotlight.ShadowMapSpotlight.BindForWriting(); 
-
                 GL.Viewport(0, 0, shadowMapSize, shadowMapSize);
+                spotlight.shadowPiece.ShadowMap.BindForWriting(); 
+               
                 GL.Clear(ClearBufferMask.DepthBufferBit);
                 
-                if (spotlight.mvpMatrixFromLight.Count > 0)
-                    spotlight.mvpMatrixFromLight.Clear();
+                if (spotlight.shadowPiece.wvpMatricesFromLight.Count > 0)
+                    spotlight.shadowPiece.wvpMatricesFromLight.Clear();
 
                 foreach (string obj_name in obj_list.Keys)
                 {
                     obj_list[obj_name].Draw(shadowShader, viewMatrixFromLight, projMatrixFromLight);
-                    spotlight.mvpMatrixFromLight.Add(obj_name, obj_list[obj_name]._pipeline.getWorld() * viewMatrixFromLight * projMatrixFromLight);
+                    spotlight.shadowPiece.wvpMatricesFromLight.Add(obj_name, obj_list[obj_name]._pipeline.getWorld() * viewMatrixFromLight * projMatrixFromLight);
+                }
+
+                GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+            }
+        }
+
+        public static void DrawPointlightShadows()
+        {
+            shadowCubeMapShader.Use();
+
+            foreach(PointLight pointlight in LightningManager.pointLights)
+            {
+                shadowCubeMapShader.setValue("gLightPos", pointlight.Position);
+                int shadowMapSize = pointlight.shadowCubeMap.Size;
+
+                Matrix4 projMatrixFromLight = matrix4f.GetInitPersProjTransform(90, shadowMapSize, shadowMapSize, 0.1f, 100).ToOpenTK();
+                GL.Viewport(0, 0, shadowMapSize, shadowMapSize);
+
+                for (int i = 0; i < 6; i++)
+                {
+                    // CREATE MATRICES
+                    vector3f pos = pointlight.Position;
+                    vector3f tar = CubeMapTarget.cubeMapTargets[i].Target;
+                    vector3f up = CubeMapTarget.cubeMapTargets[i].Up;
+                    Matrix4 viewMatrixFromLight = (matrix4f.GetInitTranslationTransform(-pos) * matrix4f.GetInitCameraTransform(-tar, -up)).ToOpenTK();
+
+                    // RENDER SHADOWS 
+                    pointlight.shadowCubeMap.BindForWriting(CubeMapTarget.cubeMapTargets[i].CubemapFace);
+                    GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+
+                    foreach (AObject obj in obj_list.Values)
+                    {
+                        obj.Draw(shadowCubeMapShader, viewMatrixFromLight, projMatrixFromLight);
+                    }
                 }
 
                 GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
@@ -218,8 +256,10 @@ namespace game_2.Brain
 
             for (int i = 0; i < LightningManager.SpotlightsCount; i++)
             {
-                LightningManager.spotlights[i].ShadowMapSpotlight.BindForReading(TextureUnit.Texture10 + i);
+                LightningManager.spotlights[i].shadowPiece.ShadowMap.BindForReading(TextureUnit.Texture4 + i);
             }
+
+            LightningManager.pointLights[0].shadowCubeMap.BindForReading(TextureUnit.Texture3);
 
             int sculpt_object_index = 0;
 
@@ -228,8 +268,8 @@ namespace game_2.Brain
                 // ввод матриц lightWVP
                 for (int i = 0; i < LightningManager.SpotlightsCount; i++)       //ОПТИМИЗИРОВАТЬ
                 {
-                    if (LightningManager.spotlights[i].mvpMatrixFromLight.Count > 0)
-                        normalShader.setValue("gSpotLights[" + i + "].LightWVP", LightningManager.spotlights[i].mvpMatrixFromLight[obj_name]);
+                    if (LightningManager.spotlights[i].shadowPiece.wvpMatricesFromLight.Count > 0)
+                        normalShader.setValue("gSpotLights[" + i + "].LightWVP", LightningManager.spotlights[i].shadowPiece.wvpMatricesFromLight[obj_name]);
                 }
 
                 // отрисовка объектов:
@@ -281,13 +321,11 @@ namespace game_2.Brain
         private static float AngularX = 0;
         private static float AngularY = 0;
 
-
         public static void RotatePickedObject(float dX, float dY)
         {
             if (dX != 0 || dY != 0)
             {
                 AngularX += dX / 8;
-                //AngularY += dY / 32;
             }
         }
 

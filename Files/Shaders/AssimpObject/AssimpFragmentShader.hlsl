@@ -54,8 +54,8 @@ struct SpotLight
     mat4 LightWVP;
 };
 
-const int MAX_POINT_LIGHTS = 10;
-const int MAX_SPOT_LIGHTS = 10;
+const int MAX_POINT_LIGHTS = 2;
+const int MAX_SPOT_LIGHTS = 2;
 
 uniform BaseLight gBaseLight;
 uniform DirectionalLight gDirectionalLight;
@@ -70,13 +70,16 @@ uniform vec3 gCameraPos;
 
 uniform Material gMaterial;
 
+uniform samplerCube gCubeShadowMap;
+
 vec4 CalcLightInternal(BaseLight Light, vec3 LightDirection, vec3 Normal);
 vec4 CalcDirectionalLight(vec3 Normal);
 vec4 CalcPointLight(PointLight pLight, vec3 Normal);
 vec4 CalcSpotLight(SpotLight sLight, vec3 Normal);
 vec3 CalcBumpedNormal();
 float CalcShadowFactor(vec4 LightSpacePos, sampler2D ShadowMap);
- 
+float CalcPointLightShadowFactor(vec3 LightDirection, float Distance);
+
 void main()
 {
     vec3 Normal = CalcBumpedNormal();
@@ -91,7 +94,7 @@ void main()
     vec4 AmbientColor = vec4(gBaseLight.Color, 1.0) * gBaseLight.Intensity;
 
     vec4 TotalLight = CalcDirectionalLight(Normal) + AmbientColor;
-
+    
     for (int i = 0; i < gNumPointLights; i++)
     {
         TotalLight += CalcPointLight(gPointLights[i], Normal);
@@ -99,9 +102,7 @@ void main()
     
     for (int i = 0; i < gNumSpotLights; i++)
     {   
-        vec4 LightPos = Position0 * gSpotLights[i].LightWVP;
-        shadowFactor = CalcShadowFactor(LightPos, gSpotLights[i].gShadowMap);
-        TotalLight += shadowFactor * CalcSpotLight(gSpotLights[i], Normal);
+        TotalLight += CalcShadowFactor(Position0 * gSpotLights[i].LightWVP, gSpotLights[i].gShadowMap) * CalcSpotLight(gSpotLights[i], Normal);
     }
     
     outputColor = texel * TotalLight;
@@ -128,10 +129,21 @@ float CalcShadowFactor(vec4 LightSpacePos, sampler2D ShadowMap)
     shadow /= ((PSF_Power * 2 + 1) * (PSF_Power * 2 + 1));
     
     if (ProjCoords.z > 1.0)
-        shadow = 0.0;
+        shadow = 0.2;
         
     return (1 - shadow);
 }
+
+
+float CalcPointLightShadowFactor(vec3 LightDirection, float Distance)
+{
+    float SampledDistance = texture(gCubeShadowMap, LightDirection).r;
+    if (Distance <= SampledDistance + 0.001)
+        return 1;
+    else 
+     return 0;
+}
+
 
 vec3 CalcBumpedNormal()
 {
@@ -183,12 +195,15 @@ vec4 CalcPointLight(PointLight pLight, vec3 Normal)
 {
     vec3 LightDirection = WorldPos0 - pLight.Position;
     float Distance = length(LightDirection);
+    
+    float shadow = CalcPointLightShadowFactor(LightDirection, Distance);
 
-    vec4 Color = CalcLightInternal(pLight.Base, LightDirection, Normal);
+    vec4 Color = shadow * CalcLightInternal(pLight.Base, LightDirection, Normal);
     
     float Attenuation =  pLight.Atten.Constant + 
                          pLight.Atten.Linear * Distance +
                          pLight.Atten.Exp * Distance * Distance;
+    
     return Color / Attenuation;
 }
 

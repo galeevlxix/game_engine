@@ -8,6 +8,7 @@ using game_2.Brain.SkyBoxFolder;
 using game_2.Brain.AimFolder;
 using game_2.Brain.Lights;
 using game_2.Brain.Compiler;
+using game_2.MathFolder;
 
 namespace game_2
 {
@@ -48,6 +49,15 @@ namespace game_2
         protected override async void OnLoad()
         {
             base.OnLoad();
+
+            vector3f f = new vector3f(1, 1, 0);
+            f.Normalize();
+
+            vector3f s = new vector3f(1, 0, 1);
+            s.Normalize();
+
+            vector3f t = vector3f.Cross(f, s);
+            string a = t.ToStr();
 
             GL.ClearColor(BackGroundColor);
             GL.Enable(EnableCap.DepthTest);
@@ -96,7 +106,8 @@ namespace game_2
             // не нарушать последовательность !!!
             ObjectArray.OnRender(deltaTime);
 
-            ObjectArray.DrawShadows();
+            ObjectArray.DrawSpotlightShadows();
+            ObjectArray.DrawPointlightShadows();
 
             ObjectArray.GetObservedObject();
 
