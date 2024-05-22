@@ -99,9 +99,7 @@ void main()
     
     for (int i = 0; i < gNumSpotLights; i++)
     {   
-        vec4 LightPos = Position0 * gSpotLights[i].LightWVP;
-        shadowFactor = CalcShadowFactor(LightPos, gSpotLights[i].gShadowMap);
-        TotalLight += shadowFactor * CalcSpotLight(gSpotLights[i], Normal);
+        TotalLight += CalcSpotLight(gSpotLights[i], Normal);
     }
     
     outputColor = texel * TotalLight;
@@ -113,23 +111,17 @@ float CalcShadowFactor(vec4 LightSpacePos, sampler2D ShadowMap)
 {
     vec3 ProjCoords = LightSpacePos.xyz / LightSpacePos.w;
     ProjCoords = 0.5 * ProjCoords + 0.5;
-    
     float shadow = 0.0;
     vec2 texSize = 1.0 / textureSize(ShadowMap, 0);
-    
     for (int x = -PSF_Power; x <= PSF_Power; ++x)
     {
         for (int y = -PSF_Power; y <= PSF_Power; ++y)
         {
             float pcfDepth = texture(ShadowMap, ProjCoords.xy + vec2(x, y) * texSize).r;
-            shadow += ProjCoords.z - 0.00001 > pcfDepth ? 1.0 : 0.0;
+            shadow += ProjCoords.z <= pcfDepth + 0.00001 ? 0.0 : 1.0;
         }
     }
     shadow /= ((PSF_Power * 2 + 1) * (PSF_Power * 2 + 1));
-    
-    if (ProjCoords.z > 1.0)
-        shadow = 0.0;
-        
     return (1 - shadow);
 }
 
@@ -198,7 +190,8 @@ vec4 CalcSpotLight(SpotLight sLight, vec3 Normal)
     float SpotFactor = dot(LightToPixel, sLight.Direction);
     if (SpotFactor > sLight.Cutoff1)
     {
-        vec4 Color = CalcPointLight(sLight.Base, Normal);
+        float shadow = CalcShadowFactor(Position0 * sLight.LightWVP, sLight.gShadowMap);
+        vec4 Color = shadow * CalcPointLight(sLight.Base, Normal);
         return Color * (1.0 - (1.0 - SpotFactor) * 1.0 / (1.0 - sLight.Cutoff1));
     }
 

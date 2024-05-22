@@ -108,7 +108,7 @@ namespace game_2
 
             GL.CullFace(CullFaceMode.Front);
 
-            if (!ObjectArray.pick_mode) aim.Draw();
+            if (!ObjectArray.pick_mode && !isMouseDown2) aim.Draw();
 
             GL.CullFace(CullFaceMode.Back);
 

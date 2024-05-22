@@ -176,6 +176,8 @@ namespace game_2.Brain
                 picked_object_index = -1;
         }
 
+        static bool shadows_exist = false;
+
         public static void DrawShadows()
         {
             shadowShader.Use();
@@ -206,6 +208,8 @@ namespace game_2.Brain
                 }
 
                 GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+
+                shadows_exist = true;
             }
         }
 
@@ -228,7 +232,7 @@ namespace game_2.Brain
                 // ввод матриц lightWVP
                 for (int i = 0; i < LightningManager.SpotlightsCount; i++)       //ОПТИМИЗИРОВАТЬ
                 {
-                    if (LightningManager.spotlights[i].mvpMatrixFromLight.Count > 0)
+                    if (shadows_exist)
                         normalShader.setValue("gSpotLights[" + i + "].LightWVP", LightningManager.spotlights[i].mvpMatrixFromLight[obj_name]);
                 }
 
