@@ -54,7 +54,7 @@ struct SpotLight
     mat4 LightWVP;
 };
 
-const int MAX_POINT_LIGHTS = 2;
+const int MAX_POINT_LIGHTS = 1;
 const int MAX_SPOT_LIGHTS = 2;
 
 uniform BaseLight gBaseLight;
@@ -102,7 +102,7 @@ void main()
     
     for (int i = 0; i < gNumSpotLights; i++)
     {   
-        TotalLight += CalcShadowFactor(Position0 * gSpotLights[i].LightWVP, gSpotLights[i].gShadowMap) * CalcSpotLight(gSpotLights[i], Normal);
+        TotalLight += CalcSpotLight(gSpotLights[i], Normal);
     }
     
     outputColor = texel * TotalLight;
@@ -123,25 +123,22 @@ float CalcShadowFactor(vec4 LightSpacePos, sampler2D ShadowMap)
         for (int y = -PSF_Power; y <= PSF_Power; ++y)
         {
             float pcfDepth = texture(ShadowMap, ProjCoords.xy + vec2(x, y) * texSize).r;
-            shadow += ProjCoords.z - 0.00001 > pcfDepth ? 1.0 : 0.0;
+            shadow += ProjCoords.z <= pcfDepth + 0.001 ? 0.0 : 1.0;
         }
     }
     shadow /= ((PSF_Power * 2 + 1) * (PSF_Power * 2 + 1));
-    
-    if (ProjCoords.z > 1.0)
-        shadow = 0.2;
-        
+   
     return (1 - shadow);
 }
 
-
 float CalcPointLightShadowFactor(vec3 LightDirection, float Distance)
 {
+    vec3 ProjCoords = 0.5 * LightDirection + 0.5;
     float SampledDistance = texture(gCubeShadowMap, LightDirection).r;
     if (Distance <= SampledDistance + 0.001)
         return 1;
     else 
-     return 0;
+        return 0;
 }
 
 
@@ -213,7 +210,7 @@ vec4 CalcSpotLight(SpotLight sLight, vec3 Normal)
     float SpotFactor = dot(LightToPixel, sLight.Direction);
     if (SpotFactor > sLight.Cutoff1)
     {
-        vec4 Color = CalcPointLight(sLight.Base, Normal);
+        vec4 Color = CalcShadowFactor(Position0 * sLight.LightWVP, sLight.gShadowMap) * CalcPointLight(sLight.Base, Normal);
         return Color * (1.0 - (1.0 - SpotFactor) * 1.0 / (1.0 - sLight.Cutoff1));
     }
 

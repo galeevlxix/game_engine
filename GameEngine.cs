@@ -50,15 +50,6 @@ namespace game_2
         {
             base.OnLoad();
 
-            vector3f f = new vector3f(1, 1, 0);
-            f.Normalize();
-
-            vector3f s = new vector3f(1, 0, 1);
-            s.Normalize();
-
-            vector3f t = vector3f.Cross(f, s);
-            string a = t.ToStr();
-
             GL.ClearColor(BackGroundColor);
             GL.Enable(EnableCap.DepthTest);
 

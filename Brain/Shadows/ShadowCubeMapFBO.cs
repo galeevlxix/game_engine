@@ -13,7 +13,7 @@ namespace game_2.Brain.Shadows
 
         public ShadowCubeMapFBO()
         {
-            m_shadowSize = 2048;
+            m_shadowSize = 512;
 
             m_fbo = 0; 
             m_shadowCubeMap = 0;
@@ -93,7 +93,6 @@ namespace game_2.Brain.Shadows
         public void BindForWriting(TextureTarget target)
         {
             GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, m_fbo);
-            //or cubeface ??
             GL.FramebufferTexture2D(FramebufferTarget.DrawFramebuffer, FramebufferAttachment.ColorAttachment0, target, m_shadowCubeMap, 0);
             GL.DrawBuffer(DrawBufferMode.ColorAttachment0);
         }

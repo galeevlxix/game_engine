@@ -18,7 +18,8 @@ namespace game_2.Brain
         {
             Console.WriteLine("Загрузка шейдеров...");
 
-            m_shaders = new Dictionary<ShaderName, Shader>() {
+            m_shaders = new Dictionary<ShaderName, Shader>() 
+            {
                 {   // OBJECT SHADER
                     ShaderName.ObjectShader,
                     new Shader(
@@ -86,12 +87,13 @@ namespace game_2.Brain
             SetValue(ShaderName.AssimpShader, "gMaterial.DiffuseMap", 0);
             SetValue(ShaderName.AssimpShader, "gMaterial.NormalMap", 1);
             SetValue(ShaderName.AssimpShader, "gMaterial.SpecularMap", 2);
-            SetValue(ShaderName.AssimpShader, "gCubeShadowMap", 3);
 
             for (int i = 0; i < LightningManager.SpotlightsCount; i++)
             {
-                SetValue(ShaderName.AssimpShader, "gSpotLights[" + i + "].gShadowMap", 4 + i);
+                SetValue(ShaderName.AssimpShader, "gSpotLights[" + i + "].gShadowMap", 3 + i);
             }
+
+            SetValue(ShaderName.AssimpShader, "gCubeShadowMap", 3 + LightningManager.SpotlightsCount);
         }
 
         public static void Dispose()

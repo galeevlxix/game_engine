@@ -241,11 +241,13 @@ namespace game_2.Brain
                     {
                         obj.Draw(shadowCubeMapShader, viewMatrixFromLight, projMatrixFromLight);
                     }
+                    GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
                 }
-
-                GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
             }
+            pointl_shadow_exist = true;
         }
+
+        static bool pointl_shadow_exist = false;
 
         public static void DrawScene()
         {
@@ -254,13 +256,15 @@ namespace game_2.Brain
 
             normalShader.Use();
 
+
             for (int i = 0; i < LightningManager.SpotlightsCount; i++)
             {
-                LightningManager.spotlights[i].shadowPiece.ShadowMap.BindForReading(TextureUnit.Texture4 + i);
+                LightningManager.spotlights[i].shadowPiece.ShadowMap.BindForReading(TextureUnit.Texture3 + i);
             }
 
-            LightningManager.pointLights[0].shadowCubeMap.BindForReading(TextureUnit.Texture3);
-
+            if (pointl_shadow_exist) 
+                LightningManager.pointLights[0].shadowCubeMap.BindForReading(TextureUnit.Texture3 + LightningManager.SpotlightsCount);
+            
             int sculpt_object_index = 0;
 
             foreach (string obj_name in obj_list.Keys)
@@ -294,6 +298,7 @@ namespace game_2.Brain
                     sculpt_object_index++;
                     continue;
                 }
+
                 // выход из режима взаимодействия: установить начальные свойства и разорвать связь с выбранным объектом
                 else if (obj_list[obj_name].isSculpture && sculpt_object_index == picked_object_index && !pick_mode)
                 {

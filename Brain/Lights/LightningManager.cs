@@ -35,6 +35,8 @@ namespace game_2.Brain.Lights
 
             counter += deltaTime;
             spotlights[0].Direction = new vector3f(math3d.sin(counter), math3d.cos(counter), 0);
+
+            //pointLights[0].SetPosition(new vector3f(pointLights[0].Position.x - 2 * deltaTime, 0, 0));
                  
             UpdateLightsConfiguration();
         }
@@ -71,15 +73,7 @@ namespace game_2.Brain.Lights
             pointLights[0].Attenuation.Linear = 0.09f;
             pointLights[0].Attenuation.Constant = 1;
             pointLights[0].SetColor(new vector3f(1, 1, 1));
-            pointLights[0].SetIntensity(2);
-
-/*            pointLights[1] = new PointLight();
-            pointLights[1].SetPosition(5, 2, 0);
-            pointLights[1].Attenuation.Exp = 0.032f;
-            pointLights[1].Attenuation.Linear = 0.09f;
-            pointLights[1].Attenuation.Constant = 1;
-            pointLights[1].SetColor(0, 1, 1);
-            pointLights[1].SetIntensity(2);*/
+            pointLights[0].SetIntensity(3);
 
             lightConfig.SetPointLights(pointLights);
         }
@@ -87,9 +81,8 @@ namespace game_2.Brain.Lights
         private static void ConfigureSpotlights()
         {
             spotlights[0] = new Spotlight();
-            //spotlights[0].PointLight.SetPosition(35, -7, 3);
             spotlights[0].PointLight.SetPosition(30, -4, 0);
-            spotlights[0].PointLight.SetIntensity(0);
+            spotlights[0].PointLight.SetIntensity(3);
             spotlights[0].PointLight.SetColor(1, 1, 1);
             spotlights[0].PointLight.Attenuation.Constant = 1;
             spotlights[0].PointLight.Attenuation.Linear = 0.09f;
@@ -100,7 +93,7 @@ namespace game_2.Brain.Lights
 
             spotlights[1] = new Spotlight();
             spotlights[1].PointLight.SetPosition(44.3f, -3.7f, -2.7f);
-            spotlights[1].PointLight.SetIntensity(0);
+            spotlights[1].PointLight.SetIntensity(3);
             spotlights[1].PointLight.SetColor(1, 0.5f, 0.5f);
             spotlights[1].PointLight.Attenuation.Constant = 1;
             spotlights[1].PointLight.Attenuation.Linear = 0.09f;
@@ -116,7 +109,6 @@ namespace game_2.Brain.Lights
         private static void CreateLamps()
         {
             pointLights[0].SetLampScale(0.5f);
-            //pointLights[1].SetLampScale(0.5f);
 
             spotlights[0].PointLight.SetLampScale(0.2f);
             spotlights[1].PointLight.SetLampScale(0.2f);
@@ -128,7 +120,6 @@ namespace game_2.Brain.Lights
             spotlights[0].PointLight.Lamp.Draw();
             spotlights[1].PointLight.Lamp.Draw();
             pointLights[0].Lamp.Draw();
-            //pointLights[1].Lamp.Draw();
         }
 
         public static int PointlightsCount { get => pointLights.Length; }
