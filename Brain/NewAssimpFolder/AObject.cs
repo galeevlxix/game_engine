@@ -44,7 +44,9 @@ namespace game_2.Brain.NewAssimpFolder
                     _modelFilePath,
                     PostProcessSteps.Triangulate |
                     PostProcessSteps.GenerateSmoothNormals |
-                    PostProcessSteps.CalculateTangentSpace);
+                    PostProcessSteps.CalculateTangentSpace |
+                    PostProcessSteps.JoinIdenticalVertices
+                    );
             }
 
             ProcessNodes(_scene.RootNode);

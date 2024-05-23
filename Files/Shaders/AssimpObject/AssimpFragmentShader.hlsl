@@ -68,6 +68,8 @@ uniform int gNumSpotLights;
 
 uniform vec3 gCameraPos;
 
+uniform int TurnOnShadows;
+
 uniform Material gMaterial;
 
 vec4 CalcLightInternal(BaseLight Light, vec3 LightDirection, vec3 Normal);
@@ -190,7 +192,16 @@ vec4 CalcSpotLight(SpotLight sLight, vec3 Normal)
     float SpotFactor = dot(LightToPixel, sLight.Direction);
     if (SpotFactor > sLight.Cutoff1)
     {
-        float shadow = CalcShadowFactor(Position0 * sLight.LightWVP, sLight.gShadowMap);
+        float shadow;
+        if (TurnOnShadows == 1)
+        {
+            shadow = CalcShadowFactor(Position0 * sLight.LightWVP, sLight.gShadowMap);
+        }
+        else
+        {
+            shadow = 1;
+        }
+        
         vec4 Color = shadow * CalcPointLight(sLight.Base, Normal);
         return Color * (1.0 - (1.0 - SpotFactor) * 1.0 / (1.0 - sLight.Cutoff1));
     }

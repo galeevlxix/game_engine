@@ -201,7 +201,8 @@ namespace game_2.Brain
                 if ((speedX - velocity * deltaTime) * (speedX - velocity * deltaTime) + speedY * speedY + speedZ * speedZ <= max_speed * max_speed)
                     speedX -= velocity * deltaTime;
             }
-            /*if (key.IsKeyDown(Keys.Space))
+            //убрать
+            if (key.IsKeyDown(Keys.Space))
             {
                 if (speedX * speedX + (speedY + velocity * deltaTime) * (speedY + velocity * deltaTime) + speedZ * speedZ <= max_speed * max_speed)
                     speedY += velocity * deltaTime;
@@ -210,7 +211,7 @@ namespace game_2.Brain
             {
                 if (speedX * speedX + (speedY - velocity * deltaTime) * (speedY - velocity * deltaTime) + speedZ * speedZ <= max_speed * max_speed)
                     speedY -= velocity * deltaTime;
-            }*/
+            }
         }
 
         public static void OnMouse(float DeltaX, float DeltaY)
@@ -260,17 +261,14 @@ namespace game_2.Brain
         {
             vector3f res = left;
 
-            res.y = player_height;
+            //res.y = player_height;
+            res.y = left.y + right.y;
 
-            if (left.x + right.x < max_point.x && left.x + right.x > min_point.x)
-            {
-                res.x = left.x + right.x;
-            }
+            //if (left.x + right.x < max_point.x && left.x + right.x > min_point.x)
+            res.x = left.x + right.x;
 
-            if (left.z + right.z < max_point.z && left.z + right.z > min_point.z)
-            {
+            //if (left.z + right.z < max_point.z && left.z + right.z > min_point.z)
                 res.z = left.z + right.z;
-            }
 
             return res;
         }

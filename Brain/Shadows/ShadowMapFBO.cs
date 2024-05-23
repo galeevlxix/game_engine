@@ -24,7 +24,7 @@ namespace game_2.Brain.Shadows
             // Создание FBO
             m_fbo = GL.GenFramebuffer();
 
-            // Создание буфера глубены
+            // Создание буфера глубины
             m_shadowMap = GL.GenTexture();
 
             GL.BindTexture(TextureTarget.Texture2D, m_shadowMap);

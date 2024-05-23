@@ -44,13 +44,31 @@ namespace game_2.Brain
             obj_list = new Dictionary<string, AObject>();
 
             Add("museum", "Museums\\VR_Gallery\\VR_Gallery_comp.obj");
+            Add("table1", "Museums\\museum_table\\OPM0032_fin.obj");
+            Add("table2", "Museums\\museum_table\\OPM0032_fin.obj");
+            Add("table3", "Museums\\museum_table\\OPM0032_fin.obj");
+            Add("table4", "Museums\\museum_table\\OPM0032_fin.obj");
+            Add("table5", "Museums\\museum_table\\OPM0032_fin.obj");
+            Add("table6", "Museums\\museum_table\\OPM0032_fin.obj");
+
             Add("bull", "Museums\\bull\\bull5.obj");
-            Add("table", "Museums\\museum_table\\OPM0032.fbx");
+            Add("napoleon", "Museums\\st1\\HansChristianAndersen-80k_fin.obj");
 
             WindowWidth = Width;
             WindowHeight = Height;
 
             selectMap.Init(WindowWidth, WindowHeight);
+
+            foreach(Spotlight spotlight in LightningManager.spotlights)
+            {
+                spotlight.wvpMatrixFromLight = new Dictionary<string, Matrix4>();
+                
+                foreach (string obj_name in obj_list.Keys)
+                {
+                    spotlight.wvpMatrixFromLight.Add(obj_name, Matrix4.Identity);
+                }
+            }
+            
 
             SetProperties();
         }
@@ -64,11 +82,46 @@ namespace game_2.Brain
                 SetScale("museum", 0.01f);
             }
 
-            if (Exists("table"))
+            if (Exists("table1"))
             {
-                SetAngle("table", 90, 0, 90);
-                SetPosition("table", 43, -8.8f, 0);
-                SetScale("table", 4);
+                SetAngle("table1", 0, -90, 0);
+                SetPosition("table1", 43, -7.15f, 0);
+                SetScale("table1", 0.21f);
+            }
+
+            if (Exists("table2"))
+            {
+                SetAngle("table2", 0, 0, 0);
+                SetPosition("table2", 27.5f, -7.15f, -5.5f);
+                SetScale("table2", 0.21f);
+            }
+
+            if (Exists("table3"))
+            {
+                SetAngle("table3", 0, 180, 0);
+                SetPosition("table3", 27.5f, -7.15f, 5.5f);
+                SetScale("table3", 0.21f);
+            }
+
+            if (Exists("table4"))
+            {
+                SetAngle("table4", 0, 180, 0);
+                SetPosition("table4", 12.5f, -7.15f, 5.5f);
+                SetScale("table4", 0.21f);
+            }
+
+            if (Exists("table5"))
+            {
+                SetAngle("table5", 0, 0, 0);
+                SetPosition("table5", 12.5f, -7.15f, -5.5f);
+                SetScale("table5", 0.21f);
+            }
+
+            if (Exists("table6"))
+            {
+                SetAngle("table6", 0, 90, 0);
+                SetPosition("table6", -3, -7.15f, 0);
+                SetScale("table6", 0.21f);
             }
 
             if (Exists("bull"))
@@ -76,13 +129,27 @@ namespace game_2.Brain
                 SculptureAngles.Add(new vector3f(0, 180, 0));
                 SetAngle("bull", SculptureAngles[SculptureAngles.Count - 1]);
 
-                SculpturePositions.Add(new vector3f(42.85f, -4.53f, 0f));
+                SculpturePositions.Add(new vector3f(42.85f, -4.51f, 0f));
                 SetPosition("bull", SculpturePositions[SculpturePositions.Count - 1]);
 
                 SculptureScales.Add(0.1f);
                 SetScale("bull", SculptureScales[SculptureScales.Count - 1]);
 
                 MakeSculpture("bull");
+            }
+
+            if (Exists("napoleon"))
+            {
+                SculptureAngles.Add(new vector3f(90, 0, 11));
+                SetAngle("napoleon", SculptureAngles[SculptureAngles.Count - 1]);
+
+                SculpturePositions.Add(new vector3f(12.3f, -3.9f, -5.5f));
+                SetPosition("napoleon", SculpturePositions[SculpturePositions.Count - 1]);
+
+                SculptureScales.Add(0.13f);
+                SetScale("napoleon", SculptureScales[SculptureScales.Count - 1]);
+
+                MakeSculpture("napoleon");
             }
         }
 
@@ -165,7 +232,7 @@ namespace game_2.Brain
                 picked_object_index = observed_object_index;
                 pick_mode = true;
                 ScaleOfPickedObject = 0.01f;
-                AngularX = 180;
+                AngularX = 0;
                 AngularY = 0;
             }
             else if (mouse_shooter == 1 && pick_mode)
@@ -187,7 +254,7 @@ namespace game_2.Brain
                 int shadowMapSize = spotlight.ShadowMapSpotlight.Size;
 
                 // CREATE MATRICES
-                Matrix4 projMatrixFromLight = matrix4f.GetInitPersProjTransform(100, shadowMapSize, shadowMapSize, 0.1f, 100).ToOpenTK();
+                Matrix4 projMatrixFromLight = matrix4f.GetInitPersProjTransform(90, shadowMapSize, shadowMapSize, 0.1f, 100).ToOpenTK();
                 vector3f pos = spotlight.PointLight.Position;
                 vector3f tar = spotlight.Direction;
                 Matrix4 viewMatrixFromLight = (matrix4f.GetInitTranslationTransform(-pos) * matrix4f.GetInitCameraTransform(-tar, vector3f.Up)).ToOpenTK();
@@ -198,13 +265,11 @@ namespace game_2.Brain
                 GL.Viewport(0, 0, shadowMapSize, shadowMapSize);
                 GL.Clear(ClearBufferMask.DepthBufferBit);
                 
-                if (spotlight.mvpMatrixFromLight.Count > 0)
-                    spotlight.mvpMatrixFromLight.Clear();
-
                 foreach (string obj_name in obj_list.Keys)
                 {
+                    Matrix4 WVPFromLight = obj_list[obj_name]._pipeline.getWorld() * viewMatrixFromLight * projMatrixFromLight;
                     obj_list[obj_name].Draw(shadowShader, viewMatrixFromLight, projMatrixFromLight);
-                    spotlight.mvpMatrixFromLight.Add(obj_name, obj_list[obj_name]._pipeline.getWorld() * viewMatrixFromLight * projMatrixFromLight);
+                    spotlight.wvpMatrixFromLight[obj_name] = WVPFromLight;
                 }
 
                 GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
@@ -233,27 +298,37 @@ namespace game_2.Brain
                 for (int i = 0; i < LightningManager.SpotlightsCount; i++)       //ОПТИМИЗИРОВАТЬ
                 {
                     if (shadows_exist)
-                        normalShader.setValue("gSpotLights[" + i + "].LightWVP", LightningManager.spotlights[i].mvpMatrixFromLight[obj_name]);
+                        normalShader.setValue("gSpotLights[" + i + "].LightWVP", LightningManager.spotlights[i].wvpMatrixFromLight[obj_name]);
                 }
 
                 // отрисовка объектов:
                 // включение режима взаимодействия: установить специальные свойства и свет
                 if (obj_list[obj_name].isSculpture && sculpt_object_index == picked_object_index && pick_mode)
                 {
-                    SetPosition(obj_name, Camera.Pos.x - Camera.Target.x / 2, Camera.Pos.y - Camera.Target.y / 2, Camera.Pos.z - Camera.Target.z / 2);
+                    SetPosition(obj_name, Camera.Pos - Camera.Target / 2);
                     SetScale(obj_name, ScaleOfPickedObject);
-                    SetAngle(obj_name, 0, AngularX, AngularY);
 
-                    LightningManager.lightConfig.SetDirectionalLightIntensity(ObservedObjectBaseLightIntensity * 2);
+                    if (sculpt_object_index == 1)
+                    {
+                        SetAngle(obj_name, SculptureAngles[sculpt_object_index].x, SculptureAngles[sculpt_object_index].y, SculptureAngles[sculpt_object_index].z + AngularX);
+                    }
+                    else
+                    {
+                        SetAngle(obj_name, SculptureAngles[sculpt_object_index].x, SculptureAngles[sculpt_object_index].y + AngularX, SculptureAngles[sculpt_object_index].z);
+                    }
+
+                    /*LightningManager.lightConfig.SetDirectionalLightIntensity(ObservedObjectBaseLightIntensity * 2);
                     vector3f dir = -Camera.Target;
                     dir.y -= 0.5f;
                     dir.Normalize();
                     LightningManager.lightConfig.SetDirectionalLightDirection(dir);
-                    LightningManager.lightConfig.SetBaseLightIntensity(ObservedObjectBaseLightIntensity / 2);
+                    LightningManager.lightConfig.SetBaseLightIntensity(ObservedObjectBaseLightIntensity / 2);*/
+                    CentralizedShaders.SetValue(ShaderName.AssimpShader, "TurnOnShadows", 0);
                     obj_list[obj_name].Draw(normalShader);
-                    LightningManager.lightConfig.SetDirectionalLightIntensity(LightningManager.directionalLight.BaseLight.Intensity);
+                    CentralizedShaders.SetValue(ShaderName.AssimpShader, "TurnOnShadows", 1);
+                    /*LightningManager.lightConfig.SetDirectionalLightIntensity(LightningManager.directionalLight.BaseLight.Intensity);
                     LightningManager.lightConfig.SetDirectionalLightDirection(LightningManager.directionalLight.Direction);
-                    LightningManager.lightConfig.SetBaseLightIntensity(LightningManager.baseLight.Intensity);
+                    LightningManager.lightConfig.SetBaseLightIntensity(LightningManager.baseLight.Intensity);*/
 
                     sculpt_object_index++;
                     continue;
@@ -276,6 +351,10 @@ namespace game_2.Brain
 
                     sculpt_object_index++;
                     continue;
+                }
+                else if (obj_list[obj_name].isSculpture)
+                {
+                    sculpt_object_index++;
                 }
 
                 obj_list[obj_name].Draw(normalShader);

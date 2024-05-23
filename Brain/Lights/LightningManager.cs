@@ -55,7 +55,7 @@ namespace game_2.Brain.Lights
         private static void ConfigureDirectionalLight()
         {
             directionalLight.BaseLight.Color = new vector3f(1, 1, 1);
-            directionalLight.BaseLight.Intensity = 0f;
+            directionalLight.BaseLight.Intensity = 0.5f;
             directionalLight.Direction = new vector3f(1, -1, 1);
 
             lightConfig.SetDirectionalLight(directionalLight);

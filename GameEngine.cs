@@ -64,11 +64,12 @@ namespace game_2
             
             aim = new Aim();
 
+            LightningManager.Init();
+
+            CentralizedShaders.SetValue(ShaderName.AssimpShader, "TurnOnShadows", 1);
             ObjectArray.Init(WindowWidth, WindowHeight);
 
             skybox = new Skybox();
-
-            LightningManager.Init();
             
             Console.WriteLine("Успешное завершение\n");
             isLoaded = true;
@@ -91,6 +92,11 @@ namespace game_2
             {
                 InputCallbacksCamera(deltaTime);
                 Camera.OnRender(deltaTime);
+               
+            }
+            else
+            {
+                
             }
 
             // не нарушать последовательность !!!

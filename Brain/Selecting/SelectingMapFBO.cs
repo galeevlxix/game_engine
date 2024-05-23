@@ -4,7 +4,12 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using game_2.Brain.Lights.LightStructures;
+using game_2.Brain.Lights;
+using game_2.MathFolder;
 using OpenTK.Graphics.OpenGL4;
+using OpenTK.Mathematics;
+using game_2.Brain.Shadows;
 
 namespace game_2.Brain.Selecting
 {
@@ -20,7 +25,7 @@ namespace game_2.Brain.Selecting
             m_selectMap = 0;
             m_depthMap = 0;
         }
-        
+
         public void Init(int WindowWidth, int WindowHeight)
         {
             // Создание FBO
@@ -29,58 +34,21 @@ namespace game_2.Brain.Selecting
 
             // Создание объекта текстуры для буфера с информацией о примитиве
             m_selectMap = GL.GenTexture();
-
             GL.BindTexture(TextureTarget.Texture2D, m_selectMap);
-
-            GL.TexImage2D(
-                TextureTarget.Texture2D,
-                0,
-                PixelInternalFormat.Rgb32ui,
-                WindowWidth,
-                WindowHeight,
-                0,
-                PixelFormat.RgbInteger,
-                PixelType.UnsignedInt,
-                IntPtr.Zero);
-
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgb32ui, WindowWidth, WindowHeight, 0, PixelFormat.RgbInteger, PixelType.UnsignedInt, IntPtr.Zero);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
-
-            GL.FramebufferTexture2D(
-                FramebufferTarget.DrawFramebuffer, 
-                FramebufferAttachment.ColorAttachment0, 
-                TextureTarget.Texture2D, 
-                m_selectMap, 
-                0);
+            GL.FramebufferTexture2D(FramebufferTarget.DrawFramebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, m_selectMap, 0);
 
             // Создание объекта текстуры для буфера глубины
             m_depthMap = GL.GenTexture();
-
             GL.BindTexture(TextureTarget.Texture2D, m_depthMap);
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.DepthComponent, WindowWidth, WindowHeight, 0, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero);
+            GL.FramebufferTexture2D(FramebufferTarget.DrawFramebuffer, FramebufferAttachment.DepthAttachment, TextureTarget.Texture2D, m_depthMap, 0);
 
-            GL.TexImage2D(
-                TextureTarget.Texture2D,
-                0,
-                PixelInternalFormat.DepthComponent,
-                WindowWidth,
-                WindowHeight,
-                0,
-                PixelFormat.DepthComponent,
-                PixelType.Float,
-                IntPtr.Zero);
-
-            GL.FramebufferTexture2D(
-                FramebufferTarget.DrawFramebuffer,
-                FramebufferAttachment.DepthAttachment,
-                TextureTarget.Texture2D,
-                m_depthMap,
-                0);
-
+            // Проверка успеха инициализации и развязка от текстуры и буфера глубины
             var status = GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer);
-            if (status != FramebufferErrorCode.FramebufferComplete)
-            {
-                Console.WriteLine("ShadowMapFBO error: " + status.ToString());
-            }
+            if (status != FramebufferErrorCode.FramebufferComplete) Console.WriteLine("ShadowMapFBO error: " + status.ToString());
 
             GL.BindTexture(TextureTarget.Texture2D, 0);
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);

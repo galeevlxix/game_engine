@@ -12,7 +12,7 @@ namespace game_2.Brain.Lights.LightStructures
         public PointLight PointLight;
 
         public ShadowMapFBO ShadowMapSpotlight;
-        public Dictionary<string, Matrix4> mvpMatrixFromLight;
+        public Dictionary<string, Matrix4> wvpMatrixFromLight;
 
         public Spotlight()
         {
@@ -22,7 +22,7 @@ namespace game_2.Brain.Lights.LightStructures
             PointLight = new PointLight();
 
             ShadowMapSpotlight = new ShadowMapFBO();
-            mvpMatrixFromLight = new Dictionary<string, Matrix4>();
+            wvpMatrixFromLight = new Dictionary<string, Matrix4>();
         }
     }
 

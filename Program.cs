@@ -12,6 +12,8 @@ namespace game_2
             GameWindowSettings settings = GameWindowSettings.Default;
             NativeWindowSettings windowSettings = NativeWindowSettings.Default;
 
+            //GoAllProcedures("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\Museums\\st1\\HansChristianAndersen-80k");
+            
             windowSettings.WindowState = OpenTK.Windowing.Common.WindowState.Normal;
             windowSettings.Size = new OpenTK.Mathematics.Vector2i(1920, 1080);
 
@@ -22,30 +24,73 @@ namespace game_2
             engine.Run();
         }
 
+        private static void GoAllProcedures(string filename)
+        {
+            /*
+            addNormalsToObjFile(
+                filename + ".obj",
+                filename + "_norm.obj");
+
+            Console.WriteLine("+Normals");
+            
+            CompressObjFile(
+                filename + "_norm.obj",
+                filename + "_comp.obj");
+
+            Console.WriteLine("+Compressed");
+            */
+
+            NormalizeObjectSizeOnX(
+                filename + ".obj",
+                filename + "_fin.obj");
+
+            Console.WriteLine("+Normalized");
+        }
+
         //функция для создания нового файла obj с нормалями из старого файла obj без нормалей. UPD: Больше не используется.
         private static void addNormalsToObjFile(string oldFilePath, string newFilePath)
         {
             TextReader reader = new StreamReader(oldFilePath);
             string? line;
 
-            string faceSector = "";
+            string tempFilePath1 = Path.GetDirectoryName(oldFilePath) + "\\tempFile1.obj";
+            string tempFilePath2 = Path.GetDirectoryName(oldFilePath) + "\\tempFile2.obj";
+
+            StreamWriter faceSectorFile = new StreamWriter(tempFilePath1);
+            StreamWriter normalSectorFile = new StreamWriter(tempFilePath2);
+
             string normalSector = "";
 
             List<List<float>> vertCords = new List<List<float>>();
             int normalCounter = 0;
 
+            float lines_count = File.ReadAllLines(oldFilePath).Length;
+
             File.Delete(newFilePath);
             using (StreamWriter sw = new StreamWriter(newFilePath))
             {
+                float current_line = 1;
+                int persent = 0;
                 while ((line = reader.ReadLine()) != null)
                 {
-                    string[] parts = line.Split(' ');
+                    int current_persent = (int)(current_line / lines_count * 100);
+                    if (current_persent > persent)
+                    {
+                        Console.Clear();
+                        persent = (int)(current_line / lines_count * 100);
+                        Console.WriteLine("Чтение файла: " + persent + "%");
+                    }
+                    current_line++;
 
+                    line = line.Trim();
+                    line = line.Replace("  ", " ");
+                    string[] parts = line.Split(' ');
+                    
                     switch (parts[0])
                     {
                         case "g":       //сохранить в faceSector
                         case "usemtl":
-                            faceSector += line + "\n";
+                            faceSectorFile.WriteLine(line);
                             break;
                         case "v":       //сохранить в массиве и положить в файл
                             vertCords.Add(new List<float> {
@@ -79,7 +124,8 @@ namespace game_2
                                 }
                             }
 
-                            normalSector += "vn " + vNormal.x.ToString("0.000", CultureInfo.InvariantCulture) + " " + vNormal.y.ToString("0.000", CultureInfo.InvariantCulture) + " " + vNormal.z.ToString("0.000", CultureInfo.InvariantCulture) + "\n";
+                            normalSector = "vn " + vNormal.x.ToString("0.000", CultureInfo.InvariantCulture) + " " + vNormal.y.ToString("0.000", CultureInfo.InvariantCulture) + " " + vNormal.z.ToString("0.000", CultureInfo.InvariantCulture);
+                            normalSectorFile.WriteLine(normalSector);
 
                             string newFaceLine = "f ";
                             for (int i = 1; i < parts.Length; i++)
@@ -87,7 +133,7 @@ namespace game_2
                                 newFaceLine += parts[i] + "/" + normalCounter + " ";
                             }
 
-                            faceSector += newFaceLine + "\n";
+                            faceSectorFile.WriteLine(newFaceLine);
 
                             break;
                         default:        //vt, mtllib, # просто положить в файл
@@ -96,8 +142,24 @@ namespace game_2
                     }
                 }
 
-                sw.WriteLine(normalSector);
-                sw.WriteLine(faceSector);
+                faceSectorFile.Close();
+                normalSectorFile.Close();
+
+                StreamReader normalSectorFileReader = new StreamReader(tempFilePath2);
+                StreamReader faceSectorFileReader = new StreamReader(tempFilePath1);
+
+                while ((line = normalSectorFileReader.ReadLine()) != null)
+                {
+                    sw.WriteLine(line);
+                }
+                normalSectorFileReader.Close();
+
+                while ((line = faceSectorFileReader.ReadLine()) != null)
+                {
+                    sw.WriteLine(line);
+                }
+                faceSectorFileReader.Close();
+
                 sw.Close();
                 reader.Close();
             }            
@@ -107,9 +169,10 @@ namespace game_2
         private static void CompressObjFile(string oldFilePath, string newFilePath)
         {            
             string? line;
-
-            string faceSector = "";
+            string tempFilePath = Path.GetDirectoryName(oldFilePath) + "\\tempFile.obj";
+            StreamWriter faceSectorFile = new StreamWriter(tempFilePath);
             string verticesSector = "";
+
 
             List<string> old_vertices = new List<string>();
             List<string> old_text_cords = new List<string>();
@@ -117,7 +180,7 @@ namespace game_2
 
             float lines_count = File.ReadAllLines(oldFilePath).Length;
 
-            using (TextReader reader = new StreamReader(oldFilePath))
+            using (StreamReader reader = new StreamReader(oldFilePath))
             {
                 bool exit = false;
                 float current_line = 1;
@@ -190,7 +253,7 @@ namespace game_2
                 }
             }
 
-            using (TextReader reader = new StreamReader(oldFilePath))
+            using (StreamReader reader = new StreamReader(oldFilePath))
             {
                 float current_line = 1;
                 int persent = 0;
@@ -228,13 +291,13 @@ namespace game_2
 
                                 newline += " " + v_ind + "/" + t_ind + "/" + n_ind; 
                             }
-                            faceSector += newline + "\n";
+                            faceSectorFile.WriteLine(newline);
                             break;
 
                         case "g":       //сохранить в faceSector
                         case "s":
                         case "usemtl":
-                            faceSector += line + "\n";
+                            faceSectorFile.WriteLine(line);
                             break;
                         default:
                             verticesSector += line + "\n";
@@ -243,6 +306,8 @@ namespace game_2
                 }
             }
 
+            faceSectorFile.Close();
+            StreamReader faceSectorFileReader = new StreamReader(tempFilePath);
             File.Delete(newFilePath);
 
             Console.Clear();
@@ -267,22 +332,24 @@ namespace game_2
                     sw.WriteLine(n_line);
                 }
 
-                sw.WriteLine(faceSector);
+                while((line = faceSectorFileReader.ReadLine()) != null)
+                {
+                    sw.WriteLine(line);
+                }
+                faceSectorFileReader.Close();
 
                 sw.Close();
             }
+
+            File.Delete(tempFilePath);
         }
 
         //функция для создания нового файла obj со смещенным центром в точку 0, 0, 0
         public static void NormalizeObjectCenter(string oldFilePath, string newFilePath, out vector3f newmax)
         {
-            //List<vector3f> vertices = new List<vector3f>();
-
             vector3f max = new vector3f(-1000, -1000, -1000);
             vector3f min = new vector3f(1000, 1000, 1000);
-
             string? line;
-
             using (TextReader reader = new StreamReader(oldFilePath))
             {
                 while ((line = reader.ReadLine()) != null)
@@ -293,27 +360,19 @@ namespace game_2
 
                     if (parts[0] == "v")
                     {
-                        vector3f current = new vector3f(
-                                float.Parse(parts[1], CultureInfo.InvariantCulture),
-                                float.Parse(parts[2], CultureInfo.InvariantCulture),
-                                float.Parse(parts[3], CultureInfo.InvariantCulture));
-
+                        vector3f current = new vector3f(float.Parse(parts[1], CultureInfo.InvariantCulture), float.Parse(parts[2], CultureInfo.InvariantCulture), float.Parse(parts[3], CultureInfo.InvariantCulture));
                         if (current.x > max.x) max.x = current.x;
                         if (current.y > max.y) max.y = current.y;
                         if (current.z > max.z) max.z = current.z;
-
                         if (current.x < min.x) min.x = current.x;
                         if (current.y < min.y) min.y = current.y;
                         if (current.z < min.z) min.z = current.z;
                     }
                 }
             }
-
             vector3f mean = (max + min) / 2;
             newmax = max - mean;
-
             File.Delete(newFilePath);
-
             using (StreamWriter sw = new StreamWriter(newFilePath))
             {
                 using (TextReader reader = new StreamReader(oldFilePath))
@@ -327,18 +386,9 @@ namespace game_2
                         switch(parts[0])
                         {
                             case "v":
-                                vector3f output_vector = new vector3f(
-                                    float.Parse(parts[1], CultureInfo.InvariantCulture),
-                                    float.Parse(parts[2], CultureInfo.InvariantCulture),
-                                    float.Parse(parts[3], CultureInfo.InvariantCulture));
+                                vector3f output_vector = new vector3f(float.Parse(parts[1], CultureInfo.InvariantCulture), float.Parse(parts[2], CultureInfo.InvariantCulture), float.Parse(parts[3], CultureInfo.InvariantCulture));
                                 output_vector -= mean;
-
-                                string output_line = 
-                                    "v " + 
-                                    output_vector.x.ToString("0.000000", CultureInfo.InvariantCulture) + " " + 
-                                    output_vector.y.ToString("0.000000", CultureInfo.InvariantCulture) + " " + 
-                                    output_vector.z.ToString("0.000000", CultureInfo.InvariantCulture);
-
+                                string output_line = "v " +  output_vector.x.ToString("0.000000", CultureInfo.InvariantCulture) + " " + output_vector.y.ToString("0.000000", CultureInfo.InvariantCulture) + " " + output_vector.z.ToString("0.000000", CultureInfo.InvariantCulture);
                                 sw.WriteLine(output_line);
                                 break;
                             default:
@@ -351,20 +401,13 @@ namespace game_2
         }
 
         //функция для создания нового файла obj со смещенным центром в точку 0, 0, 0 и нормализованным размером
-        public static void NormalizeObjectSizeOnX(string oldFilePath, string newFilePath)
+        public static void NormalizeObjectSizeOnX(string oldFilePath, string newFilePath, float max_width = 10)
         {
             string tempFilePath = Path.GetDirectoryName(oldFilePath) + "\\tempFile.obj";
-
             NormalizeObjectCenter(oldFilePath, tempFilePath, out vector3f newmax);
-
-            Console.WriteLine(newmax.ToStr());
-
             File.Delete(newFilePath);
             string? line;
-
-            float maxX = 10;
-            float rel = maxX / newmax.x;
-
+            float rel = max_width / newmax.x;
             using (StreamWriter sw = new StreamWriter(newFilePath))
             {
                 using (TextReader reader = new StreamReader(tempFilePath))
@@ -374,21 +417,11 @@ namespace game_2
                         line = line.Replace("  ", " ");
                         line = line.Trim();
                         string[] parts = line.Split(' ');
-
                         switch (parts[0])
                         {
                             case "v":
-                                vector3f output_vector = new vector3f(
-                                    float.Parse(parts[1], CultureInfo.InvariantCulture),
-                                    float.Parse(parts[2], CultureInfo.InvariantCulture),
-                                    float.Parse(parts[3], CultureInfo.InvariantCulture));
-
-                                string output_line =
-                                    "v " +
-                                    (rel * output_vector.x).ToString("0.000000", CultureInfo.InvariantCulture) + " " +
-                                    (rel * output_vector.y).ToString("0.000000", CultureInfo.InvariantCulture) + " " +
-                                    (rel * output_vector.z).ToString("0.000000", CultureInfo.InvariantCulture);
-
+                                vector3f output_vector = new vector3f(float.Parse(parts[1], CultureInfo.InvariantCulture), float.Parse(parts[2], CultureInfo.InvariantCulture), float.Parse(parts[3], CultureInfo.InvariantCulture));
+                                string output_line = "v " + (rel * output_vector.x).ToString("0.000000", CultureInfo.InvariantCulture) + " " + (rel * output_vector.y).ToString("0.000000", CultureInfo.InvariantCulture) + " " + (rel * output_vector.z).ToString("0.000000", CultureInfo.InvariantCulture);
                                 sw.WriteLine(output_line);
                                 break;
                             default:
