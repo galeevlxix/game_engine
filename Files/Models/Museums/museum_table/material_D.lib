@@ -1,0 +1,8 @@
+# Aspose.3D Wavefront OBJ Exporter
+# Copyright 2004-2024 Aspose Pty Ltd.
+# File created: 05/22/2024 21:40:56
+
+newmtl OPM0032
+Ns 32
+map_Kd OPM0032_textures\\OPM0032_4K_BaseColor.png
+map_Kn OPM0032_textures\\OPM0032_4K_Normal.png

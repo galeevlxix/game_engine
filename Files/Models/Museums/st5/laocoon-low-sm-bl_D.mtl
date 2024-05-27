@@ -1,0 +1,6 @@
+
+newmtl None
+Ns 16
+map_Kd Laocoon-diffuse_low.jpeg
+map_Kn Laocoon-normals_low.jpeg
+map_Ks white_list.bmp

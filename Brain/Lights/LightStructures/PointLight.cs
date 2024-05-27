@@ -58,7 +58,7 @@ namespace game_2.Brain.Lights.LightStructures
         public void Move(vector3f pos)
         {
             Pos += pos;
-            Lamp.pipeline.SetPosition(Pos);
+            Lamp.pipeline.SetPosition(Lamp.pipeline.PositionVector + pos);
         }
 
         public void Move(float X, float Y, float Z)
@@ -66,7 +66,7 @@ namespace game_2.Brain.Lights.LightStructures
             Pos.x += X;
             Pos.y += Y;
             Pos.z += Z;
-            Lamp.pipeline.SetPosition(Pos);
+            Lamp.pipeline.SetPosition(Lamp.pipeline.PositionVector + new vector3f(X, Y, Z));
         }
 
         public vector3f Color

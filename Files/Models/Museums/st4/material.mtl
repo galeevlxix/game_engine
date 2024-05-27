@@ -1,0 +1,14 @@
+newmtl default
+Tr 0.0000
+Tf 1.0000 1.0000 1.0000
+illum 1
+Pr 0.5
+Pds 1
+Ns 32
+Pl 1
+Ka 1 1 1
+Kd 0.800000011920929 0.800000011920929 0.800000011920929
+Ke 10 10 10
+map_Kd Rodin_Thinker_diffuse.jpg
+map_Kn Rodin_Thinker_normal.png
+map_Ks Rodin_Thinker_gloss.jpg

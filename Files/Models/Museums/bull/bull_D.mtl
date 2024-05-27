@@ -1,0 +1,6 @@
+
+newmtl bull_low
+Ns 32.000000
+map_Kd textures\\bull_diffuse.png
+map_Kn textures\\bull_normals.png
+map_Ks textures\\bull_s.png

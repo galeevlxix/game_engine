@@ -202,6 +202,7 @@ namespace game_2.Brain
                     speedX -= velocity * deltaTime;
             }
             //убрать
+            /*
             if (key.IsKeyDown(Keys.Space))
             {
                 if (speedX * speedX + (speedY + velocity * deltaTime) * (speedY + velocity * deltaTime) + speedZ * speedZ <= max_speed * max_speed)
@@ -212,6 +213,7 @@ namespace game_2.Brain
                 if (speedX * speedX + (speedY - velocity * deltaTime) * (speedY - velocity * deltaTime) + speedZ * speedZ <= max_speed * max_speed)
                     speedY -= velocity * deltaTime;
             }
+            */
         }
 
         public static void OnMouse(float DeltaX, float DeltaY)
@@ -220,9 +222,9 @@ namespace game_2.Brain
             angularY += DeltaY * sensitivity;
         }
 
-        public static void OnRender(float deltaTime)
+        public static void onPositionRender(float deltaTime)
         {
-            Braking(deltaTime);
+            BrakingPosition(deltaTime);
 
             Pos = SmartMoving(Pos, Target * speedZ * deltaTime);
 
@@ -235,45 +237,52 @@ namespace game_2.Brain
             if (isCrawl && player_height >= min_point.y)
             {
                 MakeCrawl(deltaTime);
-            } 
+            }
             else if (!isCrawl && player_height <= max_point.y)
             {
                 MakeGetUp(deltaTime);
             }
 
+            CameraTranslation.InitTranslationTransform(-Pos);
+        }
+
+        public static void onAngleRender(float deltaTime)
+        {
+            BrakingAngle(deltaTime);
+
             angle_h += angularX * deltaTime;
 
-            if (angle_v + angularY * deltaTime < 90 && angle_v + angularY * deltaTime > -90)
+            if (angle_v + angularY * deltaTime < 90 && 
+                angle_v + angularY * deltaTime > -90)
                 angle_v += angularY * deltaTime;
 
             Update();
 
-            CameraTranslation.InitTranslationTransform(-Pos);
             CameraRotation.InitCameraTransform(Target, Up);
         }
 
         // границы карты музея
-        private static vector3f min_point = new vector3f(-1f, -6f, -6f);
-        private static vector3f max_point = new vector3f(40.5f, -4f, 6f);
+        public static vector3f min_point = new vector3f(-1f, -6f, -4f);
+        public static vector3f max_point = new vector3f(40.5f, -4f, 4f);
         
         // перемещение left в пределах границ 
         private static vector3f SmartMoving(vector3f left, vector3f right)
         {
             vector3f res = left;
 
-            //res.y = player_height;
-            res.y = left.y + right.y;
+            res.y = player_height;
+            //res.y = left.y + right.y;
 
-            //if (left.x + right.x < max_point.x && left.x + right.x > min_point.x)
+            if (left.x + right.x < max_point.x && left.x + right.x > min_point.x)
             res.x = left.x + right.x;
 
-            //if (left.z + right.z < max_point.z && left.z + right.z > min_point.z)
+            if (left.z + right.z < max_point.z && left.z + right.z > min_point.z)
                 res.z = left.z + right.z;
 
             return res;
         }
 
-        private static float player_height = -4;
+        public static float player_height = -4;
 
         public static void MakeCrawl(float deltaTime)
         {
@@ -285,59 +294,32 @@ namespace game_2.Brain
             player_height += max_normal_speed * deltaTime;
         }
 
-        private static void Braking(float deltaTime)
+        private static void BrakingAngle(float deltaTime)
+        {
+            float m_angularX = angularX * (1 - brakingMouse * deltaTime);
+            float m_angularY = angularY * (1 - brakingMouse * deltaTime);
+
+            if (m_angularX < min_speed && m_angularX > -min_speed) angularX = 0;
+            else angularX = m_angularX;
+
+            if (m_angularY < min_speed && m_angularY > -min_speed) angularY = 0;
+            else angularY = m_angularY;
+        }
+
+        private static void BrakingPosition(float deltaTime)
         {
             float m_speedX = speedX * (1 - brakingKeyBo * deltaTime);
             float m_speedY = speedY * (1 - brakingKeyBo * deltaTime);
             float m_speedZ = speedZ * (1 - brakingKeyBo * deltaTime);
 
-            float m_angularX = angularX * (1 - brakingMouse * deltaTime);
-            float m_angularY = angularY * (1 - brakingMouse * deltaTime);
+            if (m_speedX < min_speed && m_speedX > -min_speed) speedX = 0;
+            else speedX = m_speedX;
 
-            if (m_speedX < min_speed && m_speedX > -min_speed)
-            {
-                speedX = 0;
-            }
-            else
-            {
-                speedX = m_speedX;
-            }
+            if (m_speedY < min_speed && m_speedY > -min_speed) speedY = 0;
+            else speedY = m_speedY;
 
-            if (m_speedY < min_speed && m_speedY > -min_speed)
-            {
-                speedY = 0;
-            }
-            else
-            {
-                speedY = m_speedY;
-            }
-
-            if (m_speedZ < min_speed && m_speedZ > -min_speed)
-            {
-                speedZ = 0;
-            }
-            else
-            {
-                speedZ = m_speedZ;
-            }
-
-            if (m_angularX < min_speed && m_angularX > -min_speed)
-            {
-                angularX = 0;
-            }
-            else
-            {
-                angularX = m_angularX;
-            }
-
-            if (m_angularY < min_speed && m_angularY > -min_speed)
-            {
-                angularY = 0;
-            }
-            else
-            {
-                angularY = m_angularY;
-            }
+            if (m_speedZ < min_speed && m_speedZ > -min_speed) speedZ = 0;
+            else speedZ = m_speedZ;
         }
 
         private static void Update()

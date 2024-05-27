@@ -10,9 +10,9 @@ namespace game_2.Brain.Lights
         public static BaseLight baseLight;
         public static DirectionalLight directionalLight;
 
-        public static PointLight[] pointLights = new PointLight[2];
+        public static PointLight[] pointLights = new PointLight[0];
 
-        public static Spotlight[] spotlights = new Spotlight[2];
+        public static Spotlight[] spotlights = new Spotlight[12];
 
         public static void Init()
         {
@@ -47,7 +47,7 @@ namespace game_2.Brain.Lights
         private static void ConfigureBaseLight()
         {
             baseLight.Color = new vector3f(1, 1, 1);
-            baseLight.Intensity = 0f;
+            baseLight.Intensity = 0.1f;
 
             lightConfig.SetBaseLight(baseLight);
         }
@@ -55,15 +55,15 @@ namespace game_2.Brain.Lights
         private static void ConfigureDirectionalLight()
         {
             directionalLight.BaseLight.Color = new vector3f(1, 1, 1);
-            directionalLight.BaseLight.Intensity = 0.5f;
-            directionalLight.Direction = new vector3f(1, -1, 1);
+            directionalLight.BaseLight.Intensity = 0.0f;
+            directionalLight.Direction = new vector3f(0, 1, 0);
 
             lightConfig.SetDirectionalLight(directionalLight);
         }
 
         private static void ConfigurePointlights()
         {
-            pointLights[0] = new PointLight();
+            /*pointLights[0] = new PointLight();
             pointLights[0].SetPosition(10, 2, 0);
             pointLights[0].Attenuation.Exp = 0.032f;
             pointLights[0].Attenuation.Linear = 0.09f;
@@ -79,33 +79,67 @@ namespace game_2.Brain.Lights
             pointLights[1].SetColor(0, 1, 1);
             pointLights[1].SetIntensity(2);
 
-            lightConfig.SetPointLights(pointLights);
+            lightConfig.SetPointLights(pointLights);*/
         }
 
         private static void ConfigureSpotlights()
         {
-            spotlights[0] = new Spotlight();
-            //spotlights[0].PointLight.SetPosition(35, -7, 3);
-            spotlights[0].PointLight.SetPosition(30, -4, 0);
-            spotlights[0].PointLight.SetIntensity(3);
-            spotlights[0].PointLight.SetColor(1, 1, 1);
-            spotlights[0].PointLight.Attenuation.Constant = 1;
-            spotlights[0].PointLight.Attenuation.Linear = 0.09f;
-            spotlights[0].PointLight.Attenuation.Exp = 0.032f;
-            spotlights[0].Direction = new vector3f(1, 0, 0);
-            spotlights[0].Direction.Normalize();
-            spotlights[0].Cutoff1 = 0.7f;
+            vector3f MapCenter = (Camera.max_point + Camera.min_point) / 2;
 
-            spotlights[1] = new Spotlight();
-            spotlights[1].PointLight.SetPosition(44.3f, -3.7f, -2.7f);
-            spotlights[1].PointLight.SetIntensity(3);
-            spotlights[1].PointLight.SetColor(1, 0.5f, 0.5f);
-            spotlights[1].PointLight.Attenuation.Constant = 1;
-            spotlights[1].PointLight.Attenuation.Linear = 0.09f;
-            spotlights[1].PointLight.Attenuation.Exp = 0.032f;
-            spotlights[1].Direction = new vector3f(-1, 0, 1);
-            spotlights[1].Direction.Normalize();
-            spotlights[1].Cutoff1 = 0.90f;
+            for (int i = 0; i < spotlights.Length; i++)
+            {
+                spotlights[i] = new Spotlight();
+                spotlights[i].PointLight.SetIntensity(3); //3
+                spotlights[i].PointLight.SetColor(1, 1, 1);
+                spotlights[i].PointLight.Attenuation.Constant = 1;
+                spotlights[i].PointLight.Attenuation.Linear = 0.09f;
+                spotlights[i].PointLight.Attenuation.Exp = 0.032f;
+                spotlights[i].Cutoff1 = 0.80f;
+            }
+            
+            spotlights[0].PointLight.SetPosition(27.5f, 4.6f, 0);
+            spotlights[0].Direction = new vector3f(1, -0.5f, 0);
+            spotlights[0].PointLight.SetIntensity(5); //5
+            
+            spotlights[1].PointLight.SetPosition(12.5f, 4.6f, 0f);
+            spotlights[1].Direction = new vector3f(-1, -0.5f, 0);
+            spotlights[1].PointLight.SetIntensity(5); //5
+
+            spotlights[2].PointLight.SetPosition(27.5f, 4.5f, 1);
+            spotlights[2].Direction = new vector3f(0, -1, 0.5f);
+
+            spotlights[3].PointLight.SetPosition(27.5f, 4.5f, -1f);
+            spotlights[3].Direction = new vector3f(0, -1, -0.5f);
+
+            spotlights[4].PointLight.SetPosition(12.5f, 4.5f, 1);
+            spotlights[4].Direction = new vector3f(0, -1, 0.5f);
+
+            spotlights[5].PointLight.SetPosition(12.5f, 4.5f, -1f);
+            spotlights[5].Direction = new vector3f(0, -1, -0.5f);
+
+            spotlights[6].PointLight.SetPosition(20, 4.5f, 1);
+            spotlights[6].Direction = new vector3f(0, -1, 0.5f);
+
+            spotlights[7].PointLight.SetPosition(20, 4.5f, -1f);
+            spotlights[7].Direction = new vector3f(0, -1, -0.5f);
+
+            spotlights[8].PointLight.SetPosition(35, 4.5f, 1);
+            spotlights[8].Direction = new vector3f(0, -1, 0.5f);
+
+            spotlights[9].PointLight.SetPosition(35, 4.5f, -1f);
+            spotlights[9].Direction = new vector3f(0, -1, -0.5f);
+
+            spotlights[10].PointLight.SetPosition(5, 4.5f, 1);
+            spotlights[10].Direction = new vector3f(0, -1, 0.5f);
+
+            spotlights[11].PointLight.SetPosition(5, 4.5f, -1f);
+            spotlights[11].Direction = new vector3f(0, -1, -0.5f);
+            
+
+            for (int i = 0; i < spotlights.Length; i++)
+            {
+                spotlights[i].Direction.Normalize();
+            }
 
             lightConfig.SetSpotLights(spotlights);
         }
@@ -113,20 +147,54 @@ namespace game_2.Brain.Lights
         //create & draw light objects
         private static void CreateLamps()
         {
-            pointLights[0].SetLampScale(0.5f);
-            pointLights[1].SetLampScale(0.5f);
+            //pointLights[0].SetLampScale(0.5f);
+            //pointLights[1].SetLampScale(0.5f);
 
-            spotlights[0].PointLight.SetLampScale(0.2f);
-            spotlights[1].PointLight.SetLampScale(0.2f);
+            spotlights[0].PointLight.SetLampScale(0.3f);
+            
+            spotlights[1].PointLight.SetLampScale(0.3f);
+
+            spotlights[2].PointLight.SetLampScale(0.2f);
+            spotlights[3].PointLight.SetLampScale(0.2f);
+
+            spotlights[4].PointLight.SetLampScale(0.2f);
+            spotlights[5].PointLight.SetLampScale(0.2f);
+
+            spotlights[6].PointLight.SetLampScale(0.2f);
+            spotlights[7].PointLight.SetLampScale(0.2f);
+
+            spotlights[8].PointLight.SetLampScale(0.2f);
+            spotlights[9].PointLight.SetLampScale(0.2f);
+
+            spotlights[10].PointLight.SetLampScale(0.2f);
+            spotlights[11].PointLight.SetLampScale(0.2f);
+            
         }
 
         private static void DrawLamps(float deltaTime)
         {
             CentralizedShaders.UseShader(ShaderName.MonochromeShader);
             spotlights[0].PointLight.Lamp.Draw();
+            
             spotlights[1].PointLight.Lamp.Draw();
-            pointLights[0].Lamp.Draw();
-            pointLights[1].Lamp.Draw();
+
+            spotlights[2].PointLight.Lamp.Draw();
+            spotlights[3].PointLight.Lamp.Draw();
+
+            spotlights[4].PointLight.Lamp.Draw();
+            spotlights[5].PointLight.Lamp.Draw();
+
+            spotlights[6].PointLight.Lamp.Draw();
+            spotlights[7].PointLight.Lamp.Draw();
+
+            spotlights[8].PointLight.Lamp.Draw();
+            spotlights[9].PointLight.Lamp.Draw();
+
+            spotlights[10].PointLight.Lamp.Draw();
+            spotlights[11].PointLight.Lamp.Draw();
+            
+            //pointLights[0].Lamp.Draw();
+            //pointLights[1].Lamp.Draw();
         }
 
         public static int PointlightsCount { get => pointLights.Length; }

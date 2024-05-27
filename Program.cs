@@ -1,5 +1,6 @@
 ﻿using game_2.FileManagers;
 using game_2.MathFolder;
+using OpenTK.Mathematics;
 using OpenTK.Windowing.Desktop;
 using System.Globalization;
 
@@ -12,10 +13,12 @@ namespace game_2
             GameWindowSettings settings = GameWindowSettings.Default;
             NativeWindowSettings windowSettings = NativeWindowSettings.Default;
 
-            //GoAllProcedures("C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\Museums\\st1\\HansChristianAndersen-80k");
-            
+            string dir = "C:\\Users\\Lenovo\\source\\repos\\game_2\\Files\\Models\\Museums\\";
+
+            //GoAllProcedures(dir + "st3\\goat");
+
             windowSettings.WindowState = OpenTK.Windowing.Common.WindowState.Normal;
-            windowSettings.Size = new OpenTK.Mathematics.Vector2i(1920, 1080);
+            windowSettings.Size = new Vector2i(1920, 1080);
 
             windowSettings.Title = "Game";
 
@@ -32,19 +35,65 @@ namespace game_2
                 filename + "_norm.obj");
 
             Console.WriteLine("+Normals");
-            
-            CompressObjFile(
-                filename + "_norm.obj",
-                filename + "_comp.obj");
-
-            Console.WriteLine("+Compressed");
             */
 
-            NormalizeObjectSizeOnX(
+            CompressObjFile(
                 filename + ".obj",
+                filename + "_comp.obj");
+
+            Console.WriteLine("+Compressed");            
+
+            NormalizeObjectSizeOnX(
+                filename + "_comp.obj",
                 filename + "_fin.obj");
 
             Console.WriteLine("+Normalized");
+
+            RotateObject(
+                filename + "_fin.obj",
+                filename + "_rot.obj", 
+                new vector3f(0, 45, 0));
+        }
+
+        private static void MakeMTLFile(string OldPath)
+        {
+            string dir = Path.GetDirectoryName(OldPath);
+            string name = Path.GetFileNameWithoutExtension(OldPath);
+            string format = Path.GetExtension(OldPath);
+
+            string NewPath = dir + "\\" + name + "_D" + format;
+
+            using (StreamReader reader = new StreamReader(OldPath))
+            {
+                using (StreamWriter writer = new StreamWriter(NewPath))
+                {
+                    string? line;
+
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        line = line.Trim();
+                        line = line.Replace("  ", " ");
+                        string[] parts = line.Split(' ');
+
+                        switch (parts[0])
+                        {
+                            case "newmtl":
+                                writer.WriteLine();
+                                writer.WriteLine(line);
+                                break;
+                            case "Ns":
+                            case "map_Kd":
+                            case "map_Kn":
+                            case "map_Ks":
+                            case "#":
+                                writer.WriteLine(line);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+            }
         }
 
         //функция для создания нового файла obj с нормалями из старого файла obj без нормалей. UPD: Больше не используется.
@@ -76,9 +125,9 @@ namespace game_2
                     int current_persent = (int)(current_line / lines_count * 100);
                     if (current_persent > persent)
                     {
-                        Console.Clear();
+                        //Console.Clear();
                         persent = (int)(current_line / lines_count * 100);
-                        Console.WriteLine("Чтение файла: " + persent + "%");
+                        if (persent % 10 == 0) Console.WriteLine("Чтение файла: " + persent + "%");
                     }
                     current_line++;
 
@@ -192,9 +241,9 @@ namespace game_2
                     int current_persent = (int)(current_line / lines_count * 100);
                     if (current_persent > persent)
                     {
-                        Console.Clear();
+                        //Console.Clear();
                         persent = (int)(current_line / lines_count * 100);
-                        Console.WriteLine("Чтение вершин из файла: " + persent + "%");
+                        if (persent % 10 == 0) Console.WriteLine("Чтение вершин из файла: " + persent + "%");
                     }
                     current_line++;
 
@@ -224,7 +273,7 @@ namespace game_2
             Dictionary<string, int> text = new Dictionary<string, int>();
             Dictionary<string, int> norm = new Dictionary<string, int>();
 
-            Console.Clear();
+            //Console.Clear();
             Console.WriteLine("Сохранение вершин");
             int i = 1;
             foreach (string vert_line in old_vertices)
@@ -262,9 +311,9 @@ namespace game_2
                     int current_persent = (int)(current_line / lines_count * 100);
                     if (current_persent > persent)
                     {
-                        Console.Clear();
+                        //Console.Clear();
                         persent = (int)(current_line / lines_count * 100);
-                        Console.WriteLine("Чтение поверхностей из файла: " + persent + "%");
+                        if (persent % 10 == 0) Console.WriteLine("Чтение поверхностей из файла: " + persent + "%");
                     }
                     current_line++;
 
@@ -287,9 +336,13 @@ namespace game_2
 
                                 int v_ind = vert[old_vertices[int.Parse(_f[0]) - 1]];
                                 int t_ind = text[old_text_cords[int.Parse(_f[1]) - 1]];
-                                int n_ind = norm[old_normals[int.Parse(_f[2]) - 1]];
+                                int n_ind = 0;
+                                if (old_normals.Count > 0)
+                                {
+                                    n_ind = norm[old_normals[int.Parse(_f[2]) - 1]];
+                                }
 
-                                newline += " " + v_ind + "/" + t_ind + "/" + n_ind; 
+                                newline += " " + v_ind + "/" + t_ind + (old_normals.Count == 0 ? "" : "/" + n_ind); 
                             }
                             faceSectorFile.WriteLine(newline);
                             break;
@@ -310,7 +363,7 @@ namespace game_2
             StreamReader faceSectorFileReader = new StreamReader(tempFilePath);
             File.Delete(newFilePath);
 
-            Console.Clear();
+            //Console.Clear();
             Console.WriteLine("Запись в новый файл");
 
             using (StreamWriter sw = new StreamWriter(newFilePath))
@@ -433,6 +486,52 @@ namespace game_2
             }
 
             File.Delete(tempFilePath);
+        }
+
+        public static void RotateObject(string oldFilePath, string newFilePath, vector3f RotateVector) 
+        {
+            if (RotateVector == vector3f.Zero) return;
+            File.Delete(newFilePath);
+            string? line;
+            matrix4f rotateMatrix = new matrix4f();
+            rotateMatrix.Rotate(RotateVector.x, RotateVector.y, RotateVector.z);
+            Matrix4 rotateMatrixOTK = rotateMatrix.ToOpenTK();
+
+            Vector4 output_vector;
+            string output_line;
+
+            using (StreamWriter sw = new StreamWriter(newFilePath))
+            {
+                using (TextReader reader = new StreamReader(oldFilePath))
+                {
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        line = line.Replace("  ", " ");
+                        line = line.Trim();
+                        string[] parts = line.Split(' ');
+                        switch (parts[0])
+                        {
+                            case "v":
+                                output_vector = new Vector4(float.Parse(parts[1], CultureInfo.InvariantCulture), float.Parse(parts[2], CultureInfo.InvariantCulture), float.Parse(parts[3], CultureInfo.InvariantCulture), 1.0f);
+                                output_vector = output_vector * rotateMatrixOTK;
+
+                                output_line = "v " + (output_vector.X).ToString("0.000000", CultureInfo.InvariantCulture) + " " + (output_vector.Y).ToString("0.000000", CultureInfo.InvariantCulture) + " " + (output_vector.Z).ToString("0.000000", CultureInfo.InvariantCulture);
+                                sw.WriteLine(output_line);
+                                break;
+                            case "vn":
+                                output_vector = new Vector4(float.Parse(parts[1], CultureInfo.InvariantCulture), float.Parse(parts[2], CultureInfo.InvariantCulture), float.Parse(parts[3], CultureInfo.InvariantCulture), 1.0f);
+                                output_vector = output_vector * rotateMatrixOTK;
+
+                                output_line = "v " + (output_vector.X).ToString("0.000000", CultureInfo.InvariantCulture) + " " + (output_vector.Y).ToString("0.000000", CultureInfo.InvariantCulture) + " " + (output_vector.Z).ToString("0.000000", CultureInfo.InvariantCulture);
+                                sw.WriteLine(output_line);
+                                break;
+                            default:
+                                sw.WriteLine(line);
+                                break;
+                        }
+                    }
+                }
+            }
         }
     }
 }

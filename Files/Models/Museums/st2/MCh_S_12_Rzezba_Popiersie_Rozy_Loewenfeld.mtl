@@ -1,0 +1,14 @@
+newmtl defaultMat
+Tr 0.0000
+Tf 1.0000 1.0000 1.0000
+illum 1
+Pr 0.5
+Pds 1
+Ns 32
+Pl 1
+Ka 1 1 1
+Kd 0.800000011920929 0.800000011920929 0.800000011920929
+Ke 10 10 10
+map_Kd MCh_S_12_Rzezba_Popiersie_Rozy_Loewenfeld.jpg
+map_Kn MCh_S_12_Rzezba_Popiersie_Rozy_Loewenfeld_.png
+map_Ks white_list.bmp

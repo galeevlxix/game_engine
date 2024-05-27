@@ -88,16 +88,8 @@ namespace game_2
             InputCallbacks(deltaTime);
 
             // управление камерой
-            if (!ObjectArray.pick_mode)
-            {
-                InputCallbacksCamera(deltaTime);
-                Camera.OnRender(deltaTime);
-               
-            }
-            else
-            {
-                
-            }
+
+            InputCallbacksCamera(deltaTime);
 
             // не нарушать последовательность !!!
             ObjectArray.OnRender(deltaTime);
@@ -134,14 +126,25 @@ namespace game_2
 
             if (ObjectArray.pick_mode)
             {
-                ObjectArray.RotatePickedObject(MouseState.Delta.X, MouseState.Delta.Y);
+                ObjectArray.RotatePickedObject(MouseState.Delta.X / 16);
             }
         }
 
         private void InputCallbacksCamera(float Time)
         {
-            Camera.OnMouse(-MouseState.Delta.X, -MouseState.Delta.Y);
-            Camera.OnKeyboard(KeyboardState, Time);
+            if (!ObjectArray.pick_mode)
+            {
+                Camera.OnMouse(-MouseState.Delta.X, -MouseState.Delta.Y);
+                Camera.OnKeyboard(KeyboardState, Time);
+
+                Camera.onPositionRender(deltaTime);
+                Camera.onAngleRender(deltaTime);
+            }
+            else
+            {
+                Camera.OnMouse(0, -MouseState.Delta.Y / 4);
+                Camera.onAngleRender(deltaTime);
+            }
         }
 
         // Callbacks
@@ -181,7 +184,7 @@ namespace game_2
                 if (isMouseDown2)
                 {
                     isMouseDown2 = false;
-                    mPersProj.ChangeFOV(60);
+                    mPersProj.ChangeFOV(70);
                 }
             }
         }

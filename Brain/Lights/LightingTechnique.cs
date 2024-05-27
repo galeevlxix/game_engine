@@ -13,7 +13,7 @@ namespace game_2.Brain.Lights
         int _matSpecularPowerLocation;
 
         const int MAX_POINT_LIGHTS = 10;
-        const int MAX_SPOT_LIGHTS = 10;
+        const int MAX_SPOT_LIGHTS = 12;
 
         int _numPointLightsLocation;
         PointLightLocations[] _pointLightLocations = new PointLightLocations[MAX_POINT_LIGHTS];

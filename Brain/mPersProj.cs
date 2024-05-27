@@ -4,11 +4,11 @@ namespace game_2.Brain
 {
     public static class mPersProj
     {
-        private static float FOV = 60;
+        private static float FOV = 70;
         private static float width = 1920;
         private static float height = 1080;
         private static float zNear = 0.1f;
-        private static float zFar = 350;
+        private static float zFar = 370;
         public static matrix4f PersProjMatrix = new matrix4f();
 
         public static float GetFOV

@@ -15,6 +15,7 @@ namespace game_2.Brain.NewAssimpFolder
         private string _modelDirectoryPath;
 
         public bool isSculpture = false;
+        public bool isMuseum = false;
 
         public Pipeline _pipeline;
 
@@ -31,7 +32,6 @@ namespace game_2.Brain.NewAssimpFolder
             _entries = new List<AEntry>();
             _pipeline = new Pipeline();
 
-
             if (!File.Exists(_modelFilePath))
                 throw new Exception("Ошибка: не существует файл " + _modelFilePath);
             _modelDirectoryPath = Path.GetDirectoryName(_modelFilePath);
@@ -45,7 +45,8 @@ namespace game_2.Brain.NewAssimpFolder
                     PostProcessSteps.Triangulate |
                     PostProcessSteps.GenerateSmoothNormals |
                     PostProcessSteps.CalculateTangentSpace |
-                    PostProcessSteps.JoinIdenticalVertices
+                    PostProcessSteps.JoinIdenticalVertices |
+                    PostProcessSteps.SortByPrimitiveType 
                     );
             }
 

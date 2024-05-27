@@ -1,0 +1,6 @@
+
+newmtl hans_low80-tex
+Ns 32
+map_Kd hansdiff_low.jpg
+map_Kn hans_low80-tex_u1_v1_normal_low.jpg
+map_Ks white_list.bmp

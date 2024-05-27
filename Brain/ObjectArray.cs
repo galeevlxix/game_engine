@@ -33,6 +33,9 @@ namespace game_2.Brain
         private static List<float> SculptureScales = new List<float>();
 
         public static float ScaleOfPickedObject = 0.01f;
+
+        private static vector3f pickedObjectPosition = new vector3f();
+
         public static void Init(int Width, int Height)
         {
             shadowShader = CentralizedShaders.GetShader(ShaderName.ShadowShader);
@@ -50,10 +53,14 @@ namespace game_2.Brain
             Add("table4", "Museums\\museum_table\\OPM0032_fin.obj");
             Add("table5", "Museums\\museum_table\\OPM0032_fin.obj");
             Add("table6", "Museums\\museum_table\\OPM0032_fin.obj");
-
+            
             Add("bull", "Museums\\bull\\bull5.obj");
-            Add("napoleon", "Museums\\st1\\HansChristianAndersen-80k_fin.obj");
-
+            Add("hans", "Museums\\st1\\HansChristianAndersen-80k_rot.obj");
+            Add("head", "Museums\\st2\\MCh_S_12_Rzezba_Popiersie_Rozy_Loewenfeld_fin.obj");
+            Add("goat", "Museums\\st3\\goat_rot.obj");
+            Add("thinker", "Museums\\st4\\Rodin_Thinker_fin.obj");
+            Add("laocoon", "Museums\\st5\\Laocoon-and-his-sons_rot.obj");
+            
             WindowWidth = Width;
             WindowHeight = Height;
 
@@ -68,7 +75,6 @@ namespace game_2.Brain
                     spotlight.wvpMatrixFromLight.Add(obj_name, Matrix4.Identity);
                 }
             }
-            
 
             SetProperties();
         }
@@ -138,18 +144,74 @@ namespace game_2.Brain
                 MakeSculpture("bull");
             }
 
-            if (Exists("napoleon"))
+            if (Exists("hans"))
             {
-                SculptureAngles.Add(new vector3f(90, 0, 11));
-                SetAngle("napoleon", SculptureAngles[SculptureAngles.Count - 1]);
+                SculptureAngles.Add(new vector3f(0, -11, 0));
+                SetAngle("hans", SculptureAngles[SculptureAngles.Count - 1]);
 
                 SculpturePositions.Add(new vector3f(12.3f, -3.9f, -5.5f));
-                SetPosition("napoleon", SculpturePositions[SculpturePositions.Count - 1]);
+                SetPosition("hans", SculpturePositions[SculpturePositions.Count - 1]);
 
                 SculptureScales.Add(0.13f);
-                SetScale("napoleon", SculptureScales[SculptureScales.Count - 1]);
+                SetScale("hans", SculptureScales[SculptureScales.Count - 1]);
 
-                MakeSculpture("napoleon");
+                MakeSculpture("hans");
+            }
+
+            if (Exists("head"))
+            {
+                SculptureAngles.Add(new vector3f(0, 180, 0));
+                SetAngle("head", SculptureAngles[SculptureAngles.Count - 1]);
+
+                SculpturePositions.Add(new vector3f(12.3f, -3.8f, 5.5f));
+                SetPosition("head", SculpturePositions[SculpturePositions.Count - 1]);
+
+                SculptureScales.Add(0.13f);
+                SetScale("head", SculptureScales[SculptureScales.Count - 1]);
+
+                MakeSculpture("head");
+            }
+
+            if (Exists("goat"))
+            {
+                SculptureAngles.Add(new vector3f(0, 180, 0));
+                SetAngle("goat", SculptureAngles[SculptureAngles.Count - 1]);
+
+                SculpturePositions.Add(new vector3f(27.4f, -3.7f, 5.3f));
+                SetPosition("goat", SculpturePositions[SculpturePositions.Count - 1]);
+
+                SculptureScales.Add(0.08f);
+                SetScale("goat", SculptureScales[SculptureScales.Count - 1]);
+
+                MakeSculpture("goat");
+            }
+
+            if (Exists("thinker"))
+            {
+                SculptureAngles.Add(new vector3f(0, 60, 0));
+                SetAngle("thinker", SculptureAngles[SculptureAngles.Count - 1]);
+
+                SculpturePositions.Add(new vector3f(27.5f, -5.15f + 0.6f, -5.5f));
+                SetPosition("thinker", SculpturePositions[SculpturePositions.Count - 1]);
+
+                SculptureScales.Add(0.1f);
+                SetScale("thinker", SculptureScales[SculptureScales.Count - 1]);
+
+                MakeSculpture("thinker");
+            }
+
+            if (Exists("laocoon"))
+            {
+                SculptureAngles.Add(new vector3f(0, 0, 0));
+                SetAngle("laocoon", SculptureAngles[SculptureAngles.Count - 1]);
+
+                SculpturePositions.Add(new vector3f(-3, -3.15f + 0.07f, 0));
+                SetPosition("laocoon", SculpturePositions[SculpturePositions.Count - 1]);
+
+                SculptureScales.Add(0.08f);
+                SetScale("laocoon", SculptureScales[SculptureScales.Count - 1]);
+
+                MakeSculpture("laocoon");
             }
         }
 
@@ -200,10 +262,12 @@ namespace game_2.Brain
             int i = 0;
             foreach (AObject obj in obj_list.Values)
             {
-                if (!obj.isSculpture) continue;
-                selectingShader.setValue("gObjectIndex", i);
-                i++;
-                obj.Draw(selectingShader);
+                if (obj.isSculpture)
+                {
+                    selectingShader.setValue("gObjectIndex", i);
+                    i++;
+                    obj.Draw(selectingShader);
+                }
             }
 
             selectMap.Disable();
@@ -233,7 +297,8 @@ namespace game_2.Brain
                 pick_mode = true;
                 ScaleOfPickedObject = 0.01f;
                 AngularX = 0;
-                AngularY = 0;
+                pickedObjectPosition = Camera.Pos - Camera.Target / 2;
+                pickedObjectPosition.y = Camera.player_height;
             }
             else if (mouse_shooter == 1 && pick_mode)
             {
@@ -254,10 +319,11 @@ namespace game_2.Brain
                 int shadowMapSize = spotlight.ShadowMapSpotlight.Size;
 
                 // CREATE MATRICES
-                Matrix4 projMatrixFromLight = matrix4f.GetInitPersProjTransform(90, shadowMapSize, shadowMapSize, 0.1f, 100).ToOpenTK();
+                Matrix4 projMatrixFromLight = matrix4f.GetInitPersProjTransform(75, shadowMapSize, shadowMapSize, 0.1f, 100).ToOpenTK();
                 vector3f pos = spotlight.PointLight.Position;
                 vector3f tar = spotlight.Direction;
-                Matrix4 viewMatrixFromLight = (matrix4f.GetInitTranslationTransform(-pos) * matrix4f.GetInitCameraTransform(-tar, vector3f.Up)).ToOpenTK();
+                vector3f up = vector3f.Cross(tar, vector3f.Right);
+                Matrix4 viewMatrixFromLight = (matrix4f.GetInitTranslationTransform(-pos) * matrix4f.GetInitCameraTransform(-tar, -up)).ToOpenTK();
 
                 // RENDER SHADOWS 
                 spotlight.ShadowMapSpotlight.BindForWriting(); 
@@ -305,30 +371,23 @@ namespace game_2.Brain
                 // включение режима взаимодействия: установить специальные свойства и свет
                 if (obj_list[obj_name].isSculpture && sculpt_object_index == picked_object_index && pick_mode)
                 {
-                    SetPosition(obj_name, Camera.Pos - Camera.Target / 2);
+                    SetPosition(obj_name, pickedObjectPosition);
                     SetScale(obj_name, ScaleOfPickedObject);
 
-                    if (sculpt_object_index == 1)
-                    {
-                        SetAngle(obj_name, SculptureAngles[sculpt_object_index].x, SculptureAngles[sculpt_object_index].y, SculptureAngles[sculpt_object_index].z + AngularX);
-                    }
-                    else
-                    {
-                        SetAngle(obj_name, SculptureAngles[sculpt_object_index].x, SculptureAngles[sculpt_object_index].y + AngularX, SculptureAngles[sculpt_object_index].z);
-                    }
+                    SetAngle(obj_name, SculptureAngles[sculpt_object_index].x, SculptureAngles[sculpt_object_index].y + AngularX, SculptureAngles[sculpt_object_index].z);
 
-                    /*LightningManager.lightConfig.SetDirectionalLightIntensity(ObservedObjectBaseLightIntensity * 2);
+                    LightningManager.lightConfig.SetDirectionalLightIntensity(ObservedObjectBaseLightIntensity * 2);
                     vector3f dir = -Camera.Target;
                     dir.y -= 0.5f;
                     dir.Normalize();
                     LightningManager.lightConfig.SetDirectionalLightDirection(dir);
-                    LightningManager.lightConfig.SetBaseLightIntensity(ObservedObjectBaseLightIntensity / 2);*/
+                    LightningManager.lightConfig.SetBaseLightIntensity(ObservedObjectBaseLightIntensity / 2);
                     CentralizedShaders.SetValue(ShaderName.AssimpShader, "TurnOnShadows", 0);
                     obj_list[obj_name].Draw(normalShader);
                     CentralizedShaders.SetValue(ShaderName.AssimpShader, "TurnOnShadows", 1);
-                    /*LightningManager.lightConfig.SetDirectionalLightIntensity(LightningManager.directionalLight.BaseLight.Intensity);
+                    LightningManager.lightConfig.SetDirectionalLightIntensity(LightningManager.directionalLight.BaseLight.Intensity);
                     LightningManager.lightConfig.SetDirectionalLightDirection(LightningManager.directionalLight.Direction);
-                    LightningManager.lightConfig.SetBaseLightIntensity(LightningManager.baseLight.Intensity);*/
+                    LightningManager.lightConfig.SetBaseLightIntensity(LightningManager.baseLight.Intensity);
 
                     sculpt_object_index++;
                     continue;
@@ -345,7 +404,7 @@ namespace game_2.Brain
                 // упал взгляд на объект скульптуры
                 else if (obj_list[obj_name].isSculpture && sculpt_object_index == observed_object_index && !pick_mode)
                 {
-                    LightningManager.lightConfig.SetBaseLightIntensity(ObservedObjectBaseLightIntensity);
+                    LightningManager.lightConfig.SetBaseLightIntensity(LightningManager.baseLight.Intensity + ObservedObjectBaseLightIntensity);
                     obj_list[obj_name].Draw(normalShader);
                     LightningManager.lightConfig.SetBaseLightIntensity(LightningManager.baseLight.Intensity);
 
@@ -362,15 +421,12 @@ namespace game_2.Brain
         }
 
         private static float AngularX = 0;
-        private static float AngularY = 0;
 
-
-        public static void RotatePickedObject(float dX, float dY)
+        public static void RotatePickedObject(float dX)
         {
-            if (dX != 0 || dY != 0)
+            if (dX != 0)
             {
-                AngularX += dX / 8;
-                //AngularY += dY / 32;
+                AngularX += dX;
             }
         }
 
@@ -463,6 +519,11 @@ namespace game_2.Brain
         private static void MakeSculpture(string name)
         {
             obj_list[name].isSculpture = true;
+        }
+
+        private static void MakeMuseum(string name)
+        {
+            obj_list[name].isMuseum = true;
         }
 
         public static void Resize(int width, int height)

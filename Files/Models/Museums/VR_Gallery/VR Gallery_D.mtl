@@ -1,0 +1,40 @@
+# MTL file - created by a modified js OBJExporter
+
+newmtl Structure
+Ns 32
+map_Kd textures\\Structure_d.png
+map_Kn textures\\Structure_n.png
+map_Ks textures\\Structure_r.png
+
+newmtl Backwall
+Ns 32
+map_Kd textures\\Backwall_d.png
+map_Kn textures\\Backwall_n.png
+map_Ks textures\\Backwall_r.png
+
+newmtl Benches
+Ns 32
+map_Kd textures\\Benches_d.png
+map_Kn textures\\Benches_n.png
+map_Ks textures\\MetalSpecularMap.png
+
+newmtl PaintingFrame
+Ns 64
+map_Kd textures\\MetalDiffuseMap.png
+map_Ks textures\\MetalSpecularMap.png
+
+newmtl Chrome
+Ns 64
+map_Kd textures\\MetalDiffuseMap.png
+map_Ks textures\\MetalSpecularMap.png
+
+newmtl Podiums
+Ns 32
+map_Kd textures\\Podiums_d.png
+map_Kn textures\\Podiums_n.png
+map_Ks textures\\Podiums_r.png
+
+newmtl Portraits
+Ns 0
+map_Kd textures\\PortraitUVmega.png
+# map_Kd textures\\Untitled.png

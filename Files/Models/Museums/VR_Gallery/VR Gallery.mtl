@@ -6,7 +6,7 @@ Tf 1.0000 1.0000 1.0000
 illum 1
 Pr 0.5
 Pds 1
-Ns 255
+Ns 32
 Pl 1
 Ka 1 1 1
 Kd 0.800000011920929 0.800000011920929 0.800000011920929
@@ -23,7 +23,7 @@ illum 1
 Pr 0.5
 Pds 1
 Pl 1
-Ns 255
+Ns 32
 Ka 1 1 1
 Kd 0.800000011920929 0.800000011920929 0.800000011920929
 Ke 0 0 0
@@ -39,7 +39,7 @@ illum 1
 Pr 0.5
 Pds 1
 Pl 1
-Ns 255
+Ns 32
 Ka 1 1 1
 Kd 0.800000011920929 0.800000011920929 0.800000011920929
 Ke 0 0 0
@@ -54,7 +54,7 @@ Tf 1.0000 1.0000 1.0000
 illum 1
 Pds 1
 Pl 1
-Ns 255
+Ns 32
 Ka 1 1 1
 Kd 1 1 1
 Ke 0 0 0
@@ -70,7 +70,7 @@ Pr 0.5
 Pds 1
 Pl 1
 Ka 1 1 1
-Ns 255
+Ns 32
 Kd 0.800000011920929 0.800000011920929 0.800000011920929
 Ke 0 0 0
 map_Kd textures\\Podiums_d.png
@@ -85,7 +85,7 @@ illum 1
 Pr 0.2734082341194153
 Pds 1
 Pl 1
-Ns 255
+Ns 32
 Ka 1 1 1
 Kd 0.8025827407836914 0.6914951205253601 0.5834991335868835
 Ke 0 0 0
@@ -99,10 +99,10 @@ illum 1
 Pr 0.3999999761581421
 Pds 1
 Pl 1
-Ns 255
+Ns 32
 Ka 1 1 1
 Kd 0.800000011920929 0.800000011920929 0.800000011920929
 Ke 0 0 0
-map_Kd textures\\PortraitUV.png
-map_Kn textures\\PortraitNorm.png
+map_Kd textures\\PortraitUVmega.png
+# map_Kn textures\\PortraitNorm.png
 map_Ks textures\\MetalSpecularMap.png

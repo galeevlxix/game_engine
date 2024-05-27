@@ -54,8 +54,8 @@ struct SpotLight
     mat4 LightWVP;
 };
 
-const int MAX_POINT_LIGHTS = 10;
-const int MAX_SPOT_LIGHTS = 10;
+const int MAX_POINT_LIGHTS = 1;
+const int MAX_SPOT_LIGHTS = 12;
 
 uniform BaseLight gBaseLight;
 uniform DirectionalLight gDirectionalLight;
