@@ -1,4 +1,5 @@
 ﻿using game_2.Brain.ObjectFolder;
+using OpenTK.Graphics.OpenGL;
 
 namespace game_2.Brain.InfoPanelFolder
 {
@@ -55,12 +56,12 @@ namespace game_2.Brain.InfoPanelFolder
         public void PutLineAndDraw(string line)
         {
             if (line == string.Empty || line == null) return;
-
+            
             line = line.ToLower();
             _arrChar = line.ToCharArray();
 
             int line_num = 0, symbol_num = 0;
-
+            
             // активировать общую для всех символов
             SymbolArrayOfVertices.texture.Use();
 

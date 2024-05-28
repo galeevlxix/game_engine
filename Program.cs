@@ -17,7 +17,7 @@ namespace game_2
 
             //GoAllProcedures(dir + "st3\\goat");
 
-            windowSettings.WindowState = OpenTK.Windowing.Common.WindowState.Normal;
+            windowSettings.WindowState = OpenTK.Windowing.Common.WindowState.Maximized;
             windowSettings.Size = new Vector2i(1920, 1080);
 
             windowSettings.Title = "Game";

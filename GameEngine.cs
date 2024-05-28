@@ -8,6 +8,7 @@ using game_2.Brain.SkyBoxFolder;
 using game_2.Brain.AimFolder;
 using game_2.Brain.Lights;
 using game_2.Brain.Compiler;
+using game_2.Brain.PictureOnScreen;
 
 namespace game_2
 {
@@ -23,7 +24,6 @@ namespace game_2
 
         private Skybox skybox;
         private Aim aim;
-        
 
         private readonly Color4 BackGroundColor;
 
@@ -105,14 +105,12 @@ namespace game_2
 
             ObjectArray.DrawScene();
 
-            skybox.Draw();
-
             GL.CullFace(CullFaceMode.Front);
-
+            ObjectArray.DrawInfoAndPicture();
             if (!ObjectArray.pick_mode && !isMouseDown2) aim.Draw();
-
             GL.CullFace(CullFaceMode.Back);
 
+            skybox.Draw();
             LightningManager.Render(deltaTime);
 
             ConsoleCompiler.Execute();
@@ -125,7 +123,7 @@ namespace game_2
         private void InputCallbacks(float Time)
         {
             if (KeyboardState.IsKeyDown(Keys.Escape)) Close();
-            if (isMouseDown && mouse_shooter <= 1) mouse_shooter++;
+            if (isMouseDown) mouse_shooter++;
 
             if (ObjectArray.pick_mode)
             {

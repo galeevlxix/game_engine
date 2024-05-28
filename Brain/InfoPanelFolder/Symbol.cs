@@ -5,8 +5,8 @@ namespace game_2.Brain.InfoPanelFolder
 {
     public class Symbol
     {
+        private SymbolMesh mesh;
         public Pipeline pipeline;
-        SymbolMesh mesh;
         public Symbol(int sym_number, float scale) 
         {
             mesh = new SymbolMesh(sym_number % 10, 9 - sym_number / 10);

@@ -8,6 +8,8 @@ using game_2.Brain.Selecting;
 using game_2.Brain.InfoPanelFolder;
 using static System.Net.Mime.MediaTypeNames;
 using System.Runtime.CompilerServices;
+using System.Diagnostics;
+using game_2.Brain.PictureOnScreen;
 
 namespace game_2.Brain
 {
@@ -40,11 +42,10 @@ namespace game_2.Brain
         private static vector3f pickedObjectPosition = new vector3f();
 
         private static InfoPanel info;
-        private static string[] descriptions = new string[]
-        {
-            string.Empty, string.Empty, string.Empty,
-            string.Empty, string.Empty, string.Empty
-        };
+
+        private static string[] descriptions;
+
+        private static PictureObject[] pictures;
 
         public static void Init(int Width, int Height)
         {
@@ -56,6 +57,24 @@ namespace game_2.Brain
 
             obj_list = new Dictionary<string, AObject>();
 
+            AddObjects();
+
+            WindowWidth = Width;
+            WindowHeight = Height;
+
+            selectMap.Init(WindowWidth, WindowHeight);
+
+            InitLightMatrices();
+
+            info = new InfoPanel(InfoPanel.FontType.FullSet);
+            GetDescriptions();
+            GetPictures();
+
+            SetProperties();
+        }
+
+        private static void AddObjects()
+        {
             Add("museum", "Museums\\VR_Gallery\\VR_Gallery_comp.obj");
             Add("table1", "Museums\\museum_table\\OPM0032_fin.obj");
 
@@ -71,26 +90,6 @@ namespace game_2.Brain
             Add("goat", "Museums\\st3\\goat_rot.obj");
             Add("thinker", "Museums\\st4\\Rodin_Thinker_fin.obj");
             Add("laocoon", "Museums\\st5\\Laocoon-and-his-sons_rot.obj");
-
-            WindowWidth = Width;
-            WindowHeight = Height;
-
-            selectMap.Init(WindowWidth, WindowHeight);
-
-            foreach (Spotlight spotlight in LightningManager.spotlights)
-            {
-                spotlight.wvpMatrixFromLight = new Dictionary<string, Matrix4>();
-
-                foreach (string obj_name in obj_list.Keys)
-                {
-                    spotlight.wvpMatrixFromLight.Add(obj_name, Matrix4.Identity);
-                }
-            }
-
-            info = new InfoPanel(InfoPanel.FontType.FullSet);
-            GetDescriptions();
-
-            SetProperties();
         }
 
         private static void SetProperties()
@@ -229,41 +228,9 @@ namespace game_2.Brain
             }
         }
 
-        private static float bull_speedY = 0;
         public static void OnRender(float deltaTime)
         {
-            bull_speedY += 3 * deltaTime;
-            if (bull_speedY >= 2 * math3d.PI)
-                bull_speedY = 0;
-
-            //Move("bull", -math3d.sin(bull_speedY) * 3, 0, 0, deltaTime);
-        }
-
-        public static void Add(string name, string filepath)
-        {
-            obj_list.Add(name, new AObject(ModelFolderPath + filepath));
-            Console.WriteLine("     Загружена модель " + name);
-        }
-
-        public static void Remove(string name)
-        {
-            obj_list[name].OnDelete();
-            obj_list.Remove(name);
-        }
-
-        public static void Clear()
-        {
-            foreach (AObject obj in obj_list.Values)
-            {
-                obj.OnDelete();
-            }
-            obj_list.Clear();
-            info.OnClear();
-        }
-
-        public static int Count
-        {
-            get => obj_list.Count;
+            
         }
 
         public static SelectingMapFBO.PixelInfo GetObservedPixel()
@@ -310,6 +277,7 @@ namespace game_2.Brain
             if (mouse_shooter == 1 && observed_object_index != -1 && !pick_mode)
             {
                 picked_object_index = observed_object_index;
+                observed_object_index = -1;
                 pick_mode = true;
                 ScaleOfPickedObject = 0.01f;
                 AngularX = 0;
@@ -436,12 +404,14 @@ namespace game_2.Brain
 
                 obj_list[obj_name].Draw(normalShader);
             }
-             
+        }
+
+        public static void DrawInfoAndPicture()
+        {
             if (picked_object_index != -1)
             {
-                GL.CullFace(CullFaceMode.Front);
                 info.PutLineAndDraw(descriptions[picked_object_index]);
-                GL.CullFace(CullFaceMode.Back);
+                pictures[picked_object_index].Draw();
             }
         }
 
@@ -453,6 +423,35 @@ namespace game_2.Brain
             {
                 AngularX += dX;
             }
+        }
+
+        // OBJECT DICTIONARY WORK:
+
+        public static void Add(string name, string filepath)
+        {
+            obj_list.Add(name, new AObject(ModelFolderPath + filepath));
+            Console.WriteLine("     Загружена модель " + name);
+        }
+
+        public static void Remove(string name)
+        {
+            obj_list[name].OnDelete();
+            obj_list.Remove(name);
+        }
+
+        public static void Clear()
+        {
+            foreach (AObject obj in obj_list.Values)
+            {
+                obj.OnDelete();
+            }
+            obj_list.Clear();
+            info.OnClear();
+        }
+
+        public static int Count
+        {
+            get => obj_list.Count;
         }
 
         public static void Reset()
@@ -556,6 +555,12 @@ namespace game_2.Brain
 
         private static void GetDescriptions()
         {
+            descriptions = new string[] 
+            {
+                string.Empty, string.Empty, string.Empty,
+                string.Empty, string.Empty, string.Empty
+            };
+
             using (StreamReader reader = new StreamReader(ModelFolderPath + "Museums\\ModelsDescription.txt"))
             {
                 string? line;
@@ -565,6 +570,33 @@ namespace game_2.Brain
                     line = line.Trim().Replace("  ", " ");
                     if (line == "#") index++;
                     else descriptions[index] += line + "\n";
+                }
+            }
+        }
+
+        private static void GetPictures()
+        {
+            string PicturesFolderPath = "..\\..\\..\\Files\\Textures\\Sculptures\\";
+            pictures = new PictureObject[]
+                {
+                    new PictureObject(PicturesFolderPath + "bull.jpeg"),
+                    new PictureObject(PicturesFolderPath + "hans.jpeg"),
+                    new PictureObject(PicturesFolderPath + "head.jpeg"),
+                    new PictureObject(PicturesFolderPath + "goat.jpeg"),
+                    new PictureObject(PicturesFolderPath + "thinker.jpeg"),
+                    new PictureObject(PicturesFolderPath + "laokoon.jpeg"),
+                };
+        }
+
+        private static void InitLightMatrices()
+        {
+            foreach (Spotlight spotlight in LightningManager.spotlights)
+            {
+                spotlight.wvpMatrixFromLight = new Dictionary<string, Matrix4>();
+
+                foreach (string obj_name in obj_list.Keys)
+                {
+                    spotlight.wvpMatrixFromLight.Add(obj_name, Matrix4.Identity);
                 }
             }
         }
