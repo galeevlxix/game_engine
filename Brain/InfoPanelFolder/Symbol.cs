@@ -7,13 +7,13 @@ namespace game_2.Brain.InfoPanelFolder
     {
         public Pipeline pipeline;
         SymbolMesh mesh;
-        public Symbol(int sym_number) 
+        public Symbol(int sym_number, float scale) 
         {
             mesh = new SymbolMesh(sym_number % 10, 9 - sym_number / 10);
             pipeline = new Pipeline();
 
             pipeline.SetPosition(0f, 0f, -1f);
-            pipeline.SetScale(0.04f);
+            pipeline.SetScale(scale);
         }
 
         public void Draw()

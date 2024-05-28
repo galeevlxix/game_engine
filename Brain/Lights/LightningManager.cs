@@ -14,6 +14,14 @@ namespace game_2.Brain.Lights
 
         public static Spotlight[] spotlights = new Spotlight[12];
 
+        private const float spotlightsMaxIntensity = 4;
+        private const float spotlightsMinIntensity = 0.2f;
+        private const float spotlightsChangeSpeed = 2.5f;
+        private static bool spotlightsIntensiyIsMax = true;
+        private static bool spotlightsIntensiyIsMin = false;
+        private static bool spotlightsNeedOff = false;
+        private static bool spotlightsNeedOn = false;
+
         public static void Init()
         {
             Console.WriteLine("Загрузка света...");
@@ -30,6 +38,20 @@ namespace game_2.Brain.Lights
         private static float counter = 0;
         public static void Render(float deltaTime)
         {
+            if (ObjectArray.pick_mode && !spotlightsIntensiyIsMin)
+            {
+                spotlightsNeedOff = true;
+                spotlightsNeedOn = false;
+            }
+            if (!ObjectArray.pick_mode && !spotlightsIntensiyIsMax)
+            {
+                spotlightsNeedOn = true;
+                spotlightsNeedOff = false;   
+            }
+
+            if (spotlightsNeedOff) TurnOutSpotlights(deltaTime);
+            if (spotlightsNeedOn) TurnOnSpotlights(deltaTime);
+
             counter += deltaTime;
             DrawLamps(deltaTime);
             lightConfig.SetCameraPosition(Camera.Pos);
@@ -47,7 +69,7 @@ namespace game_2.Brain.Lights
         private static void ConfigureBaseLight()
         {
             baseLight.Color = new vector3f(1, 1, 1);
-            baseLight.Intensity = 0.1f;
+            baseLight.Intensity = 0.2f;
 
             lightConfig.SetBaseLight(baseLight);
         }
@@ -89,7 +111,7 @@ namespace game_2.Brain.Lights
             for (int i = 0; i < spotlights.Length; i++)
             {
                 spotlights[i] = new Spotlight();
-                spotlights[i].PointLight.SetIntensity(3); //3
+                spotlights[i].PointLight.SetIntensity(spotlightsMaxIntensity);
                 spotlights[i].PointLight.SetColor(1, 1, 1);
                 spotlights[i].PointLight.Attenuation.Constant = 1;
                 spotlights[i].PointLight.Attenuation.Linear = 0.09f;
@@ -99,11 +121,9 @@ namespace game_2.Brain.Lights
             
             spotlights[0].PointLight.SetPosition(27.5f, 4.6f, 0);
             spotlights[0].Direction = new vector3f(1, -0.5f, 0);
-            spotlights[0].PointLight.SetIntensity(5); //5
             
             spotlights[1].PointLight.SetPosition(12.5f, 4.6f, 0f);
             spotlights[1].Direction = new vector3f(-1, -0.5f, 0);
-            spotlights[1].PointLight.SetIntensity(5); //5
 
             spotlights[2].PointLight.SetPosition(27.5f, 4.5f, 1);
             spotlights[2].Direction = new vector3f(0, -1, 0.5f);
@@ -142,6 +162,54 @@ namespace game_2.Brain.Lights
             }
 
             lightConfig.SetSpotLights(spotlights);
+        }
+
+        
+
+        private static void TurnOutSpotlights(float deltatime)
+        {
+            for (int i = 0; i < SpotlightsCount; i++)
+            {
+                float intensity = spotlights[i].PointLight.Intensity;
+                float intensityChange = intensity - spotlightsChangeSpeed * deltatime;
+                if (intensity > spotlightsMinIntensity)
+                {
+                    if (intensityChange <= spotlightsMinIntensity)
+                    {
+                        spotlightsIntensiyIsMin = true;
+                        spotlights[i].PointLight.SetIntensity(spotlightsMinIntensity);
+                    }
+                    else
+                    {
+                        spotlightsIntensiyIsMax = false;
+                        spotlights[i].PointLight.SetIntensity(intensityChange); 
+                    }
+                }
+            }
+            
+        }
+
+        private static void TurnOnSpotlights(float deltatime)
+        {
+            for (int i = 0; i < SpotlightsCount; i++)
+            {
+                float intensity = spotlights[i].PointLight.Intensity;
+                float intensityChange = intensity + spotlightsChangeSpeed * deltatime;
+                if (intensity < spotlightsMaxIntensity)
+                {
+                    if (intensityChange >= spotlightsMaxIntensity)
+                    {
+                        spotlightsIntensiyIsMax = true;
+                        spotlights[i].PointLight.SetIntensity(spotlightsMaxIntensity);
+                    }
+                    else
+                    {
+                        spotlightsIntensiyIsMin = false;
+                        spotlights[i].PointLight.SetIntensity(intensityChange);
+                    }
+                }
+            }
+            
         }
         
         //create & draw light objects

@@ -6,4 +6,4 @@ newmtl DefaultMaterial
 Ns 20
 map_Kd textures\\DefaultMaterial_albedo.jpg
 map_Kn textures\\DefaultMaterial_normal.jpg
-map_Ks textures\\DefaultMaterial_metallic.jpg
+map_Ks ..\\VR_Gallery\\textures\\MetalSpecularMap.png

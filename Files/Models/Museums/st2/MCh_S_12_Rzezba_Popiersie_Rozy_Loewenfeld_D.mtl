@@ -3,4 +3,4 @@ newmtl defaultMat
 Ns 8
 map_Kd MCh_S_12_Rzezba_Popiersie_Rozy_L_low.jpg
 map_Kn MCh_S_12_Rzezba_Popiersie_Rozy_L_low.png
-map_Ks white_list.bmp
+map_Ks ..\\VR_Gallery\\textures\\MetalSpecularMap.png

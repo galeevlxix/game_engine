@@ -24,7 +24,7 @@ namespace game_2.Brain
 
         public static int WindowWidth, WindowHeight;
 
-        private const float ObservedObjectBaseLightIntensity = 0.2f;
+        private const float ObservedObjectBaseLightIntensity = 0.3f;
 
         private static int observed_object_index = -1;
         private static int picked_object_index = -1;
@@ -42,7 +42,22 @@ namespace game_2.Brain
 
         private static string[] ds = new string[]
         {
-            "это бык",
+            "Атакующий бык (также известен как Бык \n" +
+            "с Уолл-стрит) - 3200-килограммовая \n" +
+            "бронзовая статуя, созданная \n" +
+            "скульптором Артуро Ди Модика. \n" +
+            "Расположена в двух кварталах южнее \n" +
+            "Нью-Йоркской фондовой биржи. Статуя \n" +
+            "изображает мощного, разъярённого, \n" +
+            "приготовившегося к атаке быка, \n" +
+            "символизирующего агрессивный финансовый \n" +
+            "оптимизм и процветание. \n" +
+            "\"Быками\" на биржевом сленге называют \n" +
+            "трейдеров, ориентированных на подъём \n" +
+            "экономики и рост цен акций. Атакующий \n" +
+            "бык является одним из самых популярных \n" +
+            "символов Нью-Йорка и Уолл-Стрит.\n",
+
             "это ганс",
             "это голова. тут много\n" +
             "текста бла бла бла!\\/\n" +
@@ -66,19 +81,20 @@ namespace game_2.Brain
 
             Add("museum", "Museums\\VR_Gallery\\VR_Gallery_comp.obj");
             Add("table1", "Museums\\museum_table\\OPM0032_fin.obj");
-            Add("table2", "Museums\\museum_table\\OPM0032_fin.obj");
+            
+            /*Add("table2", "Museums\\museum_table\\OPM0032_fin.obj");
             Add("table3", "Museums\\museum_table\\OPM0032_fin.obj");
             Add("table4", "Museums\\museum_table\\OPM0032_fin.obj");
             Add("table5", "Museums\\museum_table\\OPM0032_fin.obj");
-            Add("table6", "Museums\\museum_table\\OPM0032_fin.obj");
-
+            Add("table6", "Museums\\museum_table\\OPM0032_fin.obj");*/
+            
             Add("bull", "Museums\\bull\\bull5.obj");
-            Add("hans", "Museums\\st1\\HansChristianAndersen-80k_rot.obj");
+            /*Add("hans", "Museums\\st1\\HansChristianAndersen-80k_rot.obj");
             Add("head", "Museums\\st2\\MCh_S_12_Rzezba_Popiersie_Rozy_Loewenfeld_fin.obj");
             Add("goat", "Museums\\st3\\goat_rot.obj");
             Add("thinker", "Museums\\st4\\Rodin_Thinker_fin.obj");
-            Add("laocoon", "Museums\\st5\\Laocoon-and-his-sons_rot.obj");
-
+            Add("laocoon", "Museums\\st5\\Laocoon-and-his-sons_rot.obj");*/
+            
             WindowWidth = Width;
             WindowHeight = Height;
 
@@ -319,7 +335,7 @@ namespace game_2.Brain
                 ScaleOfPickedObject = 0.01f;
                 AngularX = 0;
                 vector3f rotatedTarget = Camera.Target;
-                rotatedTarget.Rotate(-30, vector3f.Up);
+                rotatedTarget.Rotate(-25, vector3f.Up);
                 pickedObjectPosition = Camera.Pos - rotatedTarget / 2;
                 pickedObjectPosition.y = Camera.player_height;
             }
@@ -413,8 +429,6 @@ namespace game_2.Brain
                     LightningManager.lightConfig.SetDirectionalLightIntensity(LightningManager.directionalLight.BaseLight.Intensity);
                     LightningManager.lightConfig.SetDirectionalLightDirection(LightningManager.directionalLight.Direction);
                     LightningManager.lightConfig.SetBaseLightIntensity(LightningManager.baseLight.Intensity);
-
-                    
 
                     sculpt_object_index++;
                     continue;

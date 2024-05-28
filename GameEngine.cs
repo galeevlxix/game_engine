@@ -231,8 +231,7 @@ namespace game_2
         {
             ObjectArray.Clear();
             skybox.OnDelete();
-            aim.OnDelete();
-            
+            aim.OnDelete();            
 
             CentralizedShaders.Dispose();
 

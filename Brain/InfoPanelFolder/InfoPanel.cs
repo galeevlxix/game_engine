@@ -7,8 +7,13 @@ namespace game_2.Brain.InfoPanelFolder
         private List<Symbol> _symbols;
         private char[] _arrChar;
 
-        private float step_x = 0.045f;
+        /*private float step_x = 0.045f;
         private float step_y = 0.08f;
+        private float scale = 0.04f;*/
+
+        private float step_x = 0.0225f;
+        private float step_y = 0.04f;
+        private float scale = 0.02f;
 
         public enum FontType : int
         {
@@ -26,7 +31,7 @@ namespace game_2.Brain.InfoPanelFolder
 
             for (int i = 0; i < (int)type; i++)
             {
-                _symbols.Add(new Symbol(i));
+                _symbols.Add(new Symbol(i, scale));
 
                 if (i == 25)
                 {
