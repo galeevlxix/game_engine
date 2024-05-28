@@ -44,7 +44,7 @@ namespace game_2.Brain.MonochromeObjectFolder
 
         public override void Draw(Matrix4 matrix)
         {
-            Matrix4 p = mPersProj.PersProjMatrix.ToOpenTK();
+            Matrix4 p = PersProjMat.PersProjMatrix.ToOpenTK();
             Matrix4 c_pos = Camera.CameraTranslation.ToOpenTK();
             Matrix4 c_rot = Camera.CameraRotation.ToOpenTK();
 

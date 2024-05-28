@@ -4,7 +4,7 @@ namespace game_2.Brain.InfoPanelFolder
 {
     public class InfoPanel
     {
-        private List<GameObj> _symbols;
+        private List<Symbol> _symbols;
         private char[] _arrChar;
 
         private float step_x = 0.045f;
@@ -20,8 +20,9 @@ namespace game_2.Brain.InfoPanelFolder
 
         public InfoPanel(FontType type)
         {
-            _symbols = new List<GameObj>();
-            SymbolArrayOfVertices.LoadTexture("..\\..\\..\\Files\\Textures\\font.png");
+            Console.WriteLine("Загрузка информационной панели...");
+            _symbols = new List<Symbol>();
+            SymbolArrayOfVertices.LoadTexture("..\\..\\..\\Files\\Textures\\glow2_font.png");
 
             for (int i = 0; i < (int)type; i++)
             {
@@ -48,15 +49,22 @@ namespace game_2.Brain.InfoPanelFolder
 
         public void PutLineAndDraw(string line)
         {
+            if (line == string.Empty || line == null) return;
+
             line = line.ToLower();
             _arrChar = line.ToCharArray();
 
             int line_num = 0, symbol_num = 0;
 
+            // активировать общую для всех символов
+            SymbolArrayOfVertices.texture.Use();
+
             for (int i = 0; i < _arrChar.Length; i++)
             {
+                // взять номер символа
                 int symbol = GetSymbolNumber(_arrChar[i]) - 1;
 
+                // новая строка
                 if (symbol == 100)
                 {
                     symbol_num = 0;
@@ -290,6 +298,7 @@ namespace game_2.Brain.InfoPanelFolder
             {
                 _symbols[i].OnDelete();
             }
+            SymbolArrayOfVertices.texture.Dispose();
             _symbols.Clear();
         }
     }

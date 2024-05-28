@@ -8,6 +8,8 @@ using game_2.Brain.SkyBoxFolder;
 using game_2.Brain.AimFolder;
 using game_2.Brain.Lights;
 using game_2.Brain.Compiler;
+using game_2.Brain.InfoPanelFolder;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace game_2
 {
@@ -23,6 +25,7 @@ namespace game_2
 
         private Skybox skybox;
         private Aim aim;
+        
 
         private readonly Color4 BackGroundColor;
 
@@ -59,6 +62,8 @@ namespace game_2
             Camera.InitCamera();
             Camera.SetCameraPosition(21, -4, 0);
             CursorGrabbed = true;
+
+            PersProjMat.InitDefault();
 
             CentralizedShaders.Load();
             
@@ -164,7 +169,7 @@ namespace game_2
                 if (!isMouseDown2)
                 {
                     isMouseDown2 = true;
-                    mPersProj.ChangeFOV(30);
+                    PersProjMat.ChangeFOV(30);
                 }
             }
         }
@@ -184,7 +189,7 @@ namespace game_2
                 if (isMouseDown2)
                 {
                     isMouseDown2 = false;
-                    mPersProj.ChangeFOV(70);
+                    PersProjMat.ChangeFOV(70);
                 }
             }
         }
@@ -216,7 +221,7 @@ namespace game_2
             WindowWidth = e.Width;
             WindowHeight = e.Height;
 
-            if (isLoaded) mPersProj.ChangeWindowSize(WindowWidth, WindowHeight);
+            if (isLoaded) PersProjMat.ChangeWindowSize(WindowWidth, WindowHeight);
             ObjectArray.WindowWidth = WindowWidth;
             ObjectArray.WindowHeight = WindowHeight;
             ObjectArray.Resize(WindowWidth, WindowHeight);
@@ -227,6 +232,7 @@ namespace game_2
             ObjectArray.Clear();
             skybox.OnDelete();
             aim.OnDelete();
+            
 
             CentralizedShaders.Dispose();
 

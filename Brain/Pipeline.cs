@@ -221,7 +221,7 @@ namespace game_2.Brain
             rotateTrans.Rotate(RotateVector.x, RotateVector.y, RotateVector.z);
             translationTrans.InitTranslationTransform(PositionVector.x, PositionVector.y, PositionVector.z);
 
-            matrix4f pers = mPersProj.PersProjMatrix;
+            matrix4f pers = PersProjMat.PersProjMatrix;
             matrix4f c_pos = Camera.CameraTranslation;
             matrix4f c_rot = Camera.CameraRotation;
 

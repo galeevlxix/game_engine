@@ -5,6 +5,8 @@ using game_2.MathFolder;
 using OpenTK.Mathematics;
 using OpenTK.Graphics.OpenGL;
 using game_2.Brain.Selecting;
+using game_2.Brain.InfoPanelFolder;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace game_2.Brain
 {
@@ -36,6 +38,22 @@ namespace game_2.Brain
 
         private static vector3f pickedObjectPosition = new vector3f();
 
+        private static InfoPanel info;
+
+        private static string[] ds = new string[]
+        {
+            "это бык",
+            "это ганс",
+            "это голова. тут много\n" +
+            "текста бла бла бла!\\/\n" +
+            "еще и английский nichego\n" +
+            "sebe #$%^&*(&^%03",
+            "это козел",
+            "это мыслитель",
+            "это какая то статуя \n" +
+            "Laocoon and his sons"
+        };
+
         public static void Init(int Width, int Height)
         {
             shadowShader = CentralizedShaders.GetShader(ShaderName.ShadowShader);
@@ -53,14 +71,14 @@ namespace game_2.Brain
             Add("table4", "Museums\\museum_table\\OPM0032_fin.obj");
             Add("table5", "Museums\\museum_table\\OPM0032_fin.obj");
             Add("table6", "Museums\\museum_table\\OPM0032_fin.obj");
-            
+
             Add("bull", "Museums\\bull\\bull5.obj");
             Add("hans", "Museums\\st1\\HansChristianAndersen-80k_rot.obj");
             Add("head", "Museums\\st2\\MCh_S_12_Rzezba_Popiersie_Rozy_Loewenfeld_fin.obj");
             Add("goat", "Museums\\st3\\goat_rot.obj");
             Add("thinker", "Museums\\st4\\Rodin_Thinker_fin.obj");
             Add("laocoon", "Museums\\st5\\Laocoon-and-his-sons_rot.obj");
-            
+
             WindowWidth = Width;
             WindowHeight = Height;
 
@@ -75,6 +93,8 @@ namespace game_2.Brain
                     spotlight.wvpMatrixFromLight.Add(obj_name, Matrix4.Identity);
                 }
             }
+
+            info = new InfoPanel(InfoPanel.FontType.FullSet);
 
             SetProperties();
         }
@@ -244,6 +264,7 @@ namespace game_2.Brain
                 obj.OnDelete();
             }
             obj_list.Clear();
+            info.OnClear();
         }
 
         public static int Count 
@@ -297,7 +318,9 @@ namespace game_2.Brain
                 pick_mode = true;
                 ScaleOfPickedObject = 0.01f;
                 AngularX = 0;
-                pickedObjectPosition = Camera.Pos - Camera.Target / 2;
+                vector3f rotatedTarget = Camera.Target;
+                rotatedTarget.Rotate(-30, vector3f.Up);
+                pickedObjectPosition = Camera.Pos - rotatedTarget / 2;
                 pickedObjectPosition.y = Camera.player_height;
             }
             else if (mouse_shooter == 1 && pick_mode)
@@ -346,6 +369,8 @@ namespace game_2.Brain
 
         public static void DrawScene()
         {
+            
+
             GL.Viewport(0, 0, WindowWidth, WindowHeight);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
@@ -389,6 +414,8 @@ namespace game_2.Brain
                     LightningManager.lightConfig.SetDirectionalLightDirection(LightningManager.directionalLight.Direction);
                     LightningManager.lightConfig.SetBaseLightIntensity(LightningManager.baseLight.Intensity);
 
+                    
+
                     sculpt_object_index++;
                     continue;
                 }
@@ -418,6 +445,11 @@ namespace game_2.Brain
 
                 obj_list[obj_name].Draw(normalShader);
             }
+
+            GL.CullFace(CullFaceMode.Front);
+            if (picked_object_index != -1) info.PutLineAndDraw(ds[picked_object_index]);
+            else info.PutLineAndDraw(FPSMeter.Int_FPS.ToString() + " FPS");
+            GL.CullFace(CullFaceMode.Back);
         }
 
         private static float AngularX = 0;

@@ -138,15 +138,15 @@ namespace game_2.Brain.Compiler
             switch (parts[3])
             {
                 case "fov":
-                    return "FOV: " + mPersProj.GetFOV;
+                    return "FOV: " + PersProjMat.GetFOV;
                 case "width":
-                    return "WIDTH: " + mPersProj.GetWidth;
+                    return "WIDTH: " + PersProjMat.GetWidth;
                 case "height":
-                    return "HEIGHT: " + mPersProj.GetHeight;
+                    return "HEIGHT: " + PersProjMat.GetHeight;
                 case "znear":
-                    return "ZNEAR: " + mPersProj.GetZNear;
+                    return "ZNEAR: " + PersProjMat.GetZNear;
                 case "zfar":
-                    return "ZFAR: " + mPersProj.GetZFar;
+                    return "ZFAR: " + PersProjMat.GetZFar;
             }
 
             return "0# Неизвестное get camera persproj действие";

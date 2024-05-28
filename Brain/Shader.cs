@@ -92,7 +92,7 @@ namespace game_2.Brain
 
         public void setValue(Matrix4 world)
         {
-            Matrix4 pers = mPersProj.PersProjMatrix.ToOpenTK();
+            Matrix4 pers = PersProjMat.PersProjMatrix.ToOpenTK();
             Matrix4 c_pos = Camera.CameraTranslation.ToOpenTK();
             Matrix4 c_rot = Camera.CameraRotation.ToOpenTK();
 
