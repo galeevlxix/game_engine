@@ -15,7 +15,6 @@ namespace game_2.Brain.NewAssimpFolder
         private string _modelDirectoryPath;
 
         public bool isSculpture = false;
-        public bool isMuseum = false;
 
         public Pipeline _pipeline;
 

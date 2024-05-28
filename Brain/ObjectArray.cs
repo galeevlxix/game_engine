@@ -7,6 +7,7 @@ using OpenTK.Graphics.OpenGL;
 using game_2.Brain.Selecting;
 using game_2.Brain.InfoPanelFolder;
 using static System.Net.Mime.MediaTypeNames;
+using System.Runtime.CompilerServices;
 
 namespace game_2.Brain
 {
@@ -39,34 +40,10 @@ namespace game_2.Brain
         private static vector3f pickedObjectPosition = new vector3f();
 
         private static InfoPanel info;
-
-        private static string[] ds = new string[]
+        private static string[] descriptions = new string[]
         {
-            "Атакующий бык (также известен как Бык \n" +
-            "с Уолл-стрит) - 3200-килограммовая \n" +
-            "бронзовая статуя, созданная \n" +
-            "скульптором Артуро Ди Модика. \n" +
-            "Расположена в двух кварталах южнее \n" +
-            "Нью-Йоркской фондовой биржи. Статуя \n" +
-            "изображает мощного, разъярённого, \n" +
-            "приготовившегося к атаке быка, \n" +
-            "символизирующего агрессивный финансовый \n" +
-            "оптимизм и процветание. \n" +
-            "\"Быками\" на биржевом сленге называют \n" +
-            "трейдеров, ориентированных на подъём \n" +
-            "экономики и рост цен акций. Атакующий \n" +
-            "бык является одним из самых популярных \n" +
-            "символов Нью-Йорка и Уолл-Стрит.\n",
-
-            "это ганс",
-            "это голова. тут много\n" +
-            "текста бла бла бла!\\/\n" +
-            "еще и английский nichego\n" +
-            "sebe #$%^&*(&^%03",
-            "это козел",
-            "это мыслитель",
-            "это какая то статуя \n" +
-            "Laocoon and his sons"
+            string.Empty, string.Empty, string.Empty,
+            string.Empty, string.Empty, string.Empty
         };
 
         public static void Init(int Width, int Height)
@@ -81,29 +58,29 @@ namespace game_2.Brain
 
             Add("museum", "Museums\\VR_Gallery\\VR_Gallery_comp.obj");
             Add("table1", "Museums\\museum_table\\OPM0032_fin.obj");
-            
-            /*Add("table2", "Museums\\museum_table\\OPM0032_fin.obj");
+
+            Add("table2", "Museums\\museum_table\\OPM0032_fin.obj");
             Add("table3", "Museums\\museum_table\\OPM0032_fin.obj");
             Add("table4", "Museums\\museum_table\\OPM0032_fin.obj");
             Add("table5", "Museums\\museum_table\\OPM0032_fin.obj");
-            Add("table6", "Museums\\museum_table\\OPM0032_fin.obj");*/
-            
+            Add("table6", "Museums\\museum_table\\OPM0032_fin.obj");
+
             Add("bull", "Museums\\bull\\bull5.obj");
-            /*Add("hans", "Museums\\st1\\HansChristianAndersen-80k_rot.obj");
+            Add("hans", "Museums\\st1\\HansChristianAndersen-80k_rot.obj");
             Add("head", "Museums\\st2\\MCh_S_12_Rzezba_Popiersie_Rozy_Loewenfeld_fin.obj");
             Add("goat", "Museums\\st3\\goat_rot.obj");
             Add("thinker", "Museums\\st4\\Rodin_Thinker_fin.obj");
-            Add("laocoon", "Museums\\st5\\Laocoon-and-his-sons_rot.obj");*/
-            
+            Add("laocoon", "Museums\\st5\\Laocoon-and-his-sons_rot.obj");
+
             WindowWidth = Width;
             WindowHeight = Height;
 
             selectMap.Init(WindowWidth, WindowHeight);
 
-            foreach(Spotlight spotlight in LightningManager.spotlights)
+            foreach (Spotlight spotlight in LightningManager.spotlights)
             {
                 spotlight.wvpMatrixFromLight = new Dictionary<string, Matrix4>();
-                
+
                 foreach (string obj_name in obj_list.Keys)
                 {
                     spotlight.wvpMatrixFromLight.Add(obj_name, Matrix4.Identity);
@@ -111,6 +88,7 @@ namespace game_2.Brain
             }
 
             info = new InfoPanel(InfoPanel.FontType.FullSet);
+            GetDescriptions();
 
             SetProperties();
         }
@@ -283,7 +261,7 @@ namespace game_2.Brain
             info.OnClear();
         }
 
-        public static int Count 
+        public static int Count
         {
             get => obj_list.Count;
         }
@@ -314,6 +292,7 @@ namespace game_2.Brain
 
         public static void GetObservedObject()
         {
+            if (pick_mode) return;
             SelectingMapFBO.PixelInfo pixel = GetObservedPixel();
 
             if (pixel.PrimID != 0 &&
@@ -322,7 +301,7 @@ namespace game_2.Brain
             {
                 observed_object_index = pixel.ObjectID;
             }
-            else 
+            else
                 observed_object_index = -1;
         }
 
@@ -365,11 +344,11 @@ namespace game_2.Brain
                 Matrix4 viewMatrixFromLight = (matrix4f.GetInitTranslationTransform(-pos) * matrix4f.GetInitCameraTransform(-tar, -up)).ToOpenTK();
 
                 // RENDER SHADOWS 
-                spotlight.ShadowMapSpotlight.BindForWriting(); 
+                spotlight.ShadowMapSpotlight.BindForWriting();
 
                 GL.Viewport(0, 0, shadowMapSize, shadowMapSize);
                 GL.Clear(ClearBufferMask.DepthBufferBit);
-                
+
                 foreach (string obj_name in obj_list.Keys)
                 {
                     Matrix4 WVPFromLight = obj_list[obj_name]._pipeline.getWorld() * viewMatrixFromLight * projMatrixFromLight;
@@ -385,8 +364,6 @@ namespace game_2.Brain
 
         public static void DrawScene()
         {
-            
-
             GL.Viewport(0, 0, WindowWidth, WindowHeight);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
@@ -459,11 +436,13 @@ namespace game_2.Brain
 
                 obj_list[obj_name].Draw(normalShader);
             }
-
-            GL.CullFace(CullFaceMode.Front);
-            if (picked_object_index != -1) info.PutLineAndDraw(ds[picked_object_index]);
-            else info.PutLineAndDraw(FPSMeter.Int_FPS.ToString() + " FPS");
-            GL.CullFace(CullFaceMode.Back);
+             
+            if (picked_object_index != -1)
+            {
+                GL.CullFace(CullFaceMode.Front);
+                info.PutLineAndDraw(descriptions[picked_object_index]);
+                GL.CullFace(CullFaceMode.Back);
+            }
         }
 
         private static float AngularX = 0;
@@ -538,7 +517,7 @@ namespace game_2.Brain
 
         public static void MoveImmediately(string name, float PosX, float PosY, float PosZ)
         {
-            obj_list[name].MoveImmediately(PosX, PosY, PosZ);   
+            obj_list[name].MoveImmediately(PosX, PosY, PosZ);
         }
 
         // СКОРОСТЬ * ВРЕМЯ
@@ -567,17 +546,27 @@ namespace game_2.Brain
             obj_list[name].isSculpture = true;
         }
 
-        private static void MakeMuseum(string name)
-        {
-            obj_list[name].isMuseum = true;
-        }
-
         public static void Resize(int width, int height)
         {
             WindowWidth = width;
             WindowHeight = height;
 
             selectMap.Init(width, height);
+        }
+
+        private static void GetDescriptions()
+        {
+            using (StreamReader reader = new StreamReader(ModelFolderPath + "Museums\\ModelsDescription.txt"))
+            {
+                string? line;
+                int index = 0;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    line = line.Trim().Replace("  ", " ");
+                    if (line == "#") index++;
+                    else descriptions[index] += line + "\n";
+                }
+            }
         }
     }
 }

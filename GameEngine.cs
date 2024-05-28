@@ -8,8 +8,6 @@ using game_2.Brain.SkyBoxFolder;
 using game_2.Brain.AimFolder;
 using game_2.Brain.Lights;
 using game_2.Brain.Compiler;
-using game_2.Brain.InfoPanelFolder;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace game_2
 {
@@ -166,7 +164,7 @@ namespace game_2
             }
             if (e.Button == MouseButton.Button2)
             {
-                if (!isMouseDown2)
+                if (!isMouseDown2 && !ObjectArray.pick_mode)
                 {
                     isMouseDown2 = true;
                     PersProjMat.ChangeFOV(30);

@@ -11,9 +11,9 @@ namespace game_2.Brain.InfoPanelFolder
         private float step_y = 0.08f;
         private float scale = 0.04f;*/
 
-        private float step_x = 0.0225f;
-        private float step_y = 0.04f;
-        private float scale = 0.02f;
+        private float step_x = 0.0168f;
+        private float step_y = 0.03f;
+        private float scale = 0.0142f;
 
         public enum FontType : int
         {

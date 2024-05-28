@@ -20,9 +20,9 @@ namespace game_2.Brain
         private static float angle_v;  //вертикальный поворот
 
         private static float velocity;
-        private static float sensitivity = 0.5f;
+        private static float sensitivity = 0.2f;
         private static float brakingKeyBo = 5f;
-        private static float brakingMouse = 20f;
+        private static float brakingMouse = 10f;
 
         private static float min_speed = 0.00004f;
         private static float max_speed;
