@@ -8,7 +8,7 @@ namespace game_2.Brain.NewAssimpFolder
 {
     public class AObject
     {
-        private List<AEntry> _entries;
+        private List<AMesh> _entries;
 
         private Scene _scene;
         private string _modelFilePath;
@@ -28,7 +28,7 @@ namespace game_2.Brain.NewAssimpFolder
         {
             //загрузка сцены из файла
             _scene = new Scene();
-            _entries = new List<AEntry>();
+            _entries = new List<AMesh>();
             _pipeline = new Pipeline();
 
             if (!File.Exists(_modelFilePath))
@@ -120,7 +120,7 @@ namespace game_2.Brain.NewAssimpFolder
             material = AMaterial.Init(texturesPaths);
             material.SetSpecularPower(shininess);
 
-            _entries.Add(new AEntry(vertices, indices, material));
+            _entries.Add(new AMesh(vertices, indices, material));
         }
 
         private ModelTexturePaths ProcessTextures(TextureSlot[] allTextures)
@@ -155,7 +155,7 @@ namespace game_2.Brain.NewAssimpFolder
             shader.setValue("world", _pipeline.getWorld());
 
             // рисуем мэши объекта
-            foreach (AEntry item in _entries) item.Draw();
+            foreach (AMesh item in _entries) item.Draw();
         }
 
         public void Draw(Shader shader)
@@ -168,7 +168,7 @@ namespace game_2.Brain.NewAssimpFolder
             if (shader.name == ShaderName.SelectingShader)
             {
                 int i = 0;
-                foreach (AEntry item in _entries)
+                foreach (AMesh item in _entries)
                 {
                     shader.setValue("gDrawIndex", i);
                     i++;
@@ -177,7 +177,7 @@ namespace game_2.Brain.NewAssimpFolder
             }
             else
             {
-                foreach (AEntry item in _entries)
+                foreach (AMesh item in _entries)
                 {
                     item.Draw();
                 }
@@ -187,7 +187,7 @@ namespace game_2.Brain.NewAssimpFolder
         public void OnDelete()
         {
             _scene.Clear();
-            foreach (AEntry item in _entries) item.OnDelete();
+            foreach (AMesh item in _entries) item.Dispose();
         }
 
         // УСТАНОВИТЬ

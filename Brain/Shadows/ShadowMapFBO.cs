@@ -4,17 +4,17 @@ namespace game_2.Brain.Shadows
 {
     public class ShadowMapFBO
     {
-        private int m_shadowSize;
+        private int shadowMapSize;
 
-        private int m_fbo;
-        private int m_shadowMap; //файтический буфер глубены
+        private int FBO;
+        private int depthMap;
 
         public ShadowMapFBO()
         {
-            m_shadowSize = 1024;
+            shadowMapSize = 1024;
 
-            m_fbo = 0; 
-            m_shadowMap = 0;
+            FBO = 0; 
+            depthMap = 0;
 
             Init();
         }
@@ -22,22 +22,13 @@ namespace game_2.Brain.Shadows
         private void Init()
         {
             // Создание FBO
-            m_fbo = GL.GenFramebuffer();
+            FBO = GL.GenFramebuffer();
 
-            // Создание буфера глубины
-            m_shadowMap = GL.GenTexture();
+            // Создание объекта текстуры для буфера глубины
+            depthMap = GL.GenTexture();
 
-            GL.BindTexture(TextureTarget.Texture2D, m_shadowMap);
-            GL.TexImage2D(
-                TextureTarget.Texture2D, 
-                0, 
-                PixelInternalFormat.DepthComponent,
-                m_shadowSize,
-                m_shadowSize, 
-                0, 
-                PixelFormat.DepthComponent, 
-                PixelType.Float, 
-                IntPtr.Zero);
+            GL.BindTexture(TextureTarget.Texture2D, depthMap);
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.DepthComponent, shadowMapSize, shadowMapSize, 0, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero);
 
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
@@ -48,36 +39,37 @@ namespace game_2.Brain.Shadows
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToBorder);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToBorder);
 
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, m_fbo);
-            GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, TextureTarget.Texture2D, m_shadowMap, 0);
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, FBO);
+            GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, TextureTarget.Texture2D, depthMap, 0);
 
             GL.DrawBuffer(DrawBufferMode.None);
             GL.ReadBuffer(ReadBufferMode.None);
-
+            
+            // Проверка успеха инициализации и развязка от текстуры и буфера глубины
             var status = GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer);
             if (status != FramebufferErrorCode.FramebufferComplete)
             {
-                Console.WriteLine("ShadowMapFBO error: " + status.ToString());
+                Console.WriteLine("Ошибка инициализации shadowMapFBO: " + status.ToString());
             }
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
         }
 
         public void BindForWriting()
         {
-            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, m_fbo); // or draw framebuffer
+            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, FBO);
         }
 
         public void BindForReading(TextureUnit unit) 
         {
             GL.ActiveTexture(unit);
-            GL.BindTexture(TextureTarget.Texture2D, m_shadowMap);
+            GL.BindTexture(TextureTarget.Texture2D, depthMap);
         }
 
         public void Dispose()
         {
-            GL.DeleteTexture(m_shadowMap);
+            GL.DeleteTexture(depthMap);
         }
 
-        public int Size => m_shadowSize;
+        public int Size => shadowMapSize;
     }
 }

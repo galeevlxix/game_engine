@@ -133,11 +133,11 @@ vec3 CalcBumpedNormal()
     vec3 Tangent = normalize(Tangent0);
     Tangent = normalize(Tangent - dot(Tangent, Normal) * Normal);
     vec3 Bitangent = cross(Tangent, Normal);
-    vec3 BumpMapNormal = (texture2D(gMaterial.NormalMap, texCoord.xy)).xyz;
-    BumpMapNormal = 2.0 * BumpMapNormal - vec3(1.0, 1.0, 1.0);
-    vec3 NewNormal;                              
-    mat3 TBN = mat3(Tangent, Bitangent, Normal);    
-    NewNormal = TBN * BumpMapNormal;                    
+    vec3 NormalFromMap = (texture2D(gMaterial.NormalMap, texCoord.xy)).xyz;
+    NormalFromMap = 2.0 * NormalFromMap - vec3(1.0, 1.0, 1.0);
+    vec3 NewNormal;
+    mat3 TBN = mat3(Tangent, Bitangent, Normal);
+    NewNormal = TBN * NormalFromMap;
     NewNormal = normalize(NewNormal);               
     return NewNormal;  
 }

@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="AssimpNet" Version="5.0.0-beta1" />
+    <PackageReference Include="EntityFrameworkCore.Diagrams" Version="0.4.2" />
     <PackageReference Include="OpenTK" Version="4.1.0" />
     <PackageReference Include="OpenTK.Graphics" Version="4.1.0" />
     <PackageReference Include="OpenTK.Windowing.Common" Version="4.1.0" />

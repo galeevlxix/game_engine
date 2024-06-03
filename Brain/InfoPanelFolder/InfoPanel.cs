@@ -28,7 +28,7 @@ namespace game_2.Brain.InfoPanelFolder
         {
             Console.WriteLine("Загрузка информационной панели...");
             _symbols = new List<Symbol>();
-            SymbolArrayOfVertices.LoadTexture("..\\..\\..\\Files\\Textures\\glow2_font.png");
+            SymbolArrayOfVertices.LoadTexture("..\\..\\..\\Files\\Textures\\glow6_font.png");
 
             for (int i = 0; i < (int)type; i++)
             {

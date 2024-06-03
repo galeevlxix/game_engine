@@ -6,13 +6,12 @@ namespace game_2.Brain
 {
     public class Texture : IDisposable
     {
-        public readonly int Handle;
-
+        public readonly int textureHandle;
         public TextureUnit textureUnit = TextureUnit.Texture0;
 
         private Texture(int glHandle, TextureUnit _unit)
         {
-            Handle = glHandle;
+            textureHandle = glHandle;
             textureUnit = _unit;
         }
 
@@ -56,9 +55,9 @@ namespace game_2.Brain
         public void Use()
         {
             GL.ActiveTexture(textureUnit);
-            GL.BindTexture(TextureTarget.Texture2D, Handle);
+            GL.BindTexture(TextureTarget.Texture2D, textureHandle);
         }
 
-        public void Dispose() => GL.DeleteTexture(Handle);
+        public void Dispose() => GL.DeleteTexture(textureHandle);
     }
 }

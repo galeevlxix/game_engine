@@ -1,54 +1,43 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using game_2.Brain.Lights.LightStructures;
-using game_2.Brain.Lights;
-using game_2.MathFolder;
-using OpenTK.Graphics.OpenGL4;
-using OpenTK.Mathematics;
-using game_2.Brain.Shadows;
+﻿using OpenTK.Graphics.OpenGL4;
 
 namespace game_2.Brain.Selecting
 {
     public class SelectingMapFBO
     {
-        private int m_fbo;
-        private int m_selectMap;
-        private int m_depthMap;
+        private int FBO;
+        private int selectingMap;
+        private int depthMap;
 
         public SelectingMapFBO()
         {
-            m_fbo = 0;
-            m_selectMap = 0;
-            m_depthMap = 0;
+            FBO = 0;
+            selectingMap = 0;
+            depthMap = 0;
         }
 
         public void Init(int WindowWidth, int WindowHeight)
         {
             // Создание FBO
-            m_fbo = GL.GenFramebuffer();
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, m_fbo);
+            FBO = GL.GenFramebuffer();
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, FBO);
 
             // Создание объекта текстуры для буфера с информацией о примитиве
-            m_selectMap = GL.GenTexture();
-            GL.BindTexture(TextureTarget.Texture2D, m_selectMap);
+            selectingMap = GL.GenTexture();
+            GL.BindTexture(TextureTarget.Texture2D, selectingMap);
             GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgb32ui, WindowWidth, WindowHeight, 0, PixelFormat.RgbInteger, PixelType.UnsignedInt, IntPtr.Zero);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
-            GL.FramebufferTexture2D(FramebufferTarget.DrawFramebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, m_selectMap, 0);
+            GL.FramebufferTexture2D(FramebufferTarget.DrawFramebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, selectingMap, 0);
 
             // Создание объекта текстуры для буфера глубины
-            m_depthMap = GL.GenTexture();
-            GL.BindTexture(TextureTarget.Texture2D, m_depthMap);
+            depthMap = GL.GenTexture();
+            GL.BindTexture(TextureTarget.Texture2D, depthMap);
             GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.DepthComponent, WindowWidth, WindowHeight, 0, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero);
-            GL.FramebufferTexture2D(FramebufferTarget.DrawFramebuffer, FramebufferAttachment.DepthAttachment, TextureTarget.Texture2D, m_depthMap, 0);
+            GL.FramebufferTexture2D(FramebufferTarget.DrawFramebuffer, FramebufferAttachment.DepthAttachment, TextureTarget.Texture2D, depthMap, 0);
 
             // Проверка успеха инициализации и развязка от текстуры и буфера глубины
             var status = GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer);
-            if (status != FramebufferErrorCode.FramebufferComplete) Console.WriteLine("ShadowMapFBO error: " + status.ToString());
+            if (status != FramebufferErrorCode.FramebufferComplete) Console.WriteLine("Ошибка с инициализацией selectingMapFBO : " + status.ToString());
 
             GL.BindTexture(TextureTarget.Texture2D, 0);
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
@@ -56,7 +45,7 @@ namespace game_2.Brain.Selecting
 
         public void Enable()
         {
-            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, m_fbo);
+            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, FBO);
         }
 
         public void Disable()
@@ -67,7 +56,7 @@ namespace game_2.Brain.Selecting
         // сюда точку в центре экрана
         public unsafe PixelInfo ReadPixel(int x, int y)
         {
-            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, m_fbo);
+            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, FBO);
             GL.ReadBuffer(ReadBufferMode.ColorAttachment0);
 
             PixelInfo[] pixels = new PixelInfo[1];
