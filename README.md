@@ -1,5 +1,5 @@
 ### Разработка графического программного обеспечения для визуализации и работы с трехмерными объектами
-ст. Галеев Тимур, гр. 3530203/00102 (летняя практика)
+ст. Галеев Тимур, гр. 3530203/00102 (летняя практика + НИР1 + НИР2 + преддипломная практика + ВКР)
 # Оглавление
 [1. Первые шаги и треугольник](#s1)  
 [2. Индексная отрисовка](#s3)  
@@ -15,7 +15,16 @@
 [12. Скайбокс и прицел](#s13)  
 [13. Загрузка моделей через Assimp](#s14)  
 [14. Информационная панель](#s15)  
-[15. Свет: окружающее освещение, рассеянное освещение, отраженный свет](#s16)
+[15. Свет: окружающее освещение, рассеянное освещение, отраженный свет](#s16)  
+[16. Свет: Point Light](#s17)  
+[17. Свет: Spot Light](#s18)  
+[18. Карты нормали (Normal Map)](#s19)  
+[19. Карта отражения (Specular Map)](#s20)  
+[20. Тени (Shadow Mapping)](#s21)  
+[21. PCF](#s22)  
+[22. Shadow Mapping для нескольких источников света](#s23)  
+[23. 3D выбор](#s24)  
+[24. Интерактивное взаимодействие с объектами](#s25)  
 
 <a name="s1"></a>
 # Первые шаги и треугольник 
@@ -1498,6 +1507,15 @@ Pipeline будет вспомогательным классом для соз�
 ![camera](https://github.com/galeevlxix/game_engine/blob/WorkingWithTheModel/screens/camera%20(1).gif)
 <a name = "s9"></a>
 # Текстуры
+Diffuse map – карта диффузного цвета пикселей трехмерного объекта. Нормированные координаты текстур UV каждой вершины указывают позицию XY текселя на изображении текстуры. То есть, например, для вершины с координатой текстуры UV = (0,5; 0,5) позиция текселя на изображении текстуры размером 1024х2048 будет равна XY = (0,5 * 1024; 0,5 * 2048) = (512; 1024). Координаты UV всегда находятся в диапазоне от 0 до 1 и связаны не только с диффузной картой, но и с картой нормали и картой отражения.  
+Некоторые библиотеки загружают изображения, начиная с верхнего левого пикселя, в то время как OpenGL загружает, начиная с нижнего левого. Во время работы с текстурами следует это учесть, иначе они переворачиваются по вертикали.  
+Во время преобразований объекта в мировом пространстве координаты его текстур остаются неизменными и прикреплены к вершинам.  
+![image](https://github.com/user-attachments/assets/3d4ceea3-a23e-4a7a-aa48-6e597703c557)  
+![image](https://github.com/user-attachments/assets/d467fffc-16a1-4a11-bd00-5c7ae669c5de)
+Во время рендеринга может возникнуть ситуация, когда координаты текстуры UV указывают на тексел в XY = (223,23; 65,8). Метод, который выбирает итоговый тексел, является фильтрацией. Два самых распространенных метода фильтрации являются ближайшая фильтрация и линейная фильтрация. При ближайшей фильтрации координаты текселя округляются: (223; 66). А при линейной берутся соседние тексели ((223, 66), (223, 65), (224, 66) и (224, 65)) и над ними совершается линейная интерполяция между их цветами, сохраняя относительное расстояние между исходным текселем и каждым соседним текселем. Разница между двумя подходами заключается в более мягком отображении текстур.  
+![image](https://github.com/user-attachments/assets/0ec1c1e7-e4f9-40ec-b42f-2a889de98758)
+Итоговый цвет пикселя равен цвету текселя умноженному на результирующий цвет освещения.  
+![image](https://github.com/user-attachments/assets/8806a11a-51f2-4e2a-88f5-6eecc96034a6)
 ## Класс Texture
 В методе загрузки текстуры `Load` первым делом создаем пустую текстуру `Handle` для нашего использования.  
 `stb_image` загружается с верхнего левого пикселя, в то время как OpenGL загружается с нижнего левого, в результате чего текстура переворачивается по вертикали. Функция `stbi_set_flip_vertically_on_load` исправит это недоразумение, заставив текстуру отображаться должным образом.  
@@ -3206,7 +3224,9 @@ void main()
 <a name="s16"></a>
 # Свет: окружающий, рассеянный, отраженный
 ## Окружающий свет
+Базовый  (окружающий)  свет  содержит  только  интенсивность  и  цвет окружающего света. Это минимальное освещение примитивов всех объектов, даже когда свет на них не попадает или они находятся в тени. Итоговый цвет пикселя получается путем умножения исходного цвета пикселя на цвет света и величину интенсивности (яркости) света. 
 ### Структура BaseLight
+Структура базового света. Она состоит из цвета, а также интенсивностей окружающего и рассеянного освещения. Из базовых параметров для окружающего света понадобятся только цвет и интенсивность окружающего освещения.
 ```c#
 ﻿using game_2.MathFolder;
 
@@ -3242,6 +3262,7 @@ namespace game_2.Brain.Lights
 }
 ```
 ### Класс LightingTechnique
+Класс LightingTechnique хранит расположения параметров окружающего света в шейдере, а также устанавливает эти параметры.
 ```c#
 public class LightingTechnique
     {
@@ -3274,6 +3295,7 @@ public class LightingTechnique
     }
 ```
 ### Изменения во фрагментном шейдере
+Изменения во фрагментном шейдере состоят в том, что также инициализируется структура базового света, а цвет и интенсивность окружающего света влияют на выходной цвет. 
 ```hlsl
 #version 330
 out vec4 outputColor;
@@ -3302,6 +3324,7 @@ void main()
 }
 ```
 ### Включение в движке
+В классе движка включаем окружающий свет, задав его параметры.
 ```c#
 	protected override void OnLoad() {
 		. . .
@@ -3317,7 +3340,10 @@ void main()
 	}
 ```
 ## Рассеянный свет
+В отличие от базового света, направленный свет основывается на направлении лучей и делает ярче только те примитивы объекта, которые прошли проверку. Яркость и наличие направленного света на том или ином примитиве зависит от того, под каким углом луч направленного света падает на поверхность. Для этого у каждой вершины существует нормализованный вектор нормали, который всегда перепендикулярен поверхности вершины.
+Когда направленный свет попадает на примитив, коэффициент влияния света высчитывается через косинус угла между лучами и нормалью поверхности, который равен скалярному произведению нормализованному вектору нормали поверхности и нормализованному обратному вектору направления лучей света. Если коэффициент влияния света DiffuseFactor меньше 0, значит угол между направленным светом и нормалью тупой. Если DiffuseFactor = 0, значит угол прямой. В этих случаях влияния света не будет. Если же DiffuseFactor больше 0, то цвет рассеивания равен произведению цвета света на интенсивность рассеивания, уменьшенный на коэффициент рассеивания.
 ### Структура DirectionalLight
+Структура рассеянного освещения DirectionalLight включает в себя направление, а также элементы базового света.
 ```c#
 ﻿using game_2.MathFolder;
 
@@ -3354,6 +3380,7 @@ namespace game_2.Brain.Lights
 }
 ```
 ### Изменения в классе LightingTechnique
+Изменения в классе LightingTechnique заключаются в добавлении сохранения локаций параметров рассеянного света в функции инициализации и добавлении функций установки параметров.
 ```c#
         private void Init()
         {
@@ -3406,6 +3433,7 @@ namespace game_2.Brain.Lights
 	. . .
 ```
 ### Изменения во фрагментном шейдере
+Во фрагментном шейдере была добавлена новая структура рассеянного света, включающая параметры базового света.
 ```hlsl
 . . .
 struct DirectionalLight
@@ -3416,6 +3444,7 @@ struct DirectionalLight
 uniform DirectionalLight gDirectionalLight;
 . . .
 ```
+На основе параметров света была высчитана интенсивность рассеянного освещения на том или ином участке объекта. Если результат скалярного произведения вектора нормали и вектора направления света меньше 0, то рассеянное освещение на этом участке отсутствует. В результате окружающий и рассеянный света складываются друг с другом.
 ```hlsl
 . . .
 void main() 
@@ -3447,6 +3476,7 @@ void main()
 . . .
 ```
 ### Включение в движке
+В классе движка был создан и установлен рассеянный свет.
 ```c#
         // Загрузка окна
         protected override void OnLoad()
@@ -3461,7 +3491,11 @@ void main()
         }
 ```
 ## Отраженный свет
+Имитация отражения луча света от поверхности зависит от позиции камеры и направления луча от источника света до поверхности. Проверка наблюдения отраженного света реализуется с помощью вектора нормали, перпендикулярного поверхности. Сначала высчитывается нормализованный вектор V из точки на поверхности до камеры. Далее высчитывается нормализованный вектор R направления луча, отраженного от поверхности под тем же углом, что был при падении. Потом высчитывается косинус угла между векторами V и R, являющийся SpecularFactor. 
+![image](https://github.com/user-attachments/assets/50f8bbfc-7d14-4eed-9f3e-fd8897ae0a8a)
+Если SpecularFactor больше 0, то есть если угол между векторами R и V острый или равен 0, то SpecularFactor усиляется параметром SpecPower, являющимся силой отражения материала.
 ### Изменения в классе LightingTechnique
+Были объявлены расположения в шейдере параметров позиции камеры, интенсивности и силы отражения света.  
 ```c#
     public class LightingTechnique
     {
@@ -3471,6 +3505,7 @@ void main()
         int _matSpecularPowerLocation;
 	. . .
 ```
+Далее в функции Init параметры были инициализированы. 
 ```c#
         private void Init()
         {
@@ -3481,6 +3516,7 @@ void main()
             _matSpecularPowerLocation = CentralizedShaders.ObjectShader.GetUniformLocation("gMatSpecularPower");
         }
 ```
+Также была добавлена функция установки параметров.
 ```c#
 	. . .
         //specular
@@ -3511,7 +3547,8 @@ void main()
         }
 	. . .
 ```
-### 
+### Изменения в вершинном шейдере
+В вершинном шейдере высчитывается параметр WorldPos0, хранящий расположение вершины с учетом преобразований и отправляющийся во фрагментный шейдер.
 ```hlsl
 . . .
 out vec3 WorldPos0;
@@ -3523,6 +3560,7 @@ void main()
 }
 ```
 ### Изменения во фрагментном шейдере
+Если скалярное произведение вектора нормали и вектора направления рассеянного света больше 0, то происходит подсчет вектора VertexToEye из вершины в мировом пространстве до позиции камеры. Затем вычисляется вектор отражения LightReflect с помощью функции reflect, которая принимает два параметра: вектор направления света и нормаль к поверхности. Если скалярное произведение вектором VertexToEye и LightReflect больше 0, то итоговый отраженный цвет вычисляется через произведение цвета света на интенсивность отражения материала и сила отражения и добавляется к освещению при создании итогового цвета.
 ```hlsl
 ...
 in vec3 WorldPos0;
@@ -3568,6 +3606,7 @@ void main()
 }
 ```
 ### Включение в движке
+В классе движка устанавливаются параметры отраженного света.
 ```c#
         // Рендер окна
         protected override void OnRenderFrame(FrameEventArgs args)
@@ -3581,3 +3620,647 @@ void main()
 ![difli](https://github.com/galeevlxix/game_engine/blob/Light/screens/diflights.jpg)  
 
 ![spec](https://github.com/galeevlxix/game_engine/blob/Light/screens/specularlight.jpg)
+
+<a name="s17"></a>
+# Свет: Point Light
+## Теория  
+Точечный источник света схож со стандартной лампочкой, но он представляется как материальная точка. У него есть позиция в пространстве, он освещает во всех направлениях, а сила освещения обратно пропорциональна квадрату расстояния от источника света.  
+Вектор направления луча света от точечного источника определяется разностью позиции конкретной вершины объекта и позиции источника света. Длина этого вектора равна дистанции:    
+![image](https://github.com/user-attachments/assets/df4ce9b0-efe3-4bc0-892b-1c8e3ac0f954)  
+Так же, как и с направленным светом (2.2.2 и 2.2.3), косинус угла между направлением света и нормалью поверхности определяет коэффициент влияния света на поверхность. Если коэффициент больше 0, то цвет от точечного света равен произведению цвета света на интенсивность, уменьшенный на коэффициент рассеивания и экспоненциально от дистанции:  
+![image](https://github.com/user-attachments/assets/c73571f8-8afc-4019-8f74-92b290cf3eb9)  
+Например, пусть существует точечный источник света, у которого белый цвет Color = (1, 1, 1), интенсивность Intensity = 1. Пусть DiffuseFactor = =1, то есть луч света падает под прямым углом на поверхность. Пусть параметры затухания определены как: Constant = 1, Linear = 0,09, Exp = 0,032. Тогда итоговый цвет от освещения поверхности зависит от расстояния до точечным источником света следующим образом.  
+![image](https://github.com/user-attachments/assets/7cfab7ac-1b37-40ab-a4e8-5f4bfe2c9c09)  
+## Реализация  
+Структура точечного источника света выглядит следующим образом. Он имеет вектор позиции, структуру BaseLight с интенсивностью и цветом света, а также Attenuation с параметрами константного, линейного и экспоненциального затухания.
+```c#
+    public struct PointLight
+    {
+        public vector3f Position;
+        public BaseLight BaseLight;
+        public Attenuation Attenuation;
+    }
+
+    public struct PointLightLocations
+    {
+        public BaseLightLocations BaseLightLocations;
+        public AttenuationLocations Attenuation;
+        public int Position;
+    }
+
+    public struct Attenuation
+    {
+        public float Constant;
+        public float Linear;
+        public float Exp;
+    }
+
+    public struct AttenuationLocations
+    {
+        public int Constant;
+        public int Linear;
+        public int Exp;
+    }
+```
+В программе шейдера инициализируется структура точечного света, а также максимальное количество, массив и текущее количество источников точечного света.
+```c
+struct PointLight
+{
+    BaseLight Base;
+    vec3 Position;
+    Attenuation Atten;
+};
+const int MAX_POINT_LIGHTS = 10;
+
+uniform PointLight gPointLights[MAX_POINT_LIGHTS];
+uniform int gNumPointLights;
+```
+В функции CalcLightInternal на основе направления луча света и вектора нормали текущей поверхности вычисляется влияние диффузного и отраженного освещения на поверхность от всех типов источника света. В функции CalcPointLight задается направление луча для вычисления его диффузного и отраженного освещения, а также задается затухание света, зависящее от расстояния.
+```c
+vec4 CalcLightInternal(BaseLight Light, vec3 pLightDirection, vec3 Normal)
+{
+    vec3 LightDirection = normalize(pLightDirection);
+
+    float DiffuseFactor = dot(Normal, -LightDirection);
+
+    vec4 DiffuseColor = vec4(0, 0, 0, 0);
+    vec4 SpecularColor = vec4(0, 0, 0, 0);
+
+    if (DiffuseFactor > 0)
+    {
+        DiffuseColor = vec4(Light.Color, 1.0) * Light.Intensity * DiffuseFactor;
+
+        vec3 VertexToEye = normalize(gCameraPos - WorldPos0);
+        vec3 LightReflect = normalize(reflect(LightDirection, Normal));
+        float SpecularFactor = dot(VertexToEye, LightReflect);
+
+        if (SpecularFactor > 0) 
+        {
+            SpecularFactor = pow(SpecularFactor, gMaterial.SpecularPower);
+            SpecularColor = vec4(Light.Color, 1.0f) * Light.Intensity * SpecularFactor;
+        }
+    }
+    return (DiffuseColor + SpecularColor);
+}
+vec4 CalcPointLight(PointLight pLight, vec3 Normal)
+{
+    vec3 LightDirection = WorldPos0 - pLight.Position;
+    float Distance = length(LightDirection);
+
+    vec4 Color = CalcLightInternal(pLight.Base, LightDirection, Normal);
+    
+    float Attenuation =  pLight.Atten.Constant + 
+                         pLight.Atten.Linear * Distance +
+                         pLight.Atten.Exp * Distance * Distance;
+    return Color / Attenuation;
+}
+void main()
+{
+	. . .
+    for (int i = 0; i < gNumPointLights; i++)
+    {
+        TotalLight += CalcPointLight(gPointLights[i], Normal);
+    }
+    	. . .
+}
+```
+При инициализации позиции для шейдерных переменных сохраняются.
+```c
+_numPointLightsLocation = CentralizedShaders.GetUniformLocation( ShaderName.AssimpShader, "gNumPointLights");
+for (int i = 0; i < MAX_POINT_LIGHTS; i++)
+{
+	_pointLightLocations[i].BaseLightLocations.Color = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gPointLights[" + i + "].Base.Color");
+	_pointLightLocations[i].BaseLightLocations.Intensity = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gPointLights[" + i + "].Base.Intensity");
+	_pointLightLocations[i].Position = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gPointLights[" + i + "].Position");
+	_pointLightLocations[i].Attenuation.Exp = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gPointLights[" + i + "].Atten.Exp");
+	_pointLightLocations[i].Attenuation.Linear = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gPointLights[" + i + "].Atten.Linear");
+	_pointLightLocations[i].Attenuation.Constant = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gPointLights[" + i + "].Atten.Constant");
+}
+```
+Установка параметров точечного света.
+```c#
+	public void SetPointLights(PointLight[] pointLights)
+        {
+            Use();
+            GL.Uniform1(_numPointLightsLocation, pointLights.Length);
+
+            for (int i = 0; i < pointLights.Length; i++)
+            {
+                GL.Uniform3(
+                    _pointLightLocations[i].BaseLightLocations.Color, 
+                    pointLights[i].BaseLight.Color.x, 
+                    pointLights[i].BaseLight.Color.y, 
+                    pointLights[i].BaseLight.Color.z);
+                GL.Uniform1(
+                    _pointLightLocations[i].BaseLightLocations.Intensity, 
+                    pointLights[i].BaseLight.Intensity);
+                GL.Uniform3(
+                    _pointLightLocations[i].Position, 
+                    pointLights[i].Position.x, 
+                    pointLights[i].Position.y, 
+                    pointLights[i].Position.z);
+                GL.Uniform1(
+                    _pointLightLocations[i].Attenuation.Exp, 
+                    pointLights[i].Attenuation.Exp);
+                GL.Uniform1(
+                    _pointLightLocations[i].Attenuation.Linear, 
+                    pointLights[i].Attenuation.Linear);
+                GL.Uniform1(
+                    _pointLightLocations[i].Attenuation.Constant, 
+                    pointLights[i].Attenuation.Constant);
+            }
+}
+```
+
+```c#
+            pointLights[0].Position = new vector3f(-5, 2, 0);
+            pointLights[0].Attenuation.Exp = 0.032f;
+            pointLights[0].Attenuation.Linear = 0.09f;
+            pointLights[0].Attenuation.Constant = 1;
+            pointLights[0].BaseLight.Color = new vector3f(1, 0, 0);
+            pointLights[0].BaseLight.Intensity = 1f;
+
+            pointLights[1].Position = new vector3f(5, 2, 0);
+            pointLights[1].Attenuation.Exp = 0.032f;
+            pointLights[1].Attenuation.Linear = 0.09f;
+            pointLights[1].Attenuation.Constant = 1;
+            pointLights[1].BaseLight.Color = new vector3f(0, 1, 1);
+            pointLights[1].BaseLight.Intensity = 1f;
+
+            lightConfig.SetPointLights(pointLights);
+```
+<a name="s18"></a>
+# Свет: Spot Light 
+## Теория  
+Прожекторный свет, как и точечный свет, имеет позицию, затухание, цвет и интенсивность, а также он имеет направление и коэффициент обрезки света Cutoff. Чтобы определить влияние прожекторного света на поверхность, первым делом необходимо вычислить косинус угла между нормализованным вектором направления луча света прожектора от начала источника до пикселя поверхности с самим направлением прожектора.  
+Если косинус меньше, чем коэффициент обрезки света, то пиксель находится вне круга прожектора. А если больше, значит пиксель находится в пределах круга, и необходимо вычислить влияние света на него так, как если бы у нас был точечный источник света	, учитывая угол падения луча, дистанцию до пикселя, коэффициенты затухания и интенсивность свечения. Полученный результат умножается на значение, линейно интерполируемое от 0 до 1 в зависимости от SpotFactor и Cutoff.  
+![image](https://github.com/user-attachments/assets/fcde44d1-67ab-4a36-ab72-8b04a527554b)  
+## Реализация  
+Структура прожекторного источника света выглядит следующим образом. Он имеет вектор направления, параметр отсечения и структуру Point Light. Усеченный и направленный точечный свет определяет прожекторный свет. 
+```c#
+    public struct Spotlight
+    {
+        public vector3f Direction;
+        public float Cutoff1;
+        public PointLight PointLight;
+    }
+
+    public struct SpotlightLocations
+    {
+        public PointLightLocations PointLightLocations;
+        public int Direction;
+        public int Cutoff1;
+    }
+```
+В программе шейдера инициализируется структура прожекторного света, а также максимальное количество, массив и текущее количество источников прожекторного света.  
+```c
+struct SpotLight
+{
+    PointLight Base;
+    vec3 Direction;
+    float Cutoff1;
+};
+
+const int MAX_SPOT_LIGHTS = 10;
+
+uniform SpotLight gSpotLights[MAX_SPOT_LIGHTS];
+uniform int gNumSpotLights;
+```
+Вектор LightToPixel может не совпадать с направлением прожектора. Он лишь указывает направление текущего луча от источника света до пикселя объекта. Если этот луч находится в области усечения, цвет от прожекторного свет считается, как от точечного. Далее границы освещения делаются более плавными.  
+```c
+vec4 CalcSpotLight(SpotLight sLight, vec3 Normal) 
+{
+    vec3 LightToPixel = normalize(WorldPos0 - sLight.Base.Position);
+    float SpotFactor = dot(LightToPixel, sLight.Direction);
+
+    if (SpotFactor > sLight.Cutoff1)
+    {
+        vec4 Color = CalcPointLight(sLight.Base, Normal);
+        return Color * (1.0 - (1.0 - SpotFactor) * 1.0 / (1.0 - sLight.Cutoff1));
+    }
+
+    return vec4(0, 0, 0, 0);
+}
+. . .
+    for (int i = 0; i < gNumSpotLights; i++)
+    {
+        TotalLight += CalcSpotLight(gSpotLights[i], Normal0);
+    }
+```
+При инициализации сохраняем позиции для шейдерных переменных.  
+```c#
+            _numSpotLightsLocation = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gNumSpotLights");
+
+            for (int i = 0; i < MAX_SPOT_LIGHTS; i++)
+            {
+		_spotlightLocations[i].PointLightLocations.BaseLightLocations.Color = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gSpotLights[" + i + "].Base.Base.Color");
+                _spotlightLocations[i].PointLightLocations.BaseLightLocations.Intensity = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gSpotLights[" + i + "].Base.Base.Intensity");
+                _spotlightLocations[i].PointLightLocations.Position = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gSpotLights[" + i + "].Base.Position");
+                _spotlightLocations[i].PointLightLocations.Attenuation.Exp = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gSpotLights[" + i + "].Base.Atten.Exp");
+                _spotlightLocations[i].PointLightLocations.Attenuation.Constant = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gSpotLights[" + i + "].Base.Atten.Constant");
+                _spotlightLocations[i].PointLightLocations.Attenuation.Linear = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gSpotLights[" + i + "].Base.Atten.Linear");
+                _spotlightLocations[i].Direction = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gSpotLights[" + i + "].Direction");
+                _spotlightLocations[i].Cutoff1 = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gSpotLights[" + i + "].Cutoff1");
+            }
+```
+Установка параметров прожекторного света выглядит следующим образом.  
+```c#
+        public void SetSpotLights(Spotlight[] spotLights)
+        {
+            Use();
+            GL.Uniform1(_numSpotLightsLocation, spotLights.Length);
+            for (int i = 0; i < spotLights.Length; i++)
+            {
+                GL.Uniform3(
+              _spotlightLocations[i].PointLightLocations.BaseLightLocations.Color, 
+                    spotLights[i].PointLight.BaseLight.Color.x, 
+                    spotLights[i].PointLight.BaseLight.Color.y, 
+                    spotLights[i].PointLight.BaseLight.Color.z);
+                GL.Uniform1(
+_spotlightLocations[i].PointLightLocations.BaseLightLocations.Intensity,
+                    spotLights[i].PointLight.BaseLight.Intensity);
+                GL.Uniform3(
+                    _spotlightLocations[i].PointLightLocations.Position,
+                    spotLights[i].PointLight.Position.x,
+                    spotLights[i].PointLight.Position.y,
+                    spotLights[i].PointLight.Position.z);
+                GL.Uniform1(
+                    _spotlightLocations[i].PointLightLocations.Attenuation.Exp,
+                    spotLights[i].PointLight.Attenuation.Exp);
+                GL.Uniform1(
+   _spotlightLocations[i].PointLightLocations.Attenuation.Constant,
+                    spotLights[i].PointLight.Attenuation.Constant);
+                GL.Uniform1(
+                    _spotlightLocations[i].PointLightLocations.Attenuation.Linear,
+                    spotLights[i].PointLight.Attenuation.Linear);
+                GL.Uniform3(
+                    _spotlightLocations[i].Direction,
+                    spotLights[i].Direction.x,
+                    spotLights[i].Direction.y,
+                    spotLights[i].Direction.z);
+                GL.Uniform1(
+                    _spotlightLocations[i].Cutoff1,
+                    spotLights[i].Cutoff1);
+        }
+```
+
+```c#
+            spotlights[0].PointLight.Position = new vector3f(-10, 1, 25);
+            spotlights[0].PointLight.BaseLight.Color = new vector3f(1, 1, 0);
+            spotlights[0].PointLight.BaseLight.Intensity = 1;
+            spotlights[0].PointLight.Attenuation.Constant = 1;
+            spotlights[0].PointLight.Attenuation.Linear = 0.027f;
+            spotlights[0].PointLight.Attenuation.Exp = 0.0028f;
+            spotlights[0].Direction = new vector3f(0, -1, 0);
+            spotlights[0].Cutoff1 = 0.3f; 
+            spotlights[1].PointLight.Position = Camera.Pos;
+            spotlights[1].PointLight.BaseLight.Color = new vector3f(1, 0, 1);
+            spotlights[1].PointLight.BaseLight.Intensity = 0;
+            spotlights[1].PointLight.Attenuation.Constant = 1;
+            spotlights[1].PointLight.Attenuation.Linear = 0.027f;
+            spotlights[1].PointLight.Attenuation.Exp = 0.0028f;
+            spotlights[1].Direction = -Camera.Target;
+            spotlights[1].Cutoff1 = 0.97f; 
+            lightConfig.SetSpotLights(spotlights);
+```
+## Результат  
+![image](https://github.com/user-attachments/assets/8b51e7b5-63cf-48ca-a7aa-e6aeb57b8b81)
+<a name="s19"></a>
+# Карты нормали (Normal Map)
+## Теория  
+Карты нормалей не изменяют реальный 3D-объект. Они лишь создают за счет света и теней иллюзию существования шероховатости, рельефа и прочих мелких деталей, когда на самом деле эти мелкие детали не были смоделированы, а хранятся в карте нормали в виде текстуры. Благодаря технике использования карты нормали можно значительно повысить детализацию объектов и улучшить графику, без значительного влияния на производительность.  
+![image](https://github.com/user-attachments/assets/12fdf19c-4188-4ce4-87b4-61fd7ada82ab)  
+Достигается это путем заимствования нормалей вершин из текстуры, называемой картой нормали. Каждый тексел из этой текстуры, который имеет цвет (R, G, B), определяет направление вектора нормали в координатах (X, Y, Z). Данный вектор находится в диапазоне [0; 1], так как величины Red, Green или Blue находятся в диапазоне [0; 1], поэтому необходимо перевести вектор в диапазон [-1; 1].  
+![image](https://github.com/user-attachments/assets/5bf9faa2-3d7e-4aa3-9336-12f512309edb)  
+Однако все нормали, выбранные из карты нормали, находятся в пространстве текстуры ориентированы вдоль положительной оси Oz. Это может плохо повлиять на результат освещения поверхности объекта, когда при изменении объекта в мировом пространстве нормаль его какой-то поверхности не будет сонаправлена с осью Oz.   
+TBN-матрица строится из векторов Tangent, Bitangent и Normal. Вектор нормали текстуры умножается на TBN-матрицу для преобразования из пространства текстуры в пространство модели и нормализуется, чтобы гарантировать единичную длину. Далее полученный вектор нормали текстуры будет использоваться во всех вычислениях диффузного освещения вместо вектора нормали поверхности.  
+![image](https://github.com/user-attachments/assets/fde5c98a-a5c0-4be4-802f-cd08bd49e955)  
+## Реализация  
+Каждый Mesh содержит свой объект класса материала, который в свою очередь содержит пути текстур этого Mesh и силу отражения материала, а также функции для работы с ними.  
+```c#
+    public class AMaterial
+    {
+        private ModelTexturePaths m_paths;
+        private float m_specular_power;
+
+        private AMaterial()
+        {
+            m_paths = new ModelTexturePaths();
+        }
+
+        public static AMaterial Init(ModelTexturePaths paths)
+        {
+            AMaterial material = new AMaterial();
+            material.m_paths = paths;
+            material.LoadTextures();
+
+            return material;
+        }
+
+        public void Use()
+        {
+            UseTextures();
+            LightningManager.lightConfig.SetMatSpecularPower(m_specular_power);
+        }
+
+        private void UseTextures()
+        {
+            TextureHeap.Use(m_paths);
+        }
+        
+        private void LoadTextures()
+        {
+            //missing maps
+            if (m_paths._NormalPath == string.Empty) m_paths._NormalPath = TextureHeap.empty_normal_map;
+            if (m_paths._SpecularPath == string.Empty) m_paths._SpecularPath = TextureHeap.empty_specular_map;
+
+            //add
+            TextureHeap.Add(m_paths._DiffusePath);
+            TextureHeap.Add(m_paths._NormalPath, TextureUnit.Texture1);
+        }
+
+        public void SetSpecularPower(float value)
+        {
+            m_specular_power = value;
+        }
+    }
+```
+Все текстуры, которые есть в проекте, хранятся в «куче текстур», где каждая текстура уникальная и идентифицируется путем к ее файлу. В материале хранятся пути к файлам текстур, и когда надо активировать какую-то текстуру материала, можно просто обратиться к этой куче. Сделано это для того, чтобы не создавать и не хранить одни и те же тяжелые текстуры разных материалов.  
+```c#
+    public static class TextureHeap
+    {
+        private static Dictionary<string, Texture> _textureHeap = new Dictionary<string, Texture>();
+        public static string empty_normal_map = "..\\..\\..\\Files\\Textures\\EmptyNormalMap.png";
+        public static string empty_specular_map = "..\\..\\..\\Files\\Textures\\white_list2.bmp";
+public static void Add(string file_path, TextureUnit unit = TextureUnit.Texture0, PixelInternalFormat format = PixelInternalFormat.Rgba)
+        {
+            if (!_textureHeap.ContainsKey(file_path))
+            {
+                _textureHeap.Add(file_path, Texture.Load(file_path, format, unit));
+            }
+        }
+
+        public static void Use(string file_path)
+        {
+            _textureHeap[file_path].Use();
+        }
+
+        public static void Use(ModelTexturePaths paths)
+        {
+            _textureHeap[paths._DiffusePath].Use();
+            _textureHeap[paths._NormalPath].Use();
+        }
+    }
+```
+При загрузке объекта с Assimp создаются и загружаются текстурные карты и сила отражения материалов на основе данных из файла материала (.mtl) объекта.   
+```c#
+            if (mesh.MaterialIndex >= 0)
+            {
+                // Textures
+                Material input_material = _scene.Materials[mesh.MaterialIndex];
+                texturesPaths = ProcessTextures(input_material.GetAllMaterialTextures());
+                shininess = input_material.Shininess;                
+            }
+
+            material = AMaterial.Init(texturesPaths);
+            material.SetSpecularPower(shininess);
+
+            _entries.Add(new AEntry(vertices, indices, material));
+```
+В шейдерной программе нормаль меняется на результат функции CalcBumpedNormal.  
+```c
+vec3 CalcBumpedNormal()
+{
+    vec3 Normal = normalize(Normal0); 
+    vec3 Tangent = normalize(Tangent0);
+    Tangent = normalize(Tangent - dot(Tangent, Normal) * Normal);
+    vec3 Bitangent = cross(Tangent, Normal);
+    vec3 BumpMapNormal = (texture2D(gMaterial.NormalMap, texCoord.xy)).xyz;
+    BumpMapNormal = 2.0 * BumpMapNormal - vec3(1.0, 1.0, 1.0);
+    vec3 NewNormal;                              
+    mat3 TBN = mat3(Tangent, Bitangent, Normal);    
+    NewNormal = TBN * BumpMapNormal;                    
+    NewNormal = normalize(NewNormal);               
+    return NewNormal;  
+}
+void main()
+{
+    vec3 Normal = CalcBumpedNormal();
+. . .
+}
+```
+## Результат
+![image](https://github.com/user-attachments/assets/3864426e-7b7f-4808-bf85-217b3700b3b0)
+<a name="s20"></a>
+# Карта отражения (Specular Map)
+## Теория
+Specular Map накладывается на объект, как и диффузная карта, но хранит в себе не цвета пикселей объекта, а степень отражения материала в данном участке. Отличие Specular Map от параметра силы отражения материала Specular Power в том, что второй действует по всем поверхностям одного материла и усиливает отражение. А Specular Map показывает, где отражение должно быть сильнее, а где должно быть меньше. Например, металлическое лезвие ножа должно отражать свет сильно, а деревянная ручка – слабо. Каждый пиксель карты отражения может отображаться в виде цветового вектора, где черный представляет цветовой вектор vec3 (0, 0, 0), а белый - цветовой вектор vec3 (1, 1, 1), например.  
+## Реализация  
+При загрузке и хранении текстур берется в расчет еще наличие specular map.  
+```c#
+        private void LoadTextures()
+        {
+            //missing maps
+            if (m_paths._NormalPath == string.Empty) m_paths._NormalPath = TextureHeap.empty_normal_map;
+            if (m_paths._SpecularPath == string.Empty) m_paths._SpecularPath = TextureHeap.empty_specular_map;
+
+            //add
+            TextureHeap.Add(m_paths._DiffusePath);
+            TextureHeap.Add(m_paths._NormalPath, TextureUnit.Texture1);
+            TextureHeap.Add(m_paths._SpecularPath, TextureUnit.Texture2);
+        }
+```
+```c#
+        public static void Use(ModelTexturePaths paths)
+        {
+            _textureHeap[paths._DiffusePath].Use();
+            _textureHeap[paths._NormalPath].Use();
+            _textureHeap[paths._SpecularPath].Use();
+        }
+```
+Во фрагментном шейдере SpecularColor умножается еще на тексел карты отражения.
+```c
+SpecularColor = vec4(Light.Color, 1.0f) * Light.Intensity * SpecularFactor * texture2D(gMaterial.SpecularMap, texCoord.xy);
+```
+## Результат
+![image](https://github.com/user-attachments/assets/e6c62442-7822-439f-aa81-09d05a58e684)
+<a name="s21"></a>
+# Тени (Shadow Mapping)
+## Теория
+Одним из самых распространенных техник построения теней является использование карты теней. Метод реализуется за счет повторного рендеринга сцены с объектами. Для исследования данной техники был выбран такой тип источника света как прожектор, так как он схож с камерой и удобен для построения матрицы проекции.  
+Во время первого рендеринга сцена отрисовывается с точки зрения источника света. Все ближайшие к источнику света пиксели попадают в отдельный буфер глубины. Значит мы получим наименьшие значения глубины, которые видно с точки зрения источника света. Текстура, получающаяся в итоге и не имеющая цвета, называется картой теней и связана с одним конкретным источником света. Размер текстуры указывается при создании матрицы проекции света.  
+![image](https://github.com/user-attachments/assets/153b8bc0-708b-4060-8dfe-67f118494d99)  
+Во время второго рендеринга сцена отрисовывается обычно – с точки зрения камеры. Буфер глубины используется во фрагментном шейдере для получения соответствующего значения глубины для каждого рисуемого пикселя. Например, сначала необходимо перевести пиксель в точке P в пространство источника света. Так как точка P не видна из точки зрения света, её координата z в нашем примере будет 0,9. По координатам точки x, y мы можем заглянуть в карту глубины и узнать, что ближайшая к источнику света точка — C с глубиной 0,4. Это значение меньше, чем для точки P, поэтому точка P находится в тени.  
+![image](https://github.com/user-attachments/assets/e153f61b-c408-4ea1-b51d-6cc7013d4dfe)  
+## Реализация
+Сначала создаётся кадровый буфер для рисования карты глубины и 2D текстуру, чтобы использовать её качестве буфера глубины для кадрового буфера. Здесь устанавливается высота и ширина текстуры и указывается формат текстуры GL_DEPTH_COMPONENT.  
+```c#
+    public class ShadowMapFBO
+    {
+        private int m_shadowWidth;
+        private int m_shadowHeight;
+        private int m_fbo;
+        private int m_shadowMap; // фактический буфер глубины
+        public ShadowMapFBO(int width = 0, int height = 0)
+        {
+            m_shadowWidth = width;
+            m_shadowHeight = height;
+            m_fbo = 0; 
+            m_shadowMap = 0;
+            Init();
+        }
+	. . . 
+	}
+```
+Затем необходимо присоединить текстуру глубины к кадровому буферу в качестве буфера глубины.
+```c#
+	private void Init()
+        {
+            m_fbo = GL.GenFramebuffer();
+            m_shadowMap = GL.GenTexture();
+            GL.BindTexture(TextureTarget.Texture2D, m_shadowMap);
+            GL.TexImage2D(
+                TextureTarget.Texture2D, 
+                0, 
+                PixelInternalFormat.DepthComponent32,
+                m_shadowWidth,
+                m_shadowHeight, 
+                0, 
+                PixelFormat.DepthComponent, 
+                PixelType.Float, 
+                IntPtr.Zero);
+	    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, m_fbo);
+            GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, TextureTarget.Texture2D, m_shadowMap, 0);
+            GL.DrawBuffer(DrawBufferMode.None);
+            GL.ReadBuffer(ReadBufferMode.None);
+            var status = GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer);
+            if (status != FramebufferErrorCode.FramebufferComplete)
+            {
+                Console.WriteLine("ShadowMapFBO error: " + status.ToString());
+            }
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+        }
+```
+Функция BindForWriting, вызываемая перед первым проходом, необходима для переключения рендера в карту теней. Функция BindForReading, вызываемая перед вторым проходом, необходима для привязывания карты теней для чтения.  
+```c#
+        public void BindForWriting()
+        {
+            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, m_fbo); 
+        }
+        public void BindForReading(TextureUnit unit) 
+        {
+            GL.ActiveTexture(unit);
+            GL.BindTexture(TextureTarget.Texture2D, m_shadowMap);
+        }
+        public void Dispose()
+        {
+            GL.DeleteTexture(m_shadowMap);
+        }
+```
+Сначала устанавливаются матрицы проекции перспективы и матрицы пространства камеры для камеры наблюдателя и для источника света отдельно.  
+```c#
+	var p = new matrix4f();
+	p.InitPersProjTransform(120, shadow_size_x, shadow_size_y, 0.1f, 100);
+	Matrix4 projMatrixFromLight = p.ToOpenTK();
+	Matrix4 projMatrix = mPersProj.PersProjMatrix.ToOpenTK();
+	vector3f pos = LightningManager.spotlights[0].PointLight.Position;
+	vector3f tar = LightningManager.spotlights[0].Direction;
+	matrix4f LightSpacePos = new matrix4f();
+	LightSpacePos.InitTranslationTransform(-pos);
+	matrix4f LightSpaceTarget = new matrix4f();
+	LightSpaceTarget.InitCameraTransform(-tar, vector3f.Up);
+	Matrix4 viewMatrixFromLight = (LightSpacePos * LightSpaceTarget).ToOpenTK();
+	Matrix4 viewMatrix = (Camera.CameraTranslation * Camera.CameraRotation).ToOpenTK();
+	Shader shadowShader = CentralizedShaders.GetShader(ShaderName.ShadowShader);
+	Shader normalShader = CentralizedShaders.GetShader(ShaderName.AssimpShader);
+```
+Сцена рендерится первый раз с точки зрения прожекторного источника света с использованием шейдера теней.  
+```c#
+	GL.CullFace(CullFaceMode.Front);
+	shadowMap.BindForWriting();
+	GL.Viewport(0, 0, shadow_size_x, shadow_size_y);
+	GL.Clear(ClearBufferMask.DepthBufferBit);
+	shadowShader.Use();
+	Draw(shadowShader, ball, viewMatrixFromLight, projMatrixFromLight);
+	Draw(shadowShader, back, viewMatrixFromLight, projMatrixFromLight);
+	Matrix4 wvpMatrixFromLight_ball = ball._pipeline.getWorld() * viewMatrixFromLight * projMatrixFromLight;
+	Matrix4 wvpMatrixFromLight_back = back._pipeline.getWorld() * viewMatrixFromLight * projMatrixFromLight;
+```
+Затем при обычном рендеринге передается в шейдер еще и матрица WVP с точки зрения света.  
+```c#
+	GL.CullFace(CullFaceMode.Back);
+	GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+	GL.Viewport(0, 0, WindowWidth, WindowHeight);
+	GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+	normalShader.Use();
+	shadowMap.BindForReading(TextureUnit.Texture3);
+	normalShader.setValue("light_wvp", wvpMatrixFromLight_ball);
+	Draw(normalShader, ball, viewMatrix, projMatrix);
+	normalShader.setValue("light_wvp", wvpMatrixFromLight_back);
+	Draw(normalShader, back, viewMatrix, projMatrix);
+```
+Шейдерная функция CalcShadowFactor проверяет, находится ли пиксель в тени.  
+```c
+float CalcShadowFactor(vec4 LightSpacePos)
+{
+    vec3 ProjCoords = LightSpacePos.xyz / LightSpacePos.w;
+    ProjCoords = 0.5 * ProjCoords + 0.5;
+    float Depth = texture2D(gShadowMap, ProjCoords.xy).r;
+    if (Depth + 0.0001 < ProjCoords.z)
+        return 0;
+    else
+        return 1.0;
+}
+
+void main()
+{
+	. . .
+    TotalLight += shadowFactor * CalcSpotLight(gSpotLights[0], Normal);
+. . .
+}
+```
+## Результат
+![image](https://github.com/user-attachments/assets/6b509d8c-db81-48f0-b02a-dcc9ebf5f88f)  
+<a name="s22"></a>
+# PCF  
+## Теория
+Так как карта теней (глубины) имеет постоянное разрешение, часто тексель карты глубины охватывает более одного текселя фрагмента объекта. Это приводит к тому, что несколько текселей фрагмента объекта могут извлекать одно и то же значение из карты глубины, что приводит к появлению этих неровных блочных краев.   
+PCF (Percentage Closer Filtering) является одним из методов решения этой проблемы. Самая простая реализация этого метода заключается в том, чтобы взять соседние тексели текущего текселя карты глубины и усреднить результат в текущем текселе.  
+## Реализация  
+В переменной shadow суммируются текущий тексель карты глубины и 8 соседних. Размытость теней можно настраивать с помощью переменной PСF_Power. Например, при PСF_Power = 2 усредняться будут уже 25 текселей.  
+```c
+int PСF_Power = 1;
+float CalcShadowFactor(vec4 LightSpacePos, sampler2D ShadowMap)
+{
+    vec3 ProjCoords = LightSpacePos.xyz / LightSpacePos.w;
+    ProjCoords = 0.5 * ProjCoords + 0.5;
+    float shadow = 0.0;
+    vec2 texSize = 1.0 / textureSize(ShadowMap, 0);
+    for (int x = -PСF_Power ; x <= PСF_Power ; ++x)
+    {
+        for (int y = -PСF_Power ; y <= PСF_Power ; ++y)
+        {
+            float pcfDepth = texture(ShadowMap, ProjCoords.xy + vec2(x, y) * texSize).r;
+            shadow += ProjCoords.z <= pcfDepth + 0.00001 ? 0.0 : 1.0;
+        }
+    }
+    shadow /= ((PСF_Power * 2 + 1) * (PСF_Power * 2 + 1));
+    return (1 - shadow);
+}
+```
+## Результат
+![image](https://github.com/user-attachments/assets/88a53195-6df2-4193-bfb8-3f171115c3e5)
+<a name="s23"></a>
+# Shadow Mapping для нескольких источников света  
+
+<a name="s24"></a>
+# 3D выбор  
+
+
+
+<a name="s25"></a> 
+# Интерактивное взаимодействие с объектами
