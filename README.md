@@ -24,7 +24,7 @@
 [21. PCF](#s22)  
 [22. Shadow Mapping для нескольких источников света](#s23)  
 [23. 3D выбор](#s24)  
-[24. Интерактивное взаимодействие с объектами](#s25)  
+[24. Компилятор](#s25)  
 
 <a name="s1"></a>
 # Первые шаги и треугольник 
@@ -3925,6 +3925,7 @@ _spotlightLocations[i].PointLightLocations.BaseLightLocations.Intensity,
 ```
 ## Результат  
 ![image](https://github.com/user-attachments/assets/8b51e7b5-63cf-48ca-a7aa-e6aeb57b8b81)
+![gif](https://github.com/galeevlxix/game_engine/blob/diplom%2B/Files/Screenshots/pointspotlight-ezgif.com-video-to-gif-converter.gif)
 <a name="s19"></a>
 # Карты нормали (Normal Map)
 ## Теория  
@@ -4256,11 +4257,1443 @@ float CalcShadowFactor(vec4 LightSpacePos, sampler2D ShadowMap)
 ![image](https://github.com/user-attachments/assets/88a53195-6df2-4193-bfb8-3f171115c3e5)
 <a name="s23"></a>
 # Shadow Mapping для нескольких источников света  
+## Реализация  
+Для того, чтобы реализовать тени от нескольких источников света необходимо включить в структуру света карту теней и матрицу WVP для источника света. 
+```c#
+public class Spotlight
+{
+    public vector3f Direction;
+    public float Cutoff1;
+    public PointLight PointLight;
+    public ShadowMapFBO ShadowMapSpotlight;
+    
+    public Dictionary<string, Matrix4> wvpMatrixFromLight;
+    public Spotlight()
+    {
+        Direction = new vector3f();
+        Cutoff1 = 1;
+        PointLight = new PointLight();
+        
+        ShadowMapSpotlight = new ShadowMapFBO(2048, 2048);
+        wvpMatrixFromLight = new Dictionary<string, Matrix4>();
+    }
+}
+```
+Для каждого источника света устанавливаются значения сэмплера карты теней.
+```c#
+private static void SetValuesForSamplers()
+{
+    SetValue(ShaderName.AssimpShader, "gMaterial.DiffuseMap", 0);
+    SetValue(ShaderName.AssimpShader, "gMaterial.NormalMap", 1);
+    SetValue(ShaderName.AssimpShader, "gMaterial.SpecularMap", 2);
 
+    for (int i = 0; i < LightningManager.SpotlightsCount; i++)
+    {
+        SetValue(ShaderName.AssimpShader, "gSpotLights[" + i + "].gShadowMap", 10 + i);
+    }
+}   
+```
+В функции создания теней DrawShadows() для каждого источника света строятся матрица проекции и матрица вида с указанием свойств spotlight. Далее все объекты рисуются с точки зрения источника света в буфер глубины этого источника. 
+```c#
+public static void DrawShadows()
+{
+    shadowShader.Use();
+
+    foreach (Spotlight spotlight in LightningManager.spotlights)
+    {
+        int shadowMapSize = spotlight.ShadowMapSpotlight.Size;
+        // CREATE MATRICES
+        Matrix4 projMatrixFromLight = matrix4f.GetInitPersProjTransform(100, shadowMapSize, shadowMapSize, 0.1f, 100).ToOpenTK();
+        vector3f pos = spotlight.PointLight.Position;
+        vector3f up = vector3f.Cross(tar, vector3f.Right);
+				Matrix4 viewMatrixFromLight = (matrix4f.GetInitTranslationTransform(-pos) * matrix4f.GetInitCameraTransform(-tar, -up)).ToOpenTK();
+        // RENDER SHADOWS 
+        spotlight.ShadowMapSpotlight.BindForWriting();
+        GL.Viewport(0, 0, shadowMapSize, shadowMapSize);
+        GL.Clear(ClearBufferMask.DepthBufferBit);
+        if (spotlight.wvpMatrixFromLight.Count > 0)
+            spotlight.wvpMatrixFromLight.Clear();
+        foreach (string obj_name in obj_list.Keys)
+        {
+            obj_list[obj_name].Draw(shadowShader, viewMatrixFromLight, projMatrixFromLight);
+            spotlight.wvpMatrixFromLight.Add(obj_name, obj_list[obj_name]._pipeline.getWorld() * viewMatrixFromLight * projMatrixFromLight);
+        }
+        GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+    }
+}
+```
+В функции отрисовки объектов на экране DrawScene() сначала все карты теней, записанные раннее в буфер глубины, считываются для отправки в шейдер. При отрисовке каждого объекта его матрица отображения WVP с точки зрения каждого источника света отправляется в шейдер.
+```c#
+public static void DrawScene()
+{
+    normalShader.Use();
+    for (int i = 0; i < LightningManager.SpotlightsCount; i++)
+    {
+        LightningManager.spotlights[i].ShadowMapSpotlight.BindForReading(TextureUnit.Texture10 + i);
+    }
+    foreach (string obj_name in obj_list.Keys)
+    {
+        for (int i = 0; i < LightningManager.SpotlightsCount; i++)
+        {
+            if (LightningManager.spotlights[i].wvpMatrixFromLight.Count > 0)
+                normalShader.setValue("gSpotLights[" + i + "].LightWVP", LightningManager.spotlights[i].wvpMatrixFromLight[obj_name]);
+        }
+        obj_list[obj_name].Draw(normalShader);
+    }
+}  
+```
+Во фрагментном шейдере структура источника света теперь имеет карту теней и матрицу отображения WVP текущего рисуемого объекта. 
+```c
+struct SpotLight
+{
+    PointLight Base;
+    vec3 Direction;
+    float Cutoff1;
+    
+    sampler2D gShadowMap;
+    mat4 LightWVP;
+};  
+```
+Функция CalcShadowFactor, проверяющая, находится ли пиксель в тени, имеет мягкие тени благодаря методу PCF и разбиралась в предыдущем радзеле. Теперь вызов этой функции происходит непосредственно в функции вычисления света от источника света этого типа.
+```c
+vec4 CalcSpotLight(SpotLight sLight, vec3 Normal) 
+{
+    vec3 LightToPixel = normalize(WorldPos0 - sLight.Base.Position);
+    float SpotFactor = dot(LightToPixel, sLight.Direction);
+    if (SpotFactor > sLight.Cutoff1)
+    {
+        float shadow = CalcShadowFactor(Position0 * sLight.LightWVP, sLight.gShadowMap);
+        vec4 Color = shadow * CalcPointLight(sLight.Base, Normal);
+        return Color * (1.0 - (1.0 - SpotFactor) * 1.0 / (1.0 - sLight.Cutoff1));
+    }
+
+    return vec4(0, 0, 0, 0);
+}
+```
+## Реультат  
+![image](https://github.com/user-attachments/assets/906e0b7d-87c4-4f43-9a9b-c089ce32595e)  
 <a name="s24"></a>
 # 3D выбор  
+## Реализация  
+Выбор трехмерного объекта с помощью курсора или прицела необходим для интерактивного взаимодействия с экспонатами виртуального музея. Реализация 3D выбора начинается с создания класса SelectingMapFBO, включающего в себя карту глубины m_depthMap, кадровый буфер m_fbo для рисования m_depthMap и буфера цвета для хранения информации визуализированных треугольников. 
+```c#
+public class SelectingMapFBO
+{
+    private int m_fbo;
+    private int m_selectMap;
+    private int m_depthMap;
+    public SelectingMapFBO()
+    {
+        m_fbo = 0;
+        m_selectMap = 0;
+        m_depthMap = 0;
+    }
+    . . .
+```
+В функции инициализации Init сначала создается FBO. 
+```c#
+public void Init(int WindowWidth, int WindowHeight)
+{
+    m_fbo = GL.GenFramebuffer();
+    GL.BindFramebuffer(FramebufferTarget.Framebuffer, m_fbo);
+    m_selectMap = GL.GenTexture();
+    GL.BindTexture(TextureTarget.Texture2D, m_selectMap);
+    GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgb32ui, WindowWidth, WindowHeight, 0, PixelFormat.RgbInteger, PixelType.UnsignedInt, IntPtr.Zero);
+    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+    GL.FramebufferTexture2D(FramebufferTarget.DrawFramebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, m_selectMap, 0);
+    m_depthMap = GL.GenTexture();
+    GL.BindTexture(TextureTarget.Texture2D, m_depthMap);
+    GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.DepthComponent, WindowWidth, WindowHeight, 0, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero);
+    GL.FramebufferTexture2D(FramebufferTarget.DrawFramebuffer, FramebufferAttachment.DepthAttachment, TextureTarget.Texture2D, m_depthMap, 0);
+    var status = GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer);
+    if (status != FramebufferErrorCode.FramebufferComplete) Console.WriteLine("ShadowMapFBO error: " + status.ToString());
+    GL.BindTexture(TextureTarget.Texture2D, 0);
+    GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+}
+```
+Далее происходит инициализация объекта текстуры для буфера с информацией о примитиве. Потом инициализируется объект текстуры для буфера глубины. А в конце происходит проверка успеха инициализации и развязка от текстуры и буфера глубины. Функции Enable() и Disable() используются для включения и отключения записи в буфер глубины. 
+```c#
+public void Enable()
+{
+    GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, m_fbo);
+}
 
+public void Disable()
+{
+    GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
+}
+```
+Функция ReadPixel необходима для получения информации об объекте из пикселя в центре экрана. Вместо информации о цвете объекта RGB пиксель содержит информацию об индексе объекта, его MeshEntry и номер примитива.
+```c#
+public unsafe PixelInfo ReadPixel(int x, int y)
+{
+    GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, m_fbo);
+    GL.ReadBuffer(ReadBufferMode.ColorAttachment0);
 
+    PixelInfo[] pixels = new PixelInfo[1];
 
+    pixels[0] = new PixelInfo();
+    
+    GL.ReadPixels(x, y, 1, 1, PixelFormat.RgbInteger, PixelType.UnsignedInt, pixels);
+
+    GL.ReadBuffer(ReadBufferMode.None);
+    GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, 0);
+
+    return pixels[0];
+}
+public struct PixelInfo
+{
+    public int ObjectID;
+    public int DrawID;
+    public int PrimID;
+    public PixelInfo()
+    {
+        ObjectID = 0;
+        DrawID = 0;
+        PrimID = 0;
+    }
+}
+```
+В вершинном шейдере карты выбора вершины просто умножаются на матрицу отображения WVP от камеры. 
+```c
+#version 410 core
+
+layout (location = 0) in vec3 aPosition;
+
+uniform mat4 wvp;
+
+void main()
+{
+    gl_Position = vec4(aPosition, 1.0) * wvp;
+}
+```
+А во фрагментном шейдере карты выбора вместо цвета фрагмента на выход поступает информация об объекте.
+```c
+#version 330 core
+
+out uvec4 FragColor;
+
+uniform int gDrawIndex;
+
+uniform int gObjectIndex;
+
+void main()
+{
+    FragColor = uvec4(gObjectIndex, gDrawIndex, gl_PrimitiveID + 1, 1.0f);
+}
+```
+Данная функция записывает в карту выбора информацию об объектах на экране и возвращает информацию об объекте, пиксель которого находится в центре экрана. 
+```c#
+public static SelectingMapFBO.PixelInfo GetSelectedPixel()
+{
+    selectingShader.Use();
+    selectMap.Enable();
+    GL.Viewport(0, 0, WindowWidth, WindowHeight);
+    GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+    int i = 0;
+    foreach (AObject obj in obj_list.Values)
+    {
+        selectingShader.setValue("gObjectIndex", i);
+        i++;
+        obj.Draw(selectingShader);
+    }
+    selectMap.Disable();
+    return selectMap.ReadPixel(WindowWidth / 2, WindowHeight / 2);
+}
+```
+При отрисовке, когда зажата ЛКМ, в консоль выводится информация об объекте, который находится на прицеле.
+```c#
+public static void DrawScene(bool isPressed)
+{
+    if (isPressed)
+    {
+        SelectingMapFBO.PixelInfo pixel = GetSelectedPixel();
+
+        if (pixel.PrimID != 0)
+        {
+            switch(pixel.ObjectID)      //логика
+            {
+                case 0:
+                    Console.WriteLine("Музей");
+                    break;
+                case 1:
+                    Console.WriteLine("Скульптура");
+                    break;
+                case 2:
+                    Console.WriteLine("Стол");
+                    break;
+            }
+        }
+    }
+    . . .
+```
+## Реультат  
+![gif](https://github.com/galeevlxix/game_engine/blob/diplom%2B/Files/Screenshots/3D-ezgif.com-video-to-gif-converter.gif)
 <a name="s25"></a> 
-# Интерактивное взаимодействие с объектами
+# Компилятор 
+_Находится в разработке..._
+## Теория  
+Фактически это не является компилятором, а называется так для простоты. Это скорее мини-язык программирования внутри проекта движка, предназначенный для тестирования функционала графического приложения. "Компилятор" читает строку команды, введенную в консоль, или несколько строк команд, сохраненных в файле, и в реальном времени выполняет соответствующие действия. Например, изменить цвет направленного света **без необходимости менять код и перезапускать приложение**, тратя много времени на ожидание загрузки моделей и текстур.  
+
+В данный момент компилятор может:  
+1. `alter` - Установить параметры 3D сцены (Н-р, объектов/света)  
+2. `get` - Получить информацию о параметрах 3D сцены (Н-р, камеры/FPS)  
+3. `load` - Загрузить команды настройки 3D сцены из файла и выполнить (Н-р, объектов/света)  
+4. `save` - Сохранить команды настройки 3D сцены из консоли в файл (Н-р, объектов/света)  
+5. `compress` - Сжать файл 3D-модели формата _obj_  
+6. `help` - Вызов помощника **CompilerHelper**  
+
+Для более подробного изучения синтаксиса языка обращайтесь к помощнику _CompilerHelper_. Пример использования помощника:
+1. Ввод:  
+   `help`  
+   Вывод:  
+   ```
+   CompilerHelper > Последующие команды:
+	1) alter
+	2) get
+	3) load
+	4) save
+	5) compress
+   ```
+2. Ввод:  
+   `help load`  
+   Вывод:  
+   ```
+   CompilerHelper > Последующие команды:
+       1) light
+       2) object
+       3) all
+   CompilerHelper:Description > Загрузить команды настройки 3D сцены из файла
+   ```
+3. Ввод:  
+   `help alter light pointlight`  
+   Вывод:  
+   ```
+   CompilerHelper > Последующие команды:
+       1) <index> color <r g b> {END_OF_LINE}
+       2) <index> intensity <value> {END_OF_LINE}
+       3) <index> position <x y z> {END_OF_LINE}
+       4) <index> move <x y z> {END_OF_LINE}
+       5) <index> constant <value> {END_OF_LINE}
+       6) <index> linear <value> {END_OF_LINE}
+       7) <index> exp <value> {END_OF_LINE}
+   CompilerHelper:Description > Установить параметры точечного источника света
+   ```
+_{END_OF_LINE}_ - конец строки.  
+
+## Реализация  
+### ConsoleCompiler
+Класс содержит пути к файлам для сохранения команд для настройки 3D сцены: _light_configuration.txt_ и _object_configuration.txt_. `CompilerHelper` - пользовательский помощник, хранящий дерево всех возможных команд компилятора, доступных для использования.  
+```c#
+    public static class ConsoleCompiler
+    {
+        private static string? line = "";
+        private static bool isExecuting = false;
+        private static string light_configuration_file = "..\\..\\..\\Files\\CompilerFiles\\log_config\\light_configuration.txt";
+        private static string object_configuration_file = "..\\..\\..\\Files\\CompilerFiles\\log_config\\object_configuration.txt";
+
+        private static CompilerHelper helper = new CompilerHelper();
+```
+После загрузки всех компонентов графического приложения запускается компилятор.
+```c#
+        public static void Run()
+        {
+            while (!isExecuting)
+            {
+                line = Console.ReadLine();
+            }
+        }
+```
+```c#
+        // Загрузка окна
+        protected override async void OnLoad()
+        {
+            . . .
+            await Task.Run(() => ConsoleCompiler.Run());
+        }
+```
+Функция выполнения команды. Если введенная строка не пуста, а в данный момент не выполняется другая команда, выполняется команда из консоли. После выполнения команда попадает в словарь `commands`, который хранит каждую команду из консоли, выполненную во время работы приложения, и ее соответствующий уникальный номер (ключ).  
+
+Если новая команда уже есть в словаре, то она заменяет старую команду. Например, если сначала мы установили position для объекта в точке (1, 1, 1), а потом установили position в точке (2, 2, 2). В этом случае нам не нужна старая информация о position для объекта в точке (1, 1, 1).  
+
+Но есть исключения, когда мы двигаем, расширяем или поворачиваем объект. Тогда старые команды удалять нельзя, так как, например, если мы сначала двигали объект на (dx=1, dy=0, dz=0), а потом на (dx=0, dy=0, dz=1), то в конечном итоге мы подвинули объект на (dx=1, dy=0, dz=1).
+```c#
+	private static Dictionary<string, string> commands = new Dictionary<string, string>();
+
+        private static List<string> prohibited_to_delete = new List<string>()
+        {
+            "2_4", "2_5", "2_6"
+        };
+        private static int unique_num = 0;
+
+        public static void Execute()
+        {
+            if (line != "" && !isExecuting)
+            {
+                isExecuting = true;
+                string feedback = ParseLine(line);
+                Console.WriteLine(feedback);
+                string[] parts = feedback.Split('#');
+
+                //save commands to logs
+                if (parts.Length > 1 && parts[0] != "0")
+                {
+                    string key = parts[0];
+                    for (int i = 1; i < parts.Length - 1; i++)
+                    {
+                        key += "_" + parts[i];
+                    }
+                    
+                    if(!prohibited_to_delete.Contains(parts[0] + "_" + parts[1]))
+                    {
+                        if (commands.ContainsKey(key))
+                        {
+                            commands.Remove(key);
+                        }
+                        commands.Add(key, line);
+                    }
+                    else
+                    {
+                        unique_num++;
+                        commands.Add(key + "_" + unique_num, line);
+                    }
+
+                }
+
+                line = "";
+                isExecuting = false;
+            }
+        }
+```
+```c#
+        // Рендер окна
+        protected override void OnRenderFrame(FrameEventArgs args)
+        {
+            . . .
+            ConsoleCompiler.Execute();
+            . . .
+        }
+```
+В этой функции строка команды разбивается на части (ключевые слова), разделенные пробелами. А затем все эти слова обрабатываются в соответствующих функциях. 
+```c#
+        private static string ParseLine(string? line)
+        {
+            line = line.Trim();
+            line = line.Replace("  ", " ");
+            string[] parts = line.Split(' ');
+            if (parts.Length == 0) return "Пустая строка";
+
+            switch (parts[0])
+            {
+                case "alter":
+                    return AlterChoice(parts);
+                case "get":
+                    return GetChoice(parts);
+                case "save":
+                    return SaveChoice(parts);
+                case "load":
+                    return LoadChoice(parts);
+                case "compress":
+                    return CompressObjFile(parts[1], parts[2]);
+                case "#":
+                    return "";
+                case "help":
+                    return helper.PrintCommands(parts);
+            }
+            return "0# Неизвестное действие";
+        }
+```
+Получить информацию о камере или FPS.  
+```c#
+        //GET
+        private static string GetChoice(string[] parts)
+        {
+            if (parts.Length == 1) return "0# Незаконченное get действие";
+            switch (parts[1])
+            {
+                case "camera":
+                    return GetCameraChoice(parts);
+                case "fps":
+                    return FPSMeter.Int_FPS + " FPS";
+                case "object":
+                case "light":
+                    return "0# Недоступно";
+            }
+            return "0# Неизвестное get действие";
+        }
+
+        private static string GetCameraChoice(string[] parts)
+        {
+            if (parts.Length == 2) return "0# Незаконченное get camera действие";
+
+            switch (parts[2])
+            {
+                case "position":
+                    return Camera.Pos.ToStr();
+                case "target":
+                    return (-Camera.Target).ToStr();
+                case "up":
+                    return Camera.Up.ToStr();
+                case "persproj":
+                    return GetPersProj(parts);
+            }
+            return "0# Неизвестное get camera действие";
+        }
+
+        private static string GetPersProj(string[] parts)
+        {
+            if (parts.Length == 3) return "0# Незаконченное get camera persproj действие";
+
+            switch (parts[3])
+            {
+                case "fov":
+                    return "FOV: " + PersProjMat.GetFOV;
+                case "width":
+                    return "WIDTH: " + PersProjMat.GetWidth;
+                case "height":
+                    return "HEIGHT: " + PersProjMat.GetHeight;
+                case "znear":
+                    return "ZNEAR: " + PersProjMat.GetZNear;
+                case "zfar":
+                    return "ZFAR: " + PersProjMat.GetZFar;
+            }
+
+            return "0# Неизвестное get camera persproj действие";
+        }
+```
+Сохранить команды из `commands` в файлы.
+```c#
+        //SAVE
+        private static string SaveChoice(string[] parts)
+        {
+            switch (parts[1])
+            {
+                case "light":
+                    using (StreamWriter sw = new StreamWriter(light_configuration_file))
+                    {
+                        foreach (KeyValuePair<string, string> item in commands)
+                        {                            
+                            if (item.Key.Split('_')[0] == "1") sw.WriteLine(item.Value);
+                        }
+                        sw.Close();
+                    }
+                    return "Команды настройки света сохранены в файл";
+                case "object":
+                    using (StreamWriter sw = new StreamWriter(object_configuration_file))
+                    {
+                        foreach (KeyValuePair<string, string> item in commands)
+                        {
+                            if (item.Key.Split('_')[0] == "2") sw.WriteLine(item.Value);
+                        }
+                        sw.Close();
+                    }
+                    return "Команды настройки объектов сохранены в файл";
+                case "all":
+                    return SaveChoice(new string[] { "save", "light" }) + "\n" + SaveChoice(new string[] { "save", "object" });
+            }
+            return "0# Неизвестное save действие";
+        }
+```
+Загрузить сохраненные команды из файла и выполнить их. 
+```c#
+        //LOAD
+        private static string LoadChoice(string[] parts)
+        {
+            switch (parts[1])
+            {
+                case "light":
+                    string? line;
+                    using (StreamReader sr = new StreamReader(light_configuration_file))
+                    {
+                        while ((line = sr.ReadLine()) != null)
+                        {
+                            ParseLine(line);
+                        }
+                    }
+                    return "Команды настройки света загружены из файла";
+                case "object":
+                    string? line1;
+                    using (StreamReader sr = new StreamReader(object_configuration_file))
+                    {
+                        while ((line1 = sr.ReadLine()) != null)
+                        {
+                            ParseLine(line1);
+                        }
+                    }
+                    return "Команды настройки объектов загружены из файла";
+                case "all":
+                    return LoadChoice(new string[] { "save", "light" }) + "\n" + LoadChoice(new string[] { "save", "object" });
+            }
+            return "0# Неизвестное load действие";
+        }
+```
+Установить параметры света или объектов, проинициализированных в `LightningManager` и `ObjectArray` соответственно.
+```c#
+        //ALTER
+        private static string AlterChoice(string[] parts)
+        {
+            if (parts.Length == 1) return "0# Незаконченное alter действие";
+            switch (parts[1])
+            {
+                case "light":
+                    return AlterLightChoice(parts);
+                case "object":  //material, scale, angle, position
+                    if (parts.Length == 2 || parts[2] == null || parts[2] == string.Empty) return "0# Незаконченное alter object действие -> Необходимо указать имя объекта";
+                    if (ObjectArray.Count == 0) return "0# Массив Assimp-объектов пуст";
+                    if (!ObjectArray.Exists(parts[2])) return "0# Объекта " + parts[2] + " не существует в массиве Assimp-объектов";
+                    return AlterObjectChoice(parts, parts[2]);
+                case "camera":  //position, target, 
+                    return "0# Недоступно";
+            }
+            return "0# Неизвестное alter действие";
+        }
+
+        private static string AlterObjectChoice(string[] parts, string obj)
+        {
+            if (parts.Length == 3) return "0# Незаконченное alter object действие -> Необходимо указать изменяемый параметр и его значение";
+            switch (parts[3])
+            {
+                //УСТАНОВИТЬ
+                case "scale":
+                    if (parts.Length == 5)
+                    {
+                        float value;
+                        try
+                        {
+                            value = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                        }
+                        catch
+                        {
+                            return "0# Не удается преобразовать в числовое значение";
+                        }
+                        ObjectArray.SetScale(obj, value, value, value);
+                        return "2#1#" + obj + "# Масштаб объекта изменен на Scale(" + value + "," + value + "," + value + ")";
+                    }
+                    else if (parts.Length == 7)
+                    {
+                        float x, y, z;
+                        try
+                        {
+                            x = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                            y = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                            z = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                        }
+                        catch
+                        {
+                            return "0# Не удается преобразовать в числовое значение";
+                        }
+                        ObjectArray.SetScale(obj, x, y, z);
+                        return "2#1#" + obj + "# Масштаб объекта изменен на Scale(" + x + "," + y + "," + z + ")";
+                    }
+                    else
+                    {
+                        return "0# Неизвестное alter object " + obj + " scale действие -> Необходимо ввести корректное значение";
+                    }                    
+                case "angle":
+                    if (parts.Length == 7)
+                    {
+                        float x, y, z;
+                        try
+                        {
+                            x = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                            y = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                            z = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                        }
+                        catch
+                        {
+                            return "0# Не удается преобразовать в числовое значение";
+                        }
+                        ObjectArray.SetAngle(obj, x, y, z);
+                        return "2#2#" + obj + "# Угол объекта изменен на Angle(" + x + "," + y + "," + z + ")";
+                    }
+                    else
+                    {
+                        return "0# Неизвестное alter object " + obj + " angle действие -> Необходимо ввести корректное значение";
+                    }
+                case "position":
+                    if (parts.Length == 7)
+                    {
+                        float x, y, z;
+                        try
+                        {
+                            x = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                            y = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                            z = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                        }
+                        catch
+                        {
+                            return "0# Не удается преобразовать в числовое значение";
+                        }
+                        ObjectArray.SetPosition(obj, x, y, z);
+                        return "2#3#" + obj + "# Позиция объекта изменена на Position(" + x + "," + y + "," + z + ")";
+                    }
+                    else
+                    {
+                        return "0# Неизвестное alter object " + obj + " position действие -> Необходимо ввести корректное значение";
+                    }
+                //НЕМЕДЛЕННО ОБНОВИТЬ
+                case "expand":
+                    if (parts.Length == 5)
+                    {
+                        float value;
+                        try
+                        {
+                            value = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                        }
+                        catch
+                        {
+                            return "0# Не удается преобразовать в числовое значение";
+                        }
+                        ObjectArray.ExpandImmediately(obj, value, value, value);
+                        return "2#4#" + obj + "# Масштаб объекта увеличен на Expand(" + value + "," + value + "," + value + ")";
+                    }
+                    else if (parts.Length == 7)
+                    {
+                        float x, y, z;
+                        try
+                        {
+                            x = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                            y = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                            z = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                        }
+                        catch
+                        {
+                            return "0# Не удается преобразовать в числовое значение";
+                        }
+                        ObjectArray.ExpandImmediately(obj, x, y, z);
+                        return "2#4#" + obj + "# Масштаб объекта увеличен на Expand(" + x + "," + y + "," + z + ")";
+                    }
+                    else
+                    {
+                        return "0# Неизвестное alter object " + obj + " expand действие -> Необходимо ввести корректное значение";
+                    }
+                case "rotate":
+                    if (parts.Length == 7)
+                    {
+                        float x, y, z;
+                        try
+                        {
+                            x = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                            y = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                            z = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                        }
+                        catch
+                        {
+                            return "0# Не удается преобразовать в числовое значение";
+                        }
+                        ObjectArray.RotateImmediately(obj, x, y, z);
+                        return "2#5#" + obj + "# Угол объекта увеличен на Rotate(" + x + "," + y + "," + z + ")";
+                    }
+                    else
+                    {
+                        return "0# Неизвестное alter object " + obj + " rotate действие -> Необходимо ввести корректное значение";
+                    }
+                case "move":
+                    if (parts.Length == 7)
+                    {
+                        float x, y, z;
+                        try
+                        {
+                            x = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                            y = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                            z = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                        }
+                        catch
+                        {
+                            return "0# Не удается преобразовать в числовое значение";
+                        }
+                        ObjectArray.MoveImmediately(obj, x, y, z);
+                        return "2#6#" + obj + "# Позиция объекта изменена на Move(" + x + "," + y + "," + z + ")";
+                    }
+                    else
+                    {
+                        return "0# Неизвестное alter object " + obj + " move действие -> Необходимо ввести корректное значение";
+                    }
+            }
+            return "0# Неизвестное alter object действие";
+        }
+
+        private static string AlterLightChoice(string[] parts)
+        {
+            if (parts.Length == 2) return "0# Незаконченное alter light действие";
+
+            switch (parts[2])
+            {
+                case "baselight":
+                    return AlterBaseLightChoice(parts);
+                case "directionallight":
+                    return AlterDirectionalLightChoice(parts);
+                case "pointlight":
+                    if (int.TryParse(parts[3], out int result))
+                    {
+                        if (result >= 0 && result < LightningManager.PointlightsCount)
+                            return AlterPointLightChoice(parts, result);
+                        else return "0# Индекс за пределами массива pointlights";
+                    }
+                    else return "0# Индекс pointlight должен быть числом";
+                case "spotlight":
+                    if (int.TryParse(parts[3], out int res))
+                    {
+                        if (res >= 0 && res < LightningManager.SpotlightsCount)
+                            return AlterSpotLightChoice(parts, res);
+                        else return "0# Индекс за пределами массива spotlights";
+                    }
+                    else return "0# Индекс spotlight должен быть числом";
+            }
+            return "0# Неизвестное alter light действие";
+        }
+
+        //ALTER -> BASE LIGHT
+        private static string AlterBaseLightChoice(string[] parts)
+        {
+            if (parts.Length == 3) return "0# Незаконченное alter light действие";
+
+            switch (parts[3])
+            {
+                case "color":
+                    float red;
+                    float green;
+                    float blue;
+                    try
+                    {
+                        red = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                        green = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                        blue = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                    }
+                    catch
+                    {
+                        return "0# Не удается преобразовать в числовое значение";
+                    }
+                    vector3f color = new vector3f(red, green, blue);
+                    LightningManager.lightConfig.SetBaseLightColor(color);
+                    return "1#1#1# Окружающий свет изменен на Color(" + red + ", " + green + ", " + blue + ")";
+                case "intensity":
+                    float intensity = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                    LightningManager.lightConfig.SetBaseLightIntensity(intensity);
+                    return "1#1#2# Яркость окружающего света изменена на " + intensity;
+            }
+            return "0# Неизвестное alter light действие";
+        }
+
+        //ALTER -> DIRECTIONAL LIGHT
+        private static string AlterDirectionalLightChoice(string[] parts)
+        {
+            if (parts.Length == 3) return "0# Незаконченное alter light действие";
+            switch (parts[3])
+            {
+                case "color":
+                    float red;
+                    float green;
+                    float blue;
+                    try
+                    {
+                        red = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                        green = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                        blue = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                    }
+                    catch
+                    {
+                        return "0# Не удается преобразовать в числовое значение";
+                    }
+                    vector3f color = new vector3f(red, green, blue);
+                    LightningManager.lightConfig.SetDirectionalLightColor(color);
+                    return "1#2#1# Напраленный свет изменен на Color(" + red + ", " + green + ", " + blue + ")";
+                case "intensity":
+                    float intensity = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                    LightningManager.lightConfig.SetDirectionalLightIntensity(intensity);
+                    return "1#2#2# Яркость направленного света изменена на " + intensity;
+                case "direction":
+                    float x;
+                    float y;
+                    float z;
+                    try
+                    {
+                        x = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                        y = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                        z = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                    }
+                    catch
+                    {
+                        return "0# Не удается преобразовать в числовое значение";
+                    }
+                    vector3f dir = new vector3f(x, y, z);
+                    LightningManager.lightConfig.SetDirectionalLightDirection(dir);
+                    return "1#2#3# Направление света изменено на Direction(" + x + ", " + y + ", " + z + ")";
+            }
+            return "0# Неизвестное alter light действие";
+        }
+
+        //ALTER POINT LIGHT
+        private static string AlterPointLightChoice(string[] parts, int index)
+        {
+            if (parts.Length == 4) return "0# Незаконченное alter light действие";
+            switch (parts[4])
+            {
+                case "position":
+                    float x = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    float y = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                    float z = float.Parse(parts[7], CultureInfo.InvariantCulture);
+                    LightningManager.pointLights[index].SetPosition(x, y, z);
+                    return "1#4#1#" + index + "# Позиция точечного света " + index + " изменена на Position(" + x + ", " + y + ", " + z + ")";
+                case "move":
+                    float x1 = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    float y1 = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                    float z1 = float.Parse(parts[7], CultureInfo.InvariantCulture);
+                    LightningManager.pointLights[index].Move(x1, y1, z1);
+                    return "1#4#2#" + index + "# Позиция точечного света " + index + " смещена на +Position(" + x1 + ", " + y1 + ", " + z1 + ")";
+                case "color":
+                    float red = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    float green = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                    float blue = float.Parse(parts[7], CultureInfo.InvariantCulture);
+                    LightningManager.pointLights[index].SetColor(red, green, blue);
+                    return "1#4#3#" + index + "# Цвет точечного света " + index + " изменен на Color(" + red + ", " + green + ", " + blue + ")";
+                case "intensity":
+                    float intensity = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    LightningManager.pointLights[index].SetIntensity(intensity);
+                    return "1#4#4#" + index + "# Интенсивность точечного света " + index + " изменена на " + intensity;
+                case "constant":
+                    float constant = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    LightningManager.pointLights[index].Attenuation.Constant = constant;
+                    return "1#4#5#" + index + "# Постоянное затухание точечного света " + index + " изменена на " + constant;
+                case "linear":
+                    float linear = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    LightningManager.pointLights[index].Attenuation.Linear = linear;
+                    return "1#4#6#" + index + "# Линейное затухание точечного света " + index + " изменена на " + linear;
+                case "exp":
+                    float exp = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    LightningManager.pointLights[index].Attenuation.Exp = exp;
+                    return "1#4#7#" + index + "# Экспоненциальное затухание точечного света " + index + " изменена на " + exp;
+            }
+            return "0# Неизвестное alter light действие";
+        }
+
+        //ALTER SPOT LIGHT
+        private static string AlterSpotLightChoice(string[] parts, int index)
+        {
+            if (parts.Length == 4) return "0# Незаконченное alter light действие";
+            switch (parts[4])
+            {
+                case "position":
+                    float x = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    float y = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                    float z = float.Parse(parts[7], CultureInfo.InvariantCulture);
+                    LightningManager.spotlights[index].PointLight.SetPosition(x, y, z);
+                    return "1#5#1#" + index + "# Позиция прожекторного света " + index + " изменена на Position(" + x + ", " + y + ", " + z + ")";
+                case "move":
+                    float x1 = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    float y1 = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                    float z1 = float.Parse(parts[7], CultureInfo.InvariantCulture);
+                    LightningManager.spotlights[index].PointLight.Move(x1, y1, z1);
+                    return "1#5#2#" + index + "# Позиция прожекторного света " + index + " смещена на +Position(" + x1 + ", " + y1 + ", " + z1 + ")";
+                case "color":
+                    float red = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    float green = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                    float blue = float.Parse(parts[7], CultureInfo.InvariantCulture);
+                    LightningManager.spotlights[index].PointLight.SetColor(red, green, blue);
+                    return "1#5#3#" + index + "# Цвет прожекторного света " + index + " изменен на Color(" + red + ", " + green + ", " + blue + ")";
+                case "intensity":
+                    float intensity = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    LightningManager.spotlights[index].PointLight.SetIntensity(intensity);
+                    return "1#5#4#" + index + "# Интенсивность прожекторного света " + index + " изменена на " + intensity;
+                case "constant":
+                    float constant = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    LightningManager.spotlights[index].PointLight.Attenuation.Constant = constant;
+                    return "1#5#5#" + index + "# Постоянное затухание прожекторного света " + index + " изменена на " + constant;
+                case "linear":
+                    float linear = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    LightningManager.spotlights[index].PointLight.Attenuation.Linear = linear;
+                    return "1#5#6#" + index + "# Линейное затухание прожекторного света " + index + " изменена на " + linear;
+                case "exp":
+                    float exp = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    LightningManager.spotlights[index].PointLight.Attenuation.Exp = exp;
+                    return "1#5#7#" + index + "# Экспоненциальное затухание прожекторного света " + index + " изменена на " + exp;
+                case "direction":
+                    float x2 = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    float y2 = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                    float z2 = float.Parse(parts[7], CultureInfo.InvariantCulture);
+                    vector3f dir = new vector3f(x2, y2, z2);
+                    dir.Normalize();
+                    LightningManager.spotlights[index].Direction = dir;
+                    return "1#5#8#" + index + "# Направление прожекторного света изменено на Direction(" + x2 + ", " + y2 + ", " + z2 + ")";
+                case "cutoff":
+                    float cutoff = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    LightningManager.spotlights[index].Cutoff1 = cutoff;
+                    return "1#5#9#" + index + "# Cutoff прожекторного света " + index + " изменен на " + cutoff;
+            }
+            return "0# Неизвестное alter light действие";
+        }
+```
+Для компрессии файла 3D-модели формата _obj_. Новый файл создается из старого файла, из которого удаляются неиспользуемые вершины, координаты текстур и нормали.
+```c#
+        //функция для создания нового скомпрессированного файла obj. UPD: Больше не используется.
+        private static string CompressObjFile(string oldFilePath, string newFilePath)
+        {
+            string? line;
+
+            string faceSector = "";
+            string verticesSector = "";
+
+            List<string> old_vertices = new List<string>();
+            List<string> old_text_cords = new List<string>();
+            List<string> old_normals = new List<string>();
+
+            using (TextReader reader = new StreamReader(oldFilePath))
+            {
+                bool exit = false;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    if (exit) break;
+
+                    line = line.Trim();
+                    line = line.Replace("  ", " ");
+
+                    string[] parts = line.Split(' ');
+                    switch (parts[0])
+                    {
+                        case "v":
+                            old_vertices.Add(line);
+                            break;
+                        case "vt":
+                            old_text_cords.Add(line);
+                            break;
+                        case "vn":
+                            old_normals.Add(line);
+                            break;
+                        case "f":
+                            //exit = true;
+                            break;
+                    }
+                }
+            }
+
+            Dictionary<string, int> vert = new Dictionary<string, int>();
+            Dictionary<string, int> text = new Dictionary<string, int>();
+            Dictionary<string, int> norm = new Dictionary<string, int>();
+
+            int i = 1;
+            foreach (string vert_line in old_vertices)
+            {
+                if (!vert.ContainsKey(vert_line))
+                {
+                    vert.Add(vert_line, i++);
+                }
+            }
+
+            i = 1;
+            foreach (string text_line in old_text_cords)
+            {
+                if (!text.ContainsKey(text_line))
+                {
+                    text.Add(text_line, i++);
+                }
+            }
+
+            i = 1;
+            foreach (string norm_line in old_normals)
+            {
+                if (!norm.ContainsKey(norm_line))
+                {
+                    norm.Add(norm_line, i++);
+                }
+            }
+
+            using (TextReader reader = new StreamReader(oldFilePath))
+            {
+                while ((line = reader.ReadLine()) != null)
+                {
+                    line = line.Trim();
+                    string[] parts = line.Split(' ');
+                    switch (parts[0])
+                    {
+                        case "v":
+                        case "vt":
+                        case "vn":
+                            break;
+                        case "f":
+                            line = line.Trim('f').Trim();
+                            string[] f_parts = line.Split(' ');
+                            string newline = "f";
+
+                            foreach (string f_part in f_parts)
+                            {
+                                string[] _f = f_part.Split('/');
+
+                                int v_ind = vert[old_vertices[int.Parse(_f[0]) - 1]];
+                                int t_ind = text[old_text_cords[int.Parse(_f[1]) - 1]];
+                                int n_ind = norm[old_normals[int.Parse(_f[2]) - 1]];
+
+                                newline += " " + v_ind + "/" + t_ind + "/" + n_ind;
+                            }
+                            faceSector += newline + "\n";
+                            break;
+
+                        case "g":       //сохранить в faceSector
+                        case "s":
+                        case "usemtl":
+                            faceSector += line + "\n";
+                            break;
+                        default:
+                            verticesSector += line + "\n";
+                            break;
+                    }
+                }
+            }
+
+            File.Delete(newFilePath);
+
+            using (StreamWriter sw = new StreamWriter(newFilePath))
+            {
+                sw.WriteLine(verticesSector);
+
+                foreach (string v_line in vert.Keys)
+                {
+                    sw.WriteLine(v_line);
+                }
+
+                foreach (string t_line in text.Keys)
+                {
+                    sw.WriteLine(t_line);
+                }
+
+                foreach (string n_line in norm.Keys)
+                {
+                    sw.WriteLine(n_line);
+                }
+
+                sw.WriteLine(faceSector);
+
+                sw.Close();
+            }
+
+            return "Файл размером " + (new FileInfo(oldFilePath).Length / 1024).ToString()
+                + "KB сжат в файл размером " + (new FileInfo(newFilePath).Length / 1024).ToString() + "KB";
+        }
+```
+### CompilerHelper
+Данный класс хранит всё дерево команд, описанное в _ConsoleCompiler_, в корневом узле `root`. Каждый узел имеет ключевое слово команды, его описание и множество последующих узлов (ключевых слов, следующих после данного). 
+```c#
+    public class CompilerHelper
+    {
+        private CommandNode root;
+        private const string command_list_file = "..\\..\\..\\Files\\CompilerFiles\\compiler_command_list.txt";
+        StreamReader sr;
+
+        public CompilerHelper()
+        {
+            root = new CommandNode();
+            root.name = "root";
+            sr = new StreamReader(command_list_file);
+            root.commandNodes = InitNodes();
+            sr.Close();
+        }
+
+        private class CommandNode
+        {
+            public string? name;
+            public string? description;
+            public List<CommandNode> commandNodes = new List<CommandNode>();
+        }
+```
+Все дерево команд с описаниями каждого ключевого слова хранится в файле _compiler_command_list.txt_.
+```c
+alter
+[D]
+Установить параметры 3D сцены
+{
+    light
+    [D]
+    Установить параметры различных типов света
+    {
+        baselight 
+        [D]
+        Установить параметры окружающего света
+        {
+            color <r g b> {END_OF_LINE}
+            intensity <value> {END_OF_LINE}
+        }
+        directionallight
+        [D]
+        Установить параметры направленного света
+        {
+            color <r g b> {END_OF_LINE}
+            intensity <value> {END_OF_LINE}
+            direction <dir.x dir.y dir.z> {END_OF_LINE}
+        }
+        pointlight 
+        [D]
+        Установить параметры точечного источника света
+        {
+            <index> color <r g b> {END_OF_LINE}
+            <index> intensity <value> {END_OF_LINE}
+            <index> position <x y z> {END_OF_LINE}
+            <index> move <x y z> {END_OF_LINE}
+            <index> constant <value> {END_OF_LINE}
+            <index> linear <value> {END_OF_LINE}
+            <index> exp <value> {END_OF_LINE}
+        }
+        spotlight
+        [D]
+        Установить параметры направленного источника света
+        {
+            <index> color <r g b> {END_OF_LINE}
+            <index> intensity <value> {END_OF_LINE}
+            <index> position <x y z> {END_OF_LINE}
+            <index> move <x y z> {END_OF_LINE}
+            <index> constant <value> {END_OF_LINE}
+            <index> linear <value> {END_OF_LINE}
+            <index> exp <value> {END_OF_LINE}
+            <index> direction <dir.x dir.y dir.z> {END_OF_LINE}
+            <index> cutoff {END_OF_LINE}
+        }
+    }
+    object
+    [D]
+    Установить параметры объекта
+    {
+        <object_name> scale <x y z> {END_OF_LINE}
+        <object_name> scale <value> {END_OF_LINE}
+        <object_name> angle <x y z> {END_OF_LINE}
+        <object_name> position <x y z> {END_OF_LINE}
+        <object_name> expand <x y z> {END_OF_LINE}
+        <object_name> expand <value> {END_OF_LINE}
+        <object_name> rotate <x y z> {END_OF_LINE}
+        <object_name> move <x y z> {END_OF_LINE}
+        material 
+        [D]
+        Установить параметры материала объекта
+        {
+            --Недоступно
+        }
+    }
+    camera
+    [D]
+    Установить параметры камеры 
+    {
+        --Недоступно
+    }
+}
+get
+[D]
+Получить информацию о параметрах 3D сцены
+{
+    light
+    [D]
+    Получить сведения об типе освещения
+    {
+        --Недоступно
+    }
+    object
+    [D]
+    Получить сведения об объекте
+    {
+        --Недоступно
+    }
+    camera
+    [D]
+    Получить сведения о камере
+    {
+        position
+        [D]
+        Получить вектор позиции камеры
+        {
+            {END_OF_LINE}
+        }
+        target
+        [D]
+        Получить вектор направления камеры
+        {
+            {END_OF_LINE}
+        }
+        up 
+        [D]
+        Получить вектор Up камеры
+        {
+            {END_OF_LINE}
+        }
+        persproj
+        [D]
+        Получить сведения о проекции перспективы камеры
+        {
+            fov
+            [D]
+            Получить величину поля зрения камеры
+            {
+                {END_OF_LINE}
+            }
+            width
+            [D]
+            Получить ширину камеры
+            {
+                {END_OF_LINE}
+            }
+            height
+            [D]
+            Получить высоту камеры
+            {
+                {END_OF_LINE}
+            }
+            znear
+            [D]
+            Получить близкую границу отсечения сцены
+            {
+                {END_OF_LINE}
+            }
+            zfar
+            [D]
+            Получить дальнюю границу отсечения сцены
+            {
+                {END_OF_LINE}
+            }
+        }
+    }
+    fps
+    [D]
+    Получить значение FPS
+    {
+        {END_OF_LINE}
+    }
+}
+load
+[D]
+Загрузить команды настройки 3D сцены из файла
+{
+    light
+    [D]
+    Загрузить команды настройки света из файла
+    {
+        {END_OF_LINE}
+    }
+    object
+    [D]
+    Загрузить команды настройки объектов из файла
+    {
+        {END_OF_LINE}
+    }
+    all
+    [D]
+    Загрузить все команды настройки 3D сцены из файла
+    {
+        {END_OF_LINE}
+    }
+}
+save
+[D]
+Сохранить команды настройки 3D сцены в файл
+{
+    light
+    [D]
+    Сохранить команды настройки света в файл
+    {
+        {END_OF_LINE}
+    }
+    object
+    [D]
+    Сохранить команды настройки объектов в файл
+    {
+        {END_OF_LINE}
+    }
+    all
+    [D]
+    Сохранить все команды настройки 3D сцены в файл
+    {
+        {END_OF_LINE}
+    }
+}
+compress
+[D]
+Сжать файл 3D-модели формата obj
+{
+    <old_file_name> <new_file_name> {END_OF_LINE}
+}
+```
+Функция `InitNodes` рекурсивно инициализирует каждый узел дерева, читая файл.
+```c#
+        private List<CommandNode> InitNodes()
+        {
+            List<CommandNode> child_nodes = new List<CommandNode>();
+            while (true)
+            {
+                string? line = sr.ReadLine();
+                if (line == null) return child_nodes;
+                line = line.Trim();
+
+                switch (line)
+                {
+                    case "{":
+                        if (child_nodes.Count > 0) child_nodes[child_nodes.Count - 1].commandNodes = InitNodes();
+                        break;
+                    case "}":
+                        return child_nodes;
+                    case "[D]":
+                        if (child_nodes.Count > 0)
+                        {
+                            line = sr.ReadLine();
+                            line = line.Trim();
+                            child_nodes[child_nodes.Count - 1].description = line;
+                        }
+                        break;
+                    default:
+                        CommandNode chn = new CommandNode();
+                        chn.name = line;
+                        child_nodes.Add(chn);
+                        break;
+                }
+            }
+        }
+```
+Функция `PrintCommands` принимает на вход команду типа _help ..._ и начинает поиск команд в поддереве соответствующего узла. Если команда типа _help_, то поиск производится в корневом узле.
+```c#
+        public string PrintCommands(string[] parts)
+        {
+            if (parts.Length == 1)
+            {
+                string output = "CompilerHelper > Последующие команды:";
+                int i = 0;
+                foreach (CommandNode node in root.commandNodes)
+                {
+                    i++;
+                    output += "\n" + i + ") " + node.name;
+                }
+                return output.Trim(' ').Trim(',');
+            }
+            return FindCommands(parts, 1, root);
+        }
+```
+Функция `FindCommands` рекурсивно ищет ключевые слова (если они есть), следующие после данного слова. То есть проходится по всем веткам данного узла. В конечном итоге выводит последующие ключевые слова и описание данной подкоманды.
+```c#
+        private string FindCommands(string[] parts, int index, CommandNode parrent_node)
+        {
+            foreach(CommandNode child_node in parrent_node.commandNodes)
+            {
+                if (child_node.name == parts[index])
+                {
+                    if (parts.Length == index + 1)
+                    {
+                        if (child_node.commandNodes.Count == 0)
+                        {
+                            return "CompilerHelper > " + parts[index] + " является настраиваемым параметром." + (child_node.description != null ? "\nCompilerHelper > " + child_node.description : null);
+                        }
+                        string output = "CompilerHelper > Последующие команды:";
+                        int i = 0;
+                        foreach (CommandNode node in child_node.commandNodes)
+                        {
+                            i++;
+                            output += "\n       " + i + ") " + node.name ;
+                        }
+                        return output.Trim(' ').Trim(',') + (child_node.description != null ? "\nCompilerHelper:Description > " + child_node.description : null);
+                    }
+                    else
+                    {
+                        return FindCommands(parts, index + 1, child_node);
+                    }
+                }
+            }
+            return "CompilerHelper > " + "Команды " + parts[index] + " не обнаружено.";
+        }
+```
+## Реультат  
+### ConsoleCompiler
+![gif](https://github.com/galeevlxix/game_engine/blob/diplom%2B/Files/Screenshots/bandicam2024-07-1823-07-44-491-ezgif.com-video-to-gif-converter.gif)
+### CompilerHelper
+![gif](https://github.com/galeevlxix/game_engine/blob/diplom%2B/Files/Screenshots/bandicam2024-07-1823-08-22-069-ezgif.com-video-to-gif-converter.gif)
