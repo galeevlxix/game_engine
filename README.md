@@ -1,5 +1,5 @@
 ### Разработка графического программного обеспечения для визуализации и работы с трехмерными объектами
-ст. Галеев Тимур, гр. 3530203/00102 (летняя практика)
+Проект графического приложения (3D движка) и данный веб-блог о его пошаговой разработке выполнены студентов СПбПУ Галеевым Тимуром Равилевичем для ВКР. Данный readme документ содержит подробное описание, код и скриншоты каждого этапа разработки. 
 # Оглавление
 [1. Первые шаги и треугольник](#s1)  
 [2. Индексная отрисовка](#s3)  
@@ -15,7 +15,16 @@
 [12. Скайбокс и прицел](#s13)  
 [13. Загрузка моделей через Assimp](#s14)  
 [14. Информационная панель](#s15)  
-[15. Свет: окружающее освещение, рассеянное освещение, отраженный свет](#s16)
+[15. Свет: окружающее освещение, рассеянное освещение, отраженный свет](#s16)  
+[16. Свет: Point Light](#s17)  
+[17. Свет: Spot Light](#s18)  
+[18. Карты нормали (Normal Map)](#s19)  
+[19. Карта отражения (Specular Map)](#s20)  
+[20. Тени (Shadow Mapping)](#s21)  
+[21. PCF](#s22)  
+[22. Shadow Mapping для нескольких источников света](#s23)  
+[23. 3D выбор](#s24)  
+[24. Компилятор](#s25)  
 
 <a name="s1"></a>
 # Первые шаги и треугольник 
@@ -1498,6 +1507,15 @@ Pipeline будет вспомогательным классом для соз�
 ![camera](https://github.com/galeevlxix/game_engine/blob/WorkingWithTheModel/screens/camera%20(1).gif)
 <a name = "s9"></a>
 # Текстуры
+Diffuse map – карта диффузного цвета пикселей трехмерного объекта. Нормированные координаты текстур UV каждой вершины указывают позицию XY текселя на изображении текстуры. То есть, например, для вершины с координатой текстуры UV = (0,5; 0,5) позиция текселя на изображении текстуры размером 1024х2048 будет равна XY = (0,5 * 1024; 0,5 * 2048) = (512; 1024). Координаты UV всегда находятся в диапазоне от 0 до 1 и связаны не только с диффузной картой, но и с картой нормали и картой отражения.  
+Некоторые библиотеки загружают изображения, начиная с верхнего левого пикселя, в то время как OpenGL загружает, начиная с нижнего левого. Во время работы с текстурами следует это учесть, иначе они переворачиваются по вертикали.  
+Во время преобразований объекта в мировом пространстве координаты его текстур остаются неизменными и прикреплены к вершинам.  
+![image](https://github.com/user-attachments/assets/3d4ceea3-a23e-4a7a-aa48-6e597703c557)  
+![image](https://github.com/user-attachments/assets/d467fffc-16a1-4a11-bd00-5c7ae669c5de)
+Во время рендеринга может возникнуть ситуация, когда координаты текстуры UV указывают на тексел в XY = (223,23; 65,8). Метод, который выбирает итоговый тексел, является фильтрацией. Два самых распространенных метода фильтрации являются ближайшая фильтрация и линейная фильтрация. При ближайшей фильтрации координаты текселя округляются: (223; 66). А при линейной берутся соседние тексели ((223, 66), (223, 65), (224, 66) и (224, 65)) и над ними совершается линейная интерполяция между их цветами, сохраняя относительное расстояние между исходным текселем и каждым соседним текселем. Разница между двумя подходами заключается в более мягком отображении текстур.  
+![image](https://github.com/user-attachments/assets/0ec1c1e7-e4f9-40ec-b42f-2a889de98758)
+Итоговый цвет пикселя равен цвету текселя умноженному на результирующий цвет освещения.  
+![image](https://github.com/user-attachments/assets/8806a11a-51f2-4e2a-88f5-6eecc96034a6)
 ## Класс Texture
 В методе загрузки текстуры `Load` первым делом создаем пустую текстуру `Handle` для нашего использования.  
 `stb_image` загружается с верхнего левого пикселя, в то время как OpenGL загружается с нижнего левого, в результате чего текстура переворачивается по вертикали. Функция `stbi_set_flip_vertically_on_load` исправит это недоразумение, заставив текстуру отображаться должным образом.  
@@ -3206,7 +3224,9 @@ void main()
 <a name="s16"></a>
 # Свет: окружающий, рассеянный, отраженный
 ## Окружающий свет
+Базовый  (окружающий)  свет  содержит  только  интенсивность  и  цвет окружающего света. Это минимальное освещение примитивов всех объектов, даже когда свет на них не попадает или они находятся в тени. Итоговый цвет пикселя получается путем умножения исходного цвета пикселя на цвет света и величину интенсивности (яркости) света. 
 ### Структура BaseLight
+Структура базового света. Она состоит из цвета, а также интенсивностей окружающего и рассеянного освещения. Из базовых параметров для окружающего света понадобятся только цвет и интенсивность окружающего освещения.
 ```c#
 ﻿using game_2.MathFolder;
 
@@ -3242,6 +3262,7 @@ namespace game_2.Brain.Lights
 }
 ```
 ### Класс LightingTechnique
+Класс LightingTechnique хранит расположения параметров окружающего света в шейдере, а также устанавливает эти параметры.
 ```c#
 public class LightingTechnique
     {
@@ -3274,6 +3295,7 @@ public class LightingTechnique
     }
 ```
 ### Изменения во фрагментном шейдере
+Изменения во фрагментном шейдере состоят в том, что также инициализируется структура базового света, а цвет и интенсивность окружающего света влияют на выходной цвет. 
 ```hlsl
 #version 330
 out vec4 outputColor;
@@ -3302,6 +3324,7 @@ void main()
 }
 ```
 ### Включение в движке
+В классе движка включаем окружающий свет, задав его параметры.
 ```c#
 	protected override void OnLoad() {
 		. . .
@@ -3317,7 +3340,10 @@ void main()
 	}
 ```
 ## Рассеянный свет
+В отличие от базового света, направленный свет основывается на направлении лучей и делает ярче только те примитивы объекта, которые прошли проверку. Яркость и наличие направленного света на том или ином примитиве зависит от того, под каким углом луч направленного света падает на поверхность. Для этого у каждой вершины существует нормализованный вектор нормали, который всегда перепендикулярен поверхности вершины.
+Когда направленный свет попадает на примитив, коэффициент влияния света высчитывается через косинус угла между лучами и нормалью поверхности, который равен скалярному произведению нормализованному вектору нормали поверхности и нормализованному обратному вектору направления лучей света. Если коэффициент влияния света DiffuseFactor меньше 0, значит угол между направленным светом и нормалью тупой. Если DiffuseFactor = 0, значит угол прямой. В этих случаях влияния света не будет. Если же DiffuseFactor больше 0, то цвет рассеивания равен произведению цвета света на интенсивность рассеивания, уменьшенный на коэффициент рассеивания.
 ### Структура DirectionalLight
+Структура рассеянного освещения DirectionalLight включает в себя направление, а также элементы базового света.
 ```c#
 ﻿using game_2.MathFolder;
 
@@ -3354,6 +3380,7 @@ namespace game_2.Brain.Lights
 }
 ```
 ### Изменения в классе LightingTechnique
+Изменения в классе LightingTechnique заключаются в добавлении сохранения локаций параметров рассеянного света в функции инициализации и добавлении функций установки параметров.
 ```c#
         private void Init()
         {
@@ -3406,6 +3433,7 @@ namespace game_2.Brain.Lights
 	. . .
 ```
 ### Изменения во фрагментном шейдере
+Во фрагментном шейдере была добавлена новая структура рассеянного света, включающая параметры базового света.
 ```hlsl
 . . .
 struct DirectionalLight
@@ -3416,6 +3444,7 @@ struct DirectionalLight
 uniform DirectionalLight gDirectionalLight;
 . . .
 ```
+На основе параметров света была высчитана интенсивность рассеянного освещения на том или ином участке объекта. Если результат скалярного произведения вектора нормали и вектора направления света меньше 0, то рассеянное освещение на этом участке отсутствует. В результате окружающий и рассеянный света складываются друг с другом.
 ```hlsl
 . . .
 void main() 
@@ -3447,6 +3476,7 @@ void main()
 . . .
 ```
 ### Включение в движке
+В классе движка был создан и установлен рассеянный свет.
 ```c#
         // Загрузка окна
         protected override void OnLoad()
@@ -3461,7 +3491,11 @@ void main()
         }
 ```
 ## Отраженный свет
+Имитация отражения луча света от поверхности зависит от позиции камеры и направления луча от источника света до поверхности. Проверка наблюдения отраженного света реализуется с помощью вектора нормали, перпендикулярного поверхности. Сначала высчитывается нормализованный вектор V из точки на поверхности до камеры. Далее высчитывается нормализованный вектор R направления луча, отраженного от поверхности под тем же углом, что был при падении. Потом высчитывается косинус угла между векторами V и R, являющийся SpecularFactor. 
+![image](https://github.com/user-attachments/assets/50f8bbfc-7d14-4eed-9f3e-fd8897ae0a8a)
+Если SpecularFactor больше 0, то есть если угол между векторами R и V острый или равен 0, то SpecularFactor усиляется параметром SpecPower, являющимся силой отражения материала.
 ### Изменения в классе LightingTechnique
+Были объявлены расположения в шейдере параметров позиции камеры, интенсивности и силы отражения света.  
 ```c#
     public class LightingTechnique
     {
@@ -3471,6 +3505,7 @@ void main()
         int _matSpecularPowerLocation;
 	. . .
 ```
+Далее в функции Init параметры были инициализированы. 
 ```c#
         private void Init()
         {
@@ -3481,6 +3516,7 @@ void main()
             _matSpecularPowerLocation = CentralizedShaders.ObjectShader.GetUniformLocation("gMatSpecularPower");
         }
 ```
+Также была добавлена функция установки параметров.
 ```c#
 	. . .
         //specular
@@ -3511,7 +3547,8 @@ void main()
         }
 	. . .
 ```
-### 
+### Изменения в вершинном шейдере
+В вершинном шейдере высчитывается параметр WorldPos0, хранящий расположение вершины с учетом преобразований и отправляющийся во фрагментный шейдер.
 ```hlsl
 . . .
 out vec3 WorldPos0;
@@ -3523,6 +3560,7 @@ void main()
 }
 ```
 ### Изменения во фрагментном шейдере
+Если скалярное произведение вектора нормали и вектора направления рассеянного света больше 0, то происходит подсчет вектора VertexToEye из вершины в мировом пространстве до позиции камеры. Затем вычисляется вектор отражения LightReflect с помощью функции reflect, которая принимает два параметра: вектор направления света и нормаль к поверхности. Если скалярное произведение вектором VertexToEye и LightReflect больше 0, то итоговый отраженный цвет вычисляется через произведение цвета света на интенсивность отражения материала и сила отражения и добавляется к освещению при создании итогового цвета.
 ```hlsl
 ...
 in vec3 WorldPos0;
@@ -3568,6 +3606,7 @@ void main()
 }
 ```
 ### Включение в движке
+В классе движка устанавливаются параметры отраженного света.
 ```c#
         // Рендер окна
         protected override void OnRenderFrame(FrameEventArgs args)
@@ -3581,3 +3620,2080 @@ void main()
 ![difli](https://github.com/galeevlxix/game_engine/blob/Light/screens/diflights.jpg)  
 
 ![spec](https://github.com/galeevlxix/game_engine/blob/Light/screens/specularlight.jpg)
+
+<a name="s17"></a>
+# Свет: Point Light
+## Теория  
+Точечный источник света схож со стандартной лампочкой, но он представляется как материальная точка. У него есть позиция в пространстве, он освещает во всех направлениях, а сила освещения обратно пропорциональна квадрату расстояния от источника света.  
+Вектор направления луча света от точечного источника определяется разностью позиции конкретной вершины объекта и позиции источника света. Длина этого вектора равна дистанции:    
+![image](https://github.com/user-attachments/assets/df4ce9b0-efe3-4bc0-892b-1c8e3ac0f954)  
+Так же, как и с направленным светом (2.2.2 и 2.2.3), косинус угла между направлением света и нормалью поверхности определяет коэффициент влияния света на поверхность. Если коэффициент больше 0, то цвет от точечного света равен произведению цвета света на интенсивность, уменьшенный на коэффициент рассеивания и экспоненциально от дистанции:  
+![image](https://github.com/user-attachments/assets/c73571f8-8afc-4019-8f74-92b290cf3eb9)  
+Например, пусть существует точечный источник света, у которого белый цвет Color = (1, 1, 1), интенсивность Intensity = 1. Пусть DiffuseFactor = =1, то есть луч света падает под прямым углом на поверхность. Пусть параметры затухания определены как: Constant = 1, Linear = 0,09, Exp = 0,032. Тогда итоговый цвет от освещения поверхности зависит от расстояния до точечным источником света следующим образом.  
+![image](https://github.com/user-attachments/assets/7cfab7ac-1b37-40ab-a4e8-5f4bfe2c9c09)  
+## Реализация  
+Структура точечного источника света выглядит следующим образом. Он имеет вектор позиции, структуру BaseLight с интенсивностью и цветом света, а также Attenuation с параметрами константного, линейного и экспоненциального затухания.
+```c#
+    public struct PointLight
+    {
+        public vector3f Position;
+        public BaseLight BaseLight;
+        public Attenuation Attenuation;
+    }
+
+    public struct PointLightLocations
+    {
+        public BaseLightLocations BaseLightLocations;
+        public AttenuationLocations Attenuation;
+        public int Position;
+    }
+
+    public struct Attenuation
+    {
+        public float Constant;
+        public float Linear;
+        public float Exp;
+    }
+
+    public struct AttenuationLocations
+    {
+        public int Constant;
+        public int Linear;
+        public int Exp;
+    }
+```
+В программе шейдера инициализируется структура точечного света, а также максимальное количество, массив и текущее количество источников точечного света.
+```c
+struct PointLight
+{
+    BaseLight Base;
+    vec3 Position;
+    Attenuation Atten;
+};
+const int MAX_POINT_LIGHTS = 10;
+
+uniform PointLight gPointLights[MAX_POINT_LIGHTS];
+uniform int gNumPointLights;
+```
+В функции CalcLightInternal на основе направления луча света и вектора нормали текущей поверхности вычисляется влияние диффузного и отраженного освещения на поверхность от всех типов источника света. В функции CalcPointLight задается направление луча для вычисления его диффузного и отраженного освещения, а также задается затухание света, зависящее от расстояния.
+```c
+vec4 CalcLightInternal(BaseLight Light, vec3 pLightDirection, vec3 Normal)
+{
+    vec3 LightDirection = normalize(pLightDirection);
+
+    float DiffuseFactor = dot(Normal, -LightDirection);
+
+    vec4 DiffuseColor = vec4(0, 0, 0, 0);
+    vec4 SpecularColor = vec4(0, 0, 0, 0);
+
+    if (DiffuseFactor > 0)
+    {
+        DiffuseColor = vec4(Light.Color, 1.0) * Light.Intensity * DiffuseFactor;
+
+        vec3 VertexToEye = normalize(gCameraPos - WorldPos0);
+        vec3 LightReflect = normalize(reflect(LightDirection, Normal));
+        float SpecularFactor = dot(VertexToEye, LightReflect);
+
+        if (SpecularFactor > 0) 
+        {
+            SpecularFactor = pow(SpecularFactor, gMaterial.SpecularPower);
+            SpecularColor = vec4(Light.Color, 1.0f) * Light.Intensity * SpecularFactor;
+        }
+    }
+    return (DiffuseColor + SpecularColor);
+}
+vec4 CalcPointLight(PointLight pLight, vec3 Normal)
+{
+    vec3 LightDirection = WorldPos0 - pLight.Position;
+    float Distance = length(LightDirection);
+
+    vec4 Color = CalcLightInternal(pLight.Base, LightDirection, Normal);
+    
+    float Attenuation =  pLight.Atten.Constant + 
+                         pLight.Atten.Linear * Distance +
+                         pLight.Atten.Exp * Distance * Distance;
+    return Color / Attenuation;
+}
+void main()
+{
+	. . .
+    for (int i = 0; i < gNumPointLights; i++)
+    {
+        TotalLight += CalcPointLight(gPointLights[i], Normal);
+    }
+    	. . .
+}
+```
+При инициализации позиции для шейдерных переменных сохраняются.
+```c
+_numPointLightsLocation = CentralizedShaders.GetUniformLocation( ShaderName.AssimpShader, "gNumPointLights");
+for (int i = 0; i < MAX_POINT_LIGHTS; i++)
+{
+	_pointLightLocations[i].BaseLightLocations.Color = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gPointLights[" + i + "].Base.Color");
+	_pointLightLocations[i].BaseLightLocations.Intensity = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gPointLights[" + i + "].Base.Intensity");
+	_pointLightLocations[i].Position = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gPointLights[" + i + "].Position");
+	_pointLightLocations[i].Attenuation.Exp = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gPointLights[" + i + "].Atten.Exp");
+	_pointLightLocations[i].Attenuation.Linear = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gPointLights[" + i + "].Atten.Linear");
+	_pointLightLocations[i].Attenuation.Constant = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gPointLights[" + i + "].Atten.Constant");
+}
+```
+Установка параметров точечного света.
+```c#
+	public void SetPointLights(PointLight[] pointLights)
+        {
+            Use();
+            GL.Uniform1(_numPointLightsLocation, pointLights.Length);
+
+            for (int i = 0; i < pointLights.Length; i++)
+            {
+                GL.Uniform3(
+                    _pointLightLocations[i].BaseLightLocations.Color, 
+                    pointLights[i].BaseLight.Color.x, 
+                    pointLights[i].BaseLight.Color.y, 
+                    pointLights[i].BaseLight.Color.z);
+                GL.Uniform1(
+                    _pointLightLocations[i].BaseLightLocations.Intensity, 
+                    pointLights[i].BaseLight.Intensity);
+                GL.Uniform3(
+                    _pointLightLocations[i].Position, 
+                    pointLights[i].Position.x, 
+                    pointLights[i].Position.y, 
+                    pointLights[i].Position.z);
+                GL.Uniform1(
+                    _pointLightLocations[i].Attenuation.Exp, 
+                    pointLights[i].Attenuation.Exp);
+                GL.Uniform1(
+                    _pointLightLocations[i].Attenuation.Linear, 
+                    pointLights[i].Attenuation.Linear);
+                GL.Uniform1(
+                    _pointLightLocations[i].Attenuation.Constant, 
+                    pointLights[i].Attenuation.Constant);
+            }
+}
+```
+
+```c#
+            pointLights[0].Position = new vector3f(-5, 2, 0);
+            pointLights[0].Attenuation.Exp = 0.032f;
+            pointLights[0].Attenuation.Linear = 0.09f;
+            pointLights[0].Attenuation.Constant = 1;
+            pointLights[0].BaseLight.Color = new vector3f(1, 0, 0);
+            pointLights[0].BaseLight.Intensity = 1f;
+
+            pointLights[1].Position = new vector3f(5, 2, 0);
+            pointLights[1].Attenuation.Exp = 0.032f;
+            pointLights[1].Attenuation.Linear = 0.09f;
+            pointLights[1].Attenuation.Constant = 1;
+            pointLights[1].BaseLight.Color = new vector3f(0, 1, 1);
+            pointLights[1].BaseLight.Intensity = 1f;
+
+            lightConfig.SetPointLights(pointLights);
+```
+<a name="s18"></a>
+# Свет: Spot Light 
+## Теория  
+Прожекторный свет, как и точечный свет, имеет позицию, затухание, цвет и интенсивность, а также он имеет направление и коэффициент обрезки света Cutoff. Чтобы определить влияние прожекторного света на поверхность, первым делом необходимо вычислить косинус угла между нормализованным вектором направления луча света прожектора от начала источника до пикселя поверхности с самим направлением прожектора.  
+Если косинус меньше, чем коэффициент обрезки света, то пиксель находится вне круга прожектора. А если больше, значит пиксель находится в пределах круга, и необходимо вычислить влияние света на него так, как если бы у нас был точечный источник света	, учитывая угол падения луча, дистанцию до пикселя, коэффициенты затухания и интенсивность свечения. Полученный результат умножается на значение, линейно интерполируемое от 0 до 1 в зависимости от SpotFactor и Cutoff.  
+![image](https://github.com/user-attachments/assets/fcde44d1-67ab-4a36-ab72-8b04a527554b)  
+## Реализация  
+Структура прожекторного источника света выглядит следующим образом. Он имеет вектор направления, параметр отсечения и структуру Point Light. Усеченный и направленный точечный свет определяет прожекторный свет. 
+```c#
+    public struct Spotlight
+    {
+        public vector3f Direction;
+        public float Cutoff1;
+        public PointLight PointLight;
+    }
+
+    public struct SpotlightLocations
+    {
+        public PointLightLocations PointLightLocations;
+        public int Direction;
+        public int Cutoff1;
+    }
+```
+В программе шейдера инициализируется структура прожекторного света, а также максимальное количество, массив и текущее количество источников прожекторного света.  
+```c
+struct SpotLight
+{
+    PointLight Base;
+    vec3 Direction;
+    float Cutoff1;
+};
+
+const int MAX_SPOT_LIGHTS = 10;
+
+uniform SpotLight gSpotLights[MAX_SPOT_LIGHTS];
+uniform int gNumSpotLights;
+```
+Вектор LightToPixel может не совпадать с направлением прожектора. Он лишь указывает направление текущего луча от источника света до пикселя объекта. Если этот луч находится в области усечения, цвет от прожекторного свет считается, как от точечного. Далее границы освещения делаются более плавными.  
+```c
+vec4 CalcSpotLight(SpotLight sLight, vec3 Normal) 
+{
+    vec3 LightToPixel = normalize(WorldPos0 - sLight.Base.Position);
+    float SpotFactor = dot(LightToPixel, sLight.Direction);
+
+    if (SpotFactor > sLight.Cutoff1)
+    {
+        vec4 Color = CalcPointLight(sLight.Base, Normal);
+        return Color * (1.0 - (1.0 - SpotFactor) * 1.0 / (1.0 - sLight.Cutoff1));
+    }
+
+    return vec4(0, 0, 0, 0);
+}
+. . .
+    for (int i = 0; i < gNumSpotLights; i++)
+    {
+        TotalLight += CalcSpotLight(gSpotLights[i], Normal0);
+    }
+```
+При инициализации сохраняем позиции для шейдерных переменных.  
+```c#
+            _numSpotLightsLocation = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gNumSpotLights");
+
+            for (int i = 0; i < MAX_SPOT_LIGHTS; i++)
+            {
+		_spotlightLocations[i].PointLightLocations.BaseLightLocations.Color = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gSpotLights[" + i + "].Base.Base.Color");
+                _spotlightLocations[i].PointLightLocations.BaseLightLocations.Intensity = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gSpotLights[" + i + "].Base.Base.Intensity");
+                _spotlightLocations[i].PointLightLocations.Position = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gSpotLights[" + i + "].Base.Position");
+                _spotlightLocations[i].PointLightLocations.Attenuation.Exp = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gSpotLights[" + i + "].Base.Atten.Exp");
+                _spotlightLocations[i].PointLightLocations.Attenuation.Constant = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gSpotLights[" + i + "].Base.Atten.Constant");
+                _spotlightLocations[i].PointLightLocations.Attenuation.Linear = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gSpotLights[" + i + "].Base.Atten.Linear");
+                _spotlightLocations[i].Direction = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gSpotLights[" + i + "].Direction");
+                _spotlightLocations[i].Cutoff1 = CentralizedShaders.GetUniformLocation(ShaderName.AssimpShader, "gSpotLights[" + i + "].Cutoff1");
+            }
+```
+Установка параметров прожекторного света выглядит следующим образом.  
+```c#
+        public void SetSpotLights(Spotlight[] spotLights)
+        {
+            Use();
+            GL.Uniform1(_numSpotLightsLocation, spotLights.Length);
+            for (int i = 0; i < spotLights.Length; i++)
+            {
+                GL.Uniform3(
+              _spotlightLocations[i].PointLightLocations.BaseLightLocations.Color, 
+                    spotLights[i].PointLight.BaseLight.Color.x, 
+                    spotLights[i].PointLight.BaseLight.Color.y, 
+                    spotLights[i].PointLight.BaseLight.Color.z);
+                GL.Uniform1(
+_spotlightLocations[i].PointLightLocations.BaseLightLocations.Intensity,
+                    spotLights[i].PointLight.BaseLight.Intensity);
+                GL.Uniform3(
+                    _spotlightLocations[i].PointLightLocations.Position,
+                    spotLights[i].PointLight.Position.x,
+                    spotLights[i].PointLight.Position.y,
+                    spotLights[i].PointLight.Position.z);
+                GL.Uniform1(
+                    _spotlightLocations[i].PointLightLocations.Attenuation.Exp,
+                    spotLights[i].PointLight.Attenuation.Exp);
+                GL.Uniform1(
+   _spotlightLocations[i].PointLightLocations.Attenuation.Constant,
+                    spotLights[i].PointLight.Attenuation.Constant);
+                GL.Uniform1(
+                    _spotlightLocations[i].PointLightLocations.Attenuation.Linear,
+                    spotLights[i].PointLight.Attenuation.Linear);
+                GL.Uniform3(
+                    _spotlightLocations[i].Direction,
+                    spotLights[i].Direction.x,
+                    spotLights[i].Direction.y,
+                    spotLights[i].Direction.z);
+                GL.Uniform1(
+                    _spotlightLocations[i].Cutoff1,
+                    spotLights[i].Cutoff1);
+        }
+```
+
+```c#
+            spotlights[0].PointLight.Position = new vector3f(-10, 1, 25);
+            spotlights[0].PointLight.BaseLight.Color = new vector3f(1, 1, 0);
+            spotlights[0].PointLight.BaseLight.Intensity = 1;
+            spotlights[0].PointLight.Attenuation.Constant = 1;
+            spotlights[0].PointLight.Attenuation.Linear = 0.027f;
+            spotlights[0].PointLight.Attenuation.Exp = 0.0028f;
+            spotlights[0].Direction = new vector3f(0, -1, 0);
+            spotlights[0].Cutoff1 = 0.3f; 
+            spotlights[1].PointLight.Position = Camera.Pos;
+            spotlights[1].PointLight.BaseLight.Color = new vector3f(1, 0, 1);
+            spotlights[1].PointLight.BaseLight.Intensity = 0;
+            spotlights[1].PointLight.Attenuation.Constant = 1;
+            spotlights[1].PointLight.Attenuation.Linear = 0.027f;
+            spotlights[1].PointLight.Attenuation.Exp = 0.0028f;
+            spotlights[1].Direction = -Camera.Target;
+            spotlights[1].Cutoff1 = 0.97f; 
+            lightConfig.SetSpotLights(spotlights);
+```
+## Результат  
+![image](https://github.com/user-attachments/assets/8b51e7b5-63cf-48ca-a7aa-e6aeb57b8b81)
+![gif](https://github.com/galeevlxix/game_engine/blob/diplom%2B/Files/Screenshots/pointspotlight-ezgif.com-video-to-gif-converter.gif)
+<a name="s19"></a>
+# Карты нормали (Normal Map)
+## Теория  
+Карты нормалей не изменяют реальный 3D-объект. Они лишь создают за счет света и теней иллюзию существования шероховатости, рельефа и прочих мелких деталей, когда на самом деле эти мелкие детали не были смоделированы, а хранятся в карте нормали в виде текстуры. Благодаря технике использования карты нормали можно значительно повысить детализацию объектов и улучшить графику, без значительного влияния на производительность.  
+![image](https://github.com/user-attachments/assets/12fdf19c-4188-4ce4-87b4-61fd7ada82ab)  
+Достигается это путем заимствования нормалей вершин из текстуры, называемой картой нормали. Каждый тексел из этой текстуры, который имеет цвет (R, G, B), определяет направление вектора нормали в координатах (X, Y, Z). Данный вектор находится в диапазоне [0; 1], так как величины Red, Green или Blue находятся в диапазоне [0; 1], поэтому необходимо перевести вектор в диапазон [-1; 1].  
+![image](https://github.com/user-attachments/assets/5bf9faa2-3d7e-4aa3-9336-12f512309edb)  
+Однако все нормали, выбранные из карты нормали, находятся в пространстве текстуры ориентированы вдоль положительной оси Oz. Это может плохо повлиять на результат освещения поверхности объекта, когда при изменении объекта в мировом пространстве нормаль его какой-то поверхности не будет сонаправлена с осью Oz.   
+TBN-матрица строится из векторов Tangent, Bitangent и Normal. Вектор нормали текстуры умножается на TBN-матрицу для преобразования из пространства текстуры в пространство модели и нормализуется, чтобы гарантировать единичную длину. Далее полученный вектор нормали текстуры будет использоваться во всех вычислениях диффузного освещения вместо вектора нормали поверхности.  
+![image](https://github.com/user-attachments/assets/fde5c98a-a5c0-4be4-802f-cd08bd49e955)  
+## Реализация  
+Каждый Mesh содержит свой объект класса материала, который в свою очередь содержит пути текстур этого Mesh и силу отражения материала, а также функции для работы с ними.  
+```c#
+    public class AMaterial
+    {
+        private ModelTexturePaths m_paths;
+        private float m_specular_power;
+
+        private AMaterial()
+        {
+            m_paths = new ModelTexturePaths();
+        }
+
+        public static AMaterial Init(ModelTexturePaths paths)
+        {
+            AMaterial material = new AMaterial();
+            material.m_paths = paths;
+            material.LoadTextures();
+
+            return material;
+        }
+
+        public void Use()
+        {
+            UseTextures();
+            LightningManager.lightConfig.SetMatSpecularPower(m_specular_power);
+        }
+
+        private void UseTextures()
+        {
+            TextureHeap.Use(m_paths);
+        }
+        
+        private void LoadTextures()
+        {
+            //missing maps
+            if (m_paths._NormalPath == string.Empty) m_paths._NormalPath = TextureHeap.empty_normal_map;
+            if (m_paths._SpecularPath == string.Empty) m_paths._SpecularPath = TextureHeap.empty_specular_map;
+
+            //add
+            TextureHeap.Add(m_paths._DiffusePath);
+            TextureHeap.Add(m_paths._NormalPath, TextureUnit.Texture1);
+        }
+
+        public void SetSpecularPower(float value)
+        {
+            m_specular_power = value;
+        }
+    }
+```
+Все текстуры, которые есть в проекте, хранятся в «куче текстур», где каждая текстура уникальная и идентифицируется путем к ее файлу. В материале хранятся пути к файлам текстур, и когда надо активировать какую-то текстуру материала, можно просто обратиться к этой куче. Сделано это для того, чтобы не создавать и не хранить одни и те же тяжелые текстуры разных материалов.  
+```c#
+    public static class TextureHeap
+    {
+        private static Dictionary<string, Texture> _textureHeap = new Dictionary<string, Texture>();
+        public static string empty_normal_map = "..\\..\\..\\Files\\Textures\\EmptyNormalMap.png";
+        public static string empty_specular_map = "..\\..\\..\\Files\\Textures\\white_list2.bmp";
+public static void Add(string file_path, TextureUnit unit = TextureUnit.Texture0, PixelInternalFormat format = PixelInternalFormat.Rgba)
+        {
+            if (!_textureHeap.ContainsKey(file_path))
+            {
+                _textureHeap.Add(file_path, Texture.Load(file_path, format, unit));
+            }
+        }
+
+        public static void Use(string file_path)
+        {
+            _textureHeap[file_path].Use();
+        }
+
+        public static void Use(ModelTexturePaths paths)
+        {
+            _textureHeap[paths._DiffusePath].Use();
+            _textureHeap[paths._NormalPath].Use();
+        }
+    }
+```
+При загрузке объекта с Assimp создаются и загружаются текстурные карты и сила отражения материалов на основе данных из файла материала (.mtl) объекта.   
+```c#
+            if (mesh.MaterialIndex >= 0)
+            {
+                // Textures
+                Material input_material = _scene.Materials[mesh.MaterialIndex];
+                texturesPaths = ProcessTextures(input_material.GetAllMaterialTextures());
+                shininess = input_material.Shininess;                
+            }
+
+            material = AMaterial.Init(texturesPaths);
+            material.SetSpecularPower(shininess);
+
+            _entries.Add(new AEntry(vertices, indices, material));
+```
+В шейдерной программе нормаль меняется на результат функции CalcBumpedNormal.  
+```c
+vec3 CalcBumpedNormal()
+{
+    vec3 Normal = normalize(Normal0); 
+    vec3 Tangent = normalize(Tangent0);
+    Tangent = normalize(Tangent - dot(Tangent, Normal) * Normal);
+    vec3 Bitangent = cross(Tangent, Normal);
+    vec3 BumpMapNormal = (texture2D(gMaterial.NormalMap, texCoord.xy)).xyz;
+    BumpMapNormal = 2.0 * BumpMapNormal - vec3(1.0, 1.0, 1.0);
+    vec3 NewNormal;                              
+    mat3 TBN = mat3(Tangent, Bitangent, Normal);    
+    NewNormal = TBN * BumpMapNormal;                    
+    NewNormal = normalize(NewNormal);               
+    return NewNormal;  
+}
+void main()
+{
+    vec3 Normal = CalcBumpedNormal();
+. . .
+}
+```
+## Результат
+![image](https://github.com/user-attachments/assets/3864426e-7b7f-4808-bf85-217b3700b3b0)
+<a name="s20"></a>
+# Карта отражения (Specular Map)
+## Теория
+Specular Map накладывается на объект, как и диффузная карта, но хранит в себе не цвета пикселей объекта, а степень отражения материала в данном участке. Отличие Specular Map от параметра силы отражения материала Specular Power в том, что второй действует по всем поверхностям одного материла и усиливает отражение. А Specular Map показывает, где отражение должно быть сильнее, а где должно быть меньше. Например, металлическое лезвие ножа должно отражать свет сильно, а деревянная ручка – слабо. Каждый пиксель карты отражения может отображаться в виде цветового вектора, где черный представляет цветовой вектор vec3 (0, 0, 0), а белый - цветовой вектор vec3 (1, 1, 1), например.  
+## Реализация  
+При загрузке и хранении текстур берется в расчет еще наличие specular map.  
+```c#
+        private void LoadTextures()
+        {
+            //missing maps
+            if (m_paths._NormalPath == string.Empty) m_paths._NormalPath = TextureHeap.empty_normal_map;
+            if (m_paths._SpecularPath == string.Empty) m_paths._SpecularPath = TextureHeap.empty_specular_map;
+
+            //add
+            TextureHeap.Add(m_paths._DiffusePath);
+            TextureHeap.Add(m_paths._NormalPath, TextureUnit.Texture1);
+            TextureHeap.Add(m_paths._SpecularPath, TextureUnit.Texture2);
+        }
+```
+```c#
+        public static void Use(ModelTexturePaths paths)
+        {
+            _textureHeap[paths._DiffusePath].Use();
+            _textureHeap[paths._NormalPath].Use();
+            _textureHeap[paths._SpecularPath].Use();
+        }
+```
+Во фрагментном шейдере SpecularColor умножается еще на тексел карты отражения.
+```c
+SpecularColor = vec4(Light.Color, 1.0f) * Light.Intensity * SpecularFactor * texture2D(gMaterial.SpecularMap, texCoord.xy);
+```
+## Результат
+![image](https://github.com/user-attachments/assets/e6c62442-7822-439f-aa81-09d05a58e684)
+<a name="s21"></a>
+# Тени (Shadow Mapping)
+## Теория
+Одним из самых распространенных техник построения теней является использование карты теней. Метод реализуется за счет повторного рендеринга сцены с объектами. Для исследования данной техники был выбран такой тип источника света как прожектор, так как он схож с камерой и удобен для построения матрицы проекции.  
+Во время первого рендеринга сцена отрисовывается с точки зрения источника света. Все ближайшие к источнику света пиксели попадают в отдельный буфер глубины. Значит мы получим наименьшие значения глубины, которые видно с точки зрения источника света. Текстура, получающаяся в итоге и не имеющая цвета, называется картой теней и связана с одним конкретным источником света. Размер текстуры указывается при создании матрицы проекции света.  
+![image](https://github.com/user-attachments/assets/153b8bc0-708b-4060-8dfe-67f118494d99)  
+Во время второго рендеринга сцена отрисовывается обычно – с точки зрения камеры. Буфер глубины используется во фрагментном шейдере для получения соответствующего значения глубины для каждого рисуемого пикселя. Например, сначала необходимо перевести пиксель в точке P в пространство источника света. Так как точка P не видна из точки зрения света, её координата z в нашем примере будет 0,9. По координатам точки x, y мы можем заглянуть в карту глубины и узнать, что ближайшая к источнику света точка — C с глубиной 0,4. Это значение меньше, чем для точки P, поэтому точка P находится в тени.  
+![image](https://github.com/user-attachments/assets/e153f61b-c408-4ea1-b51d-6cc7013d4dfe)  
+## Реализация
+Сначала создаётся кадровый буфер для рисования карты глубины и 2D текстуру, чтобы использовать её качестве буфера глубины для кадрового буфера. Здесь устанавливается высота и ширина текстуры и указывается формат текстуры GL_DEPTH_COMPONENT.  
+```c#
+    public class ShadowMapFBO
+    {
+        private int m_shadowWidth;
+        private int m_shadowHeight;
+        private int m_fbo;
+        private int m_shadowMap; // фактический буфер глубины
+        public ShadowMapFBO(int width = 0, int height = 0)
+        {
+            m_shadowWidth = width;
+            m_shadowHeight = height;
+            m_fbo = 0; 
+            m_shadowMap = 0;
+            Init();
+        }
+	. . . 
+	}
+```
+Затем необходимо присоединить текстуру глубины к кадровому буферу в качестве буфера глубины.
+```c#
+	private void Init()
+        {
+            m_fbo = GL.GenFramebuffer();
+            m_shadowMap = GL.GenTexture();
+            GL.BindTexture(TextureTarget.Texture2D, m_shadowMap);
+            GL.TexImage2D(
+                TextureTarget.Texture2D, 
+                0, 
+                PixelInternalFormat.DepthComponent32,
+                m_shadowWidth,
+                m_shadowHeight, 
+                0, 
+                PixelFormat.DepthComponent, 
+                PixelType.Float, 
+                IntPtr.Zero);
+	    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, m_fbo);
+            GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, TextureTarget.Texture2D, m_shadowMap, 0);
+            GL.DrawBuffer(DrawBufferMode.None);
+            GL.ReadBuffer(ReadBufferMode.None);
+            var status = GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer);
+            if (status != FramebufferErrorCode.FramebufferComplete)
+            {
+                Console.WriteLine("ShadowMapFBO error: " + status.ToString());
+            }
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+        }
+```
+Функция BindForWriting, вызываемая перед первым проходом, необходима для переключения рендера в карту теней. Функция BindForReading, вызываемая перед вторым проходом, необходима для привязывания карты теней для чтения.  
+```c#
+        public void BindForWriting()
+        {
+            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, m_fbo); 
+        }
+        public void BindForReading(TextureUnit unit) 
+        {
+            GL.ActiveTexture(unit);
+            GL.BindTexture(TextureTarget.Texture2D, m_shadowMap);
+        }
+        public void Dispose()
+        {
+            GL.DeleteTexture(m_shadowMap);
+        }
+```
+Сначала устанавливаются матрицы проекции перспективы и матрицы пространства камеры для камеры наблюдателя и для источника света отдельно.  
+```c#
+	var p = new matrix4f();
+	p.InitPersProjTransform(120, shadow_size_x, shadow_size_y, 0.1f, 100);
+	Matrix4 projMatrixFromLight = p.ToOpenTK();
+	Matrix4 projMatrix = mPersProj.PersProjMatrix.ToOpenTK();
+	vector3f pos = LightningManager.spotlights[0].PointLight.Position;
+	vector3f tar = LightningManager.spotlights[0].Direction;
+	matrix4f LightSpacePos = new matrix4f();
+	LightSpacePos.InitTranslationTransform(-pos);
+	matrix4f LightSpaceTarget = new matrix4f();
+	LightSpaceTarget.InitCameraTransform(-tar, vector3f.Up);
+	Matrix4 viewMatrixFromLight = (LightSpacePos * LightSpaceTarget).ToOpenTK();
+	Matrix4 viewMatrix = (Camera.CameraTranslation * Camera.CameraRotation).ToOpenTK();
+	Shader shadowShader = CentralizedShaders.GetShader(ShaderName.ShadowShader);
+	Shader normalShader = CentralizedShaders.GetShader(ShaderName.AssimpShader);
+```
+Сцена рендерится первый раз с точки зрения прожекторного источника света с использованием шейдера теней.  
+```c#
+	GL.CullFace(CullFaceMode.Front);
+	shadowMap.BindForWriting();
+	GL.Viewport(0, 0, shadow_size_x, shadow_size_y);
+	GL.Clear(ClearBufferMask.DepthBufferBit);
+	shadowShader.Use();
+	Draw(shadowShader, ball, viewMatrixFromLight, projMatrixFromLight);
+	Draw(shadowShader, back, viewMatrixFromLight, projMatrixFromLight);
+	Matrix4 wvpMatrixFromLight_ball = ball._pipeline.getWorld() * viewMatrixFromLight * projMatrixFromLight;
+	Matrix4 wvpMatrixFromLight_back = back._pipeline.getWorld() * viewMatrixFromLight * projMatrixFromLight;
+```
+Затем при обычном рендеринге передается в шейдер еще и матрица WVP с точки зрения света.  
+```c#
+	GL.CullFace(CullFaceMode.Back);
+	GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+	GL.Viewport(0, 0, WindowWidth, WindowHeight);
+	GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+	normalShader.Use();
+	shadowMap.BindForReading(TextureUnit.Texture3);
+	normalShader.setValue("light_wvp", wvpMatrixFromLight_ball);
+	Draw(normalShader, ball, viewMatrix, projMatrix);
+	normalShader.setValue("light_wvp", wvpMatrixFromLight_back);
+	Draw(normalShader, back, viewMatrix, projMatrix);
+```
+Шейдерная функция CalcShadowFactor проверяет, находится ли пиксель в тени.  
+```c
+float CalcShadowFactor(vec4 LightSpacePos)
+{
+    vec3 ProjCoords = LightSpacePos.xyz / LightSpacePos.w;
+    ProjCoords = 0.5 * ProjCoords + 0.5;
+    float Depth = texture2D(gShadowMap, ProjCoords.xy).r;
+    if (Depth + 0.0001 < ProjCoords.z)
+        return 0;
+    else
+        return 1.0;
+}
+
+void main()
+{
+	. . .
+    TotalLight += shadowFactor * CalcSpotLight(gSpotLights[0], Normal);
+. . .
+}
+```
+## Результат
+![image](https://github.com/user-attachments/assets/6b509d8c-db81-48f0-b02a-dcc9ebf5f88f)  
+<a name="s22"></a>
+# PCF  
+## Теория
+Так как карта теней (глубины) имеет постоянное разрешение, часто тексель карты глубины охватывает более одного текселя фрагмента объекта. Это приводит к тому, что несколько текселей фрагмента объекта могут извлекать одно и то же значение из карты глубины, что приводит к появлению этих неровных блочных краев.   
+PCF (Percentage Closer Filtering) является одним из методов решения этой проблемы. Самая простая реализация этого метода заключается в том, чтобы взять соседние тексели текущего текселя карты глубины и усреднить результат в текущем текселе.  
+## Реализация  
+В переменной shadow суммируются текущий тексель карты глубины и 8 соседних. Размытость теней можно настраивать с помощью переменной PСF_Power. Например, при PСF_Power = 2 усредняться будут уже 25 текселей.  
+```c
+int PСF_Power = 1;
+float CalcShadowFactor(vec4 LightSpacePos, sampler2D ShadowMap)
+{
+    vec3 ProjCoords = LightSpacePos.xyz / LightSpacePos.w;
+    ProjCoords = 0.5 * ProjCoords + 0.5;
+    float shadow = 0.0;
+    vec2 texSize = 1.0 / textureSize(ShadowMap, 0);
+    for (int x = -PСF_Power ; x <= PСF_Power ; ++x)
+    {
+        for (int y = -PСF_Power ; y <= PСF_Power ; ++y)
+        {
+            float pcfDepth = texture(ShadowMap, ProjCoords.xy + vec2(x, y) * texSize).r;
+            shadow += ProjCoords.z <= pcfDepth + 0.00001 ? 0.0 : 1.0;
+        }
+    }
+    shadow /= ((PСF_Power * 2 + 1) * (PСF_Power * 2 + 1));
+    return (1 - shadow);
+}
+```
+## Результат
+![image](https://github.com/user-attachments/assets/88a53195-6df2-4193-bfb8-3f171115c3e5)
+<a name="s23"></a>
+# Shadow Mapping для нескольких источников света  
+## Реализация  
+Для того, чтобы реализовать тени от нескольких источников света необходимо включить в структуру света карту теней и матрицу WVP для источника света. 
+```c#
+public class Spotlight
+{
+    public vector3f Direction;
+    public float Cutoff1;
+    public PointLight PointLight;
+    public ShadowMapFBO ShadowMapSpotlight;
+    
+    public Dictionary<string, Matrix4> wvpMatrixFromLight;
+    public Spotlight()
+    {
+        Direction = new vector3f();
+        Cutoff1 = 1;
+        PointLight = new PointLight();
+        
+        ShadowMapSpotlight = new ShadowMapFBO(2048, 2048);
+        wvpMatrixFromLight = new Dictionary<string, Matrix4>();
+    }
+}
+```
+Для каждого источника света устанавливаются значения сэмплера карты теней.
+```c#
+private static void SetValuesForSamplers()
+{
+    SetValue(ShaderName.AssimpShader, "gMaterial.DiffuseMap", 0);
+    SetValue(ShaderName.AssimpShader, "gMaterial.NormalMap", 1);
+    SetValue(ShaderName.AssimpShader, "gMaterial.SpecularMap", 2);
+
+    for (int i = 0; i < LightningManager.SpotlightsCount; i++)
+    {
+        SetValue(ShaderName.AssimpShader, "gSpotLights[" + i + "].gShadowMap", 10 + i);
+    }
+}   
+```
+В функции создания теней DrawShadows() для каждого источника света строятся матрица проекции и матрица вида с указанием свойств spotlight. Далее все объекты рисуются с точки зрения источника света в буфер глубины этого источника. 
+```c#
+public static void DrawShadows()
+{
+    shadowShader.Use();
+
+    foreach (Spotlight spotlight in LightningManager.spotlights)
+    {
+        int shadowMapSize = spotlight.ShadowMapSpotlight.Size;
+        // CREATE MATRICES
+        Matrix4 projMatrixFromLight = matrix4f.GetInitPersProjTransform(100, shadowMapSize, shadowMapSize, 0.1f, 100).ToOpenTK();
+        vector3f pos = spotlight.PointLight.Position;
+        vector3f up = vector3f.Cross(tar, vector3f.Right);
+				Matrix4 viewMatrixFromLight = (matrix4f.GetInitTranslationTransform(-pos) * matrix4f.GetInitCameraTransform(-tar, -up)).ToOpenTK();
+        // RENDER SHADOWS 
+        spotlight.ShadowMapSpotlight.BindForWriting();
+        GL.Viewport(0, 0, shadowMapSize, shadowMapSize);
+        GL.Clear(ClearBufferMask.DepthBufferBit);
+        if (spotlight.wvpMatrixFromLight.Count > 0)
+            spotlight.wvpMatrixFromLight.Clear();
+        foreach (string obj_name in obj_list.Keys)
+        {
+            obj_list[obj_name].Draw(shadowShader, viewMatrixFromLight, projMatrixFromLight);
+            spotlight.wvpMatrixFromLight.Add(obj_name, obj_list[obj_name]._pipeline.getWorld() * viewMatrixFromLight * projMatrixFromLight);
+        }
+        GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+    }
+}
+```
+В функции отрисовки объектов на экране DrawScene() сначала все карты теней, записанные раннее в буфер глубины, считываются для отправки в шейдер. При отрисовке каждого объекта его матрица отображения WVP с точки зрения каждого источника света отправляется в шейдер.
+```c#
+public static void DrawScene()
+{
+    normalShader.Use();
+    for (int i = 0; i < LightningManager.SpotlightsCount; i++)
+    {
+        LightningManager.spotlights[i].ShadowMapSpotlight.BindForReading(TextureUnit.Texture10 + i);
+    }
+    foreach (string obj_name in obj_list.Keys)
+    {
+        for (int i = 0; i < LightningManager.SpotlightsCount; i++)
+        {
+            if (LightningManager.spotlights[i].wvpMatrixFromLight.Count > 0)
+                normalShader.setValue("gSpotLights[" + i + "].LightWVP", LightningManager.spotlights[i].wvpMatrixFromLight[obj_name]);
+        }
+        obj_list[obj_name].Draw(normalShader);
+    }
+}  
+```
+Во фрагментном шейдере структура источника света теперь имеет карту теней и матрицу отображения WVP текущего рисуемого объекта. 
+```c
+struct SpotLight
+{
+    PointLight Base;
+    vec3 Direction;
+    float Cutoff1;
+    
+    sampler2D gShadowMap;
+    mat4 LightWVP;
+};  
+```
+Функция CalcShadowFactor, проверяющая, находится ли пиксель в тени, имеет мягкие тени благодаря методу PCF и разбиралась в предыдущем радзеле. Теперь вызов этой функции происходит непосредственно в функции вычисления света от источника света этого типа.
+```c
+vec4 CalcSpotLight(SpotLight sLight, vec3 Normal) 
+{
+    vec3 LightToPixel = normalize(WorldPos0 - sLight.Base.Position);
+    float SpotFactor = dot(LightToPixel, sLight.Direction);
+    if (SpotFactor > sLight.Cutoff1)
+    {
+        float shadow = CalcShadowFactor(Position0 * sLight.LightWVP, sLight.gShadowMap);
+        vec4 Color = shadow * CalcPointLight(sLight.Base, Normal);
+        return Color * (1.0 - (1.0 - SpotFactor) * 1.0 / (1.0 - sLight.Cutoff1));
+    }
+
+    return vec4(0, 0, 0, 0);
+}
+```
+## Реультат  
+![image](https://github.com/user-attachments/assets/906e0b7d-87c4-4f43-9a9b-c089ce32595e)  
+<a name="s24"></a>
+# 3D выбор  
+## Реализация  
+Выбор трехмерного объекта с помощью курсора или прицела необходим для интерактивного взаимодействия с экспонатами виртуального музея. Реализация 3D выбора начинается с создания класса SelectingMapFBO, включающего в себя карту глубины m_depthMap, кадровый буфер m_fbo для рисования m_depthMap и буфера цвета для хранения информации визуализированных треугольников. 
+```c#
+public class SelectingMapFBO
+{
+    private int m_fbo;
+    private int m_selectMap;
+    private int m_depthMap;
+    public SelectingMapFBO()
+    {
+        m_fbo = 0;
+        m_selectMap = 0;
+        m_depthMap = 0;
+    }
+    . . .
+```
+В функции инициализации Init сначала создается FBO. 
+```c#
+public void Init(int WindowWidth, int WindowHeight)
+{
+    m_fbo = GL.GenFramebuffer();
+    GL.BindFramebuffer(FramebufferTarget.Framebuffer, m_fbo);
+    m_selectMap = GL.GenTexture();
+    GL.BindTexture(TextureTarget.Texture2D, m_selectMap);
+    GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgb32ui, WindowWidth, WindowHeight, 0, PixelFormat.RgbInteger, PixelType.UnsignedInt, IntPtr.Zero);
+    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+    GL.FramebufferTexture2D(FramebufferTarget.DrawFramebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, m_selectMap, 0);
+    m_depthMap = GL.GenTexture();
+    GL.BindTexture(TextureTarget.Texture2D, m_depthMap);
+    GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.DepthComponent, WindowWidth, WindowHeight, 0, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero);
+    GL.FramebufferTexture2D(FramebufferTarget.DrawFramebuffer, FramebufferAttachment.DepthAttachment, TextureTarget.Texture2D, m_depthMap, 0);
+    var status = GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer);
+    if (status != FramebufferErrorCode.FramebufferComplete) Console.WriteLine("ShadowMapFBO error: " + status.ToString());
+    GL.BindTexture(TextureTarget.Texture2D, 0);
+    GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+}
+```
+Далее происходит инициализация объекта текстуры для буфера с информацией о примитиве. Потом инициализируется объект текстуры для буфера глубины. А в конце происходит проверка успеха инициализации и развязка от текстуры и буфера глубины. Функции Enable() и Disable() используются для включения и отключения записи в буфер глубины. 
+```c#
+public void Enable()
+{
+    GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, m_fbo);
+}
+
+public void Disable()
+{
+    GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
+}
+```
+Функция ReadPixel необходима для получения информации об объекте из пикселя в центре экрана. Вместо информации о цвете объекта RGB пиксель содержит информацию об индексе объекта, его MeshEntry и номер примитива.
+```c#
+public unsafe PixelInfo ReadPixel(int x, int y)
+{
+    GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, m_fbo);
+    GL.ReadBuffer(ReadBufferMode.ColorAttachment0);
+
+    PixelInfo[] pixels = new PixelInfo[1];
+
+    pixels[0] = new PixelInfo();
+    
+    GL.ReadPixels(x, y, 1, 1, PixelFormat.RgbInteger, PixelType.UnsignedInt, pixels);
+
+    GL.ReadBuffer(ReadBufferMode.None);
+    GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, 0);
+
+    return pixels[0];
+}
+public struct PixelInfo
+{
+    public int ObjectID;
+    public int DrawID;
+    public int PrimID;
+    public PixelInfo()
+    {
+        ObjectID = 0;
+        DrawID = 0;
+        PrimID = 0;
+    }
+}
+```
+В вершинном шейдере карты выбора вершины просто умножаются на матрицу отображения WVP от камеры. 
+```c
+#version 410 core
+
+layout (location = 0) in vec3 aPosition;
+
+uniform mat4 wvp;
+
+void main()
+{
+    gl_Position = vec4(aPosition, 1.0) * wvp;
+}
+```
+А во фрагментном шейдере карты выбора вместо цвета фрагмента на выход поступает информация об объекте.
+```c
+#version 330 core
+
+out uvec4 FragColor;
+
+uniform int gDrawIndex;
+
+uniform int gObjectIndex;
+
+void main()
+{
+    FragColor = uvec4(gObjectIndex, gDrawIndex, gl_PrimitiveID + 1, 1.0f);
+}
+```
+Данная функция записывает в карту выбора информацию об объектах на экране и возвращает информацию об объекте, пиксель которого находится в центре экрана. 
+```c#
+public static SelectingMapFBO.PixelInfo GetSelectedPixel()
+{
+    selectingShader.Use();
+    selectMap.Enable();
+    GL.Viewport(0, 0, WindowWidth, WindowHeight);
+    GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+    int i = 0;
+    foreach (AObject obj in obj_list.Values)
+    {
+        selectingShader.setValue("gObjectIndex", i);
+        i++;
+        obj.Draw(selectingShader);
+    }
+    selectMap.Disable();
+    return selectMap.ReadPixel(WindowWidth / 2, WindowHeight / 2);
+}
+```
+При отрисовке, когда зажата ЛКМ, в консоль выводится информация об объекте, который находится на прицеле.
+```c#
+public static void DrawScene(bool isPressed)
+{
+    if (isPressed)
+    {
+        SelectingMapFBO.PixelInfo pixel = GetSelectedPixel();
+
+        if (pixel.PrimID != 0)
+        {
+            switch(pixel.ObjectID)      //логика
+            {
+                case 0:
+                    Console.WriteLine("Музей");
+                    break;
+                case 1:
+                    Console.WriteLine("Скульптура");
+                    break;
+                case 2:
+                    Console.WriteLine("Стол");
+                    break;
+            }
+        }
+    }
+    . . .
+```
+## Реультат  
+![gif](https://github.com/galeevlxix/game_engine/blob/diplom%2B/Files/Screenshots/3D-ezgif.com-video-to-gif-converter.gif)
+<a name="s25"></a> 
+# Компилятор 
+_Находится в разработке..._
+## Теория  
+Фактически это не является компилятором, а называется так для простоты. Это скорее мини-язык программирования внутри проекта движка, предназначенный для тестирования функционала графического приложения. "Компилятор" читает строку команды, введенную в консоль, или несколько строк команд, сохраненных в файле, и в реальном времени выполняет соответствующие действия. Например, изменить цвет направленного света **без необходимости менять код и перезапускать приложение**, тратя много времени на ожидание загрузки моделей и текстур.  
+
+В данный момент компилятор может:  
+1. `alter` - Установить параметры 3D сцены (Н-р, объектов/света)  
+2. `get` - Получить информацию о параметрах 3D сцены (Н-р, камеры/FPS)  
+3. `load` - Загрузить команды настройки 3D сцены из файла и выполнить (Н-р, объектов/света)  
+4. `save` - Сохранить команды настройки 3D сцены из консоли в файл (Н-р, объектов/света)  
+5. `compress` - Сжать файл 3D-модели формата _obj_  
+6. `help` - Вызов помощника **CompilerHelper**  
+
+Для более подробного изучения синтаксиса языка обращайтесь к помощнику _CompilerHelper_. Пример использования помощника:
+1. Ввод:  
+   `help`  
+   Вывод:  
+   ```
+   CompilerHelper > Последующие команды:
+	1) alter
+	2) get
+	3) load
+	4) save
+	5) compress
+   ```
+2. Ввод:  
+   `help load`  
+   Вывод:  
+   ```
+   CompilerHelper > Последующие команды:
+       1) light
+       2) object
+       3) all
+   CompilerHelper:Description > Загрузить команды настройки 3D сцены из файла
+   ```
+3. Ввод:  
+   `help alter light pointlight`  
+   Вывод:  
+   ```
+   CompilerHelper > Последующие команды:
+       1) <index> color <r g b> {END_OF_LINE}
+       2) <index> intensity <value> {END_OF_LINE}
+       3) <index> position <x y z> {END_OF_LINE}
+       4) <index> move <x y z> {END_OF_LINE}
+       5) <index> constant <value> {END_OF_LINE}
+       6) <index> linear <value> {END_OF_LINE}
+       7) <index> exp <value> {END_OF_LINE}
+   CompilerHelper:Description > Установить параметры точечного источника света
+   ```
+_{END_OF_LINE}_ - конец строки.  
+
+## Реализация  
+### ConsoleCompiler
+Класс содержит пути к файлам для сохранения команд для настройки 3D сцены: _light_configuration.txt_ и _object_configuration.txt_. `CompilerHelper` - пользовательский помощник, хранящий дерево всех возможных команд компилятора, доступных для использования.  
+```c#
+    public static class ConsoleCompiler
+    {
+        private static string? line = "";
+        private static bool isExecuting = false;
+        private static string light_configuration_file = "..\\..\\..\\Files\\CompilerFiles\\log_config\\light_configuration.txt";
+        private static string object_configuration_file = "..\\..\\..\\Files\\CompilerFiles\\log_config\\object_configuration.txt";
+
+        private static CompilerHelper helper = new CompilerHelper();
+```
+После загрузки всех компонентов графического приложения запускается компилятор.
+```c#
+        public static void Run()
+        {
+            while (!isExecuting)
+            {
+                line = Console.ReadLine();
+            }
+        }
+```
+```c#
+        // Загрузка окна
+        protected override async void OnLoad()
+        {
+            . . .
+            await Task.Run(() => ConsoleCompiler.Run());
+        }
+```
+Функция выполнения команды. Если введенная строка не пуста, а в данный момент не выполняется другая команда, выполняется команда из консоли. После выполнения команда попадает в словарь `commands`, который хранит каждую команду из консоли, выполненную во время работы приложения, и ее соответствующий уникальный номер (ключ).  
+
+Если новая команда уже есть в словаре, то она заменяет старую команду. Например, если сначала мы установили position для объекта в точке (1, 1, 1), а потом установили position в точке (2, 2, 2). В этом случае нам не нужна старая информация о position для объекта в точке (1, 1, 1).  
+
+Но есть исключения, когда мы двигаем, расширяем или поворачиваем объект. Тогда старые команды удалять нельзя, так как, например, если мы сначала двигали объект на (dx=1, dy=0, dz=0), а потом на (dx=0, dy=0, dz=1), то в конечном итоге мы подвинули объект на (dx=1, dy=0, dz=1).
+```c#
+	private static Dictionary<string, string> commands = new Dictionary<string, string>();
+
+        private static List<string> prohibited_to_delete = new List<string>()
+        {
+            "2_4", "2_5", "2_6"
+        };
+        private static int unique_num = 0;
+
+        public static void Execute()
+        {
+            if (line != "" && !isExecuting)
+            {
+                isExecuting = true;
+                string feedback = ParseLine(line);
+                Console.WriteLine(feedback);
+                string[] parts = feedback.Split('#');
+
+                //save commands to logs
+                if (parts.Length > 1 && parts[0] != "0")
+                {
+                    string key = parts[0];
+                    for (int i = 1; i < parts.Length - 1; i++)
+                    {
+                        key += "_" + parts[i];
+                    }
+                    
+                    if(!prohibited_to_delete.Contains(parts[0] + "_" + parts[1]))
+                    {
+                        if (commands.ContainsKey(key))
+                        {
+                            commands.Remove(key);
+                        }
+                        commands.Add(key, line);
+                    }
+                    else
+                    {
+                        unique_num++;
+                        commands.Add(key + "_" + unique_num, line);
+                    }
+
+                }
+
+                line = "";
+                isExecuting = false;
+            }
+        }
+```
+```c#
+        // Рендер окна
+        protected override void OnRenderFrame(FrameEventArgs args)
+        {
+            . . .
+            ConsoleCompiler.Execute();
+            . . .
+        }
+```
+В этой функции строка команды разбивается на части (ключевые слова), разделенные пробелами. А затем все эти слова обрабатываются в соответствующих функциях. 
+```c#
+        private static string ParseLine(string? line)
+        {
+            line = line.Trim();
+            line = line.Replace("  ", " ");
+            string[] parts = line.Split(' ');
+            if (parts.Length == 0) return "Пустая строка";
+
+            switch (parts[0])
+            {
+                case "alter":
+                    return AlterChoice(parts);
+                case "get":
+                    return GetChoice(parts);
+                case "save":
+                    return SaveChoice(parts);
+                case "load":
+                    return LoadChoice(parts);
+                case "compress":
+                    return CompressObjFile(parts[1], parts[2]);
+                case "#":
+                    return "";
+                case "help":
+                    return helper.PrintCommands(parts);
+            }
+            return "0# Неизвестное действие";
+        }
+```
+Получить информацию о камере или FPS.  
+```c#
+        //GET
+        private static string GetChoice(string[] parts)
+        {
+            if (parts.Length == 1) return "0# Незаконченное get действие";
+            switch (parts[1])
+            {
+                case "camera":
+                    return GetCameraChoice(parts);
+                case "fps":
+                    return FPSMeter.Int_FPS + " FPS";
+                case "object":
+                case "light":
+                    return "0# Недоступно";
+            }
+            return "0# Неизвестное get действие";
+        }
+
+        private static string GetCameraChoice(string[] parts)
+        {
+            if (parts.Length == 2) return "0# Незаконченное get camera действие";
+
+            switch (parts[2])
+            {
+                case "position":
+                    return Camera.Pos.ToStr();
+                case "target":
+                    return (-Camera.Target).ToStr();
+                case "up":
+                    return Camera.Up.ToStr();
+                case "persproj":
+                    return GetPersProj(parts);
+            }
+            return "0# Неизвестное get camera действие";
+        }
+
+        private static string GetPersProj(string[] parts)
+        {
+            if (parts.Length == 3) return "0# Незаконченное get camera persproj действие";
+
+            switch (parts[3])
+            {
+                case "fov":
+                    return "FOV: " + PersProjMat.GetFOV;
+                case "width":
+                    return "WIDTH: " + PersProjMat.GetWidth;
+                case "height":
+                    return "HEIGHT: " + PersProjMat.GetHeight;
+                case "znear":
+                    return "ZNEAR: " + PersProjMat.GetZNear;
+                case "zfar":
+                    return "ZFAR: " + PersProjMat.GetZFar;
+            }
+
+            return "0# Неизвестное get camera persproj действие";
+        }
+```
+Сохранить команды из `commands` в файлы.
+```c#
+        //SAVE
+        private static string SaveChoice(string[] parts)
+        {
+            switch (parts[1])
+            {
+                case "light":
+                    using (StreamWriter sw = new StreamWriter(light_configuration_file))
+                    {
+                        foreach (KeyValuePair<string, string> item in commands)
+                        {                            
+                            if (item.Key.Split('_')[0] == "1") sw.WriteLine(item.Value);
+                        }
+                        sw.Close();
+                    }
+                    return "Команды настройки света сохранены в файл";
+                case "object":
+                    using (StreamWriter sw = new StreamWriter(object_configuration_file))
+                    {
+                        foreach (KeyValuePair<string, string> item in commands)
+                        {
+                            if (item.Key.Split('_')[0] == "2") sw.WriteLine(item.Value);
+                        }
+                        sw.Close();
+                    }
+                    return "Команды настройки объектов сохранены в файл";
+                case "all":
+                    return SaveChoice(new string[] { "save", "light" }) + "\n" + SaveChoice(new string[] { "save", "object" });
+            }
+            return "0# Неизвестное save действие";
+        }
+```
+Загрузить сохраненные команды из файла и выполнить их. 
+```c#
+        //LOAD
+        private static string LoadChoice(string[] parts)
+        {
+            switch (parts[1])
+            {
+                case "light":
+                    string? line;
+                    using (StreamReader sr = new StreamReader(light_configuration_file))
+                    {
+                        while ((line = sr.ReadLine()) != null)
+                        {
+                            ParseLine(line);
+                        }
+                    }
+                    return "Команды настройки света загружены из файла";
+                case "object":
+                    string? line1;
+                    using (StreamReader sr = new StreamReader(object_configuration_file))
+                    {
+                        while ((line1 = sr.ReadLine()) != null)
+                        {
+                            ParseLine(line1);
+                        }
+                    }
+                    return "Команды настройки объектов загружены из файла";
+                case "all":
+                    return LoadChoice(new string[] { "save", "light" }) + "\n" + LoadChoice(new string[] { "save", "object" });
+            }
+            return "0# Неизвестное load действие";
+        }
+```
+Установить параметры света или объектов, проинициализированных в `LightningManager` и `ObjectArray` соответственно.
+```c#
+        //ALTER
+        private static string AlterChoice(string[] parts)
+        {
+            if (parts.Length == 1) return "0# Незаконченное alter действие";
+            switch (parts[1])
+            {
+                case "light":
+                    return AlterLightChoice(parts);
+                case "object":  //material, scale, angle, position
+                    if (parts.Length == 2 || parts[2] == null || parts[2] == string.Empty) return "0# Незаконченное alter object действие -> Необходимо указать имя объекта";
+                    if (ObjectArray.Count == 0) return "0# Массив Assimp-объектов пуст";
+                    if (!ObjectArray.Exists(parts[2])) return "0# Объекта " + parts[2] + " не существует в массиве Assimp-объектов";
+                    return AlterObjectChoice(parts, parts[2]);
+                case "camera":  //position, target, 
+                    return "0# Недоступно";
+            }
+            return "0# Неизвестное alter действие";
+        }
+
+        private static string AlterObjectChoice(string[] parts, string obj)
+        {
+            if (parts.Length == 3) return "0# Незаконченное alter object действие -> Необходимо указать изменяемый параметр и его значение";
+            switch (parts[3])
+            {
+                //УСТАНОВИТЬ
+                case "scale":
+                    if (parts.Length == 5)
+                    {
+                        float value;
+                        try
+                        {
+                            value = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                        }
+                        catch
+                        {
+                            return "0# Не удается преобразовать в числовое значение";
+                        }
+                        ObjectArray.SetScale(obj, value, value, value);
+                        return "2#1#" + obj + "# Масштаб объекта изменен на Scale(" + value + "," + value + "," + value + ")";
+                    }
+                    else if (parts.Length == 7)
+                    {
+                        float x, y, z;
+                        try
+                        {
+                            x = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                            y = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                            z = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                        }
+                        catch
+                        {
+                            return "0# Не удается преобразовать в числовое значение";
+                        }
+                        ObjectArray.SetScale(obj, x, y, z);
+                        return "2#1#" + obj + "# Масштаб объекта изменен на Scale(" + x + "," + y + "," + z + ")";
+                    }
+                    else
+                    {
+                        return "0# Неизвестное alter object " + obj + " scale действие -> Необходимо ввести корректное значение";
+                    }                    
+                case "angle":
+                    if (parts.Length == 7)
+                    {
+                        float x, y, z;
+                        try
+                        {
+                            x = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                            y = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                            z = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                        }
+                        catch
+                        {
+                            return "0# Не удается преобразовать в числовое значение";
+                        }
+                        ObjectArray.SetAngle(obj, x, y, z);
+                        return "2#2#" + obj + "# Угол объекта изменен на Angle(" + x + "," + y + "," + z + ")";
+                    }
+                    else
+                    {
+                        return "0# Неизвестное alter object " + obj + " angle действие -> Необходимо ввести корректное значение";
+                    }
+                case "position":
+                    if (parts.Length == 7)
+                    {
+                        float x, y, z;
+                        try
+                        {
+                            x = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                            y = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                            z = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                        }
+                        catch
+                        {
+                            return "0# Не удается преобразовать в числовое значение";
+                        }
+                        ObjectArray.SetPosition(obj, x, y, z);
+                        return "2#3#" + obj + "# Позиция объекта изменена на Position(" + x + "," + y + "," + z + ")";
+                    }
+                    else
+                    {
+                        return "0# Неизвестное alter object " + obj + " position действие -> Необходимо ввести корректное значение";
+                    }
+                //НЕМЕДЛЕННО ОБНОВИТЬ
+                case "expand":
+                    if (parts.Length == 5)
+                    {
+                        float value;
+                        try
+                        {
+                            value = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                        }
+                        catch
+                        {
+                            return "0# Не удается преобразовать в числовое значение";
+                        }
+                        ObjectArray.ExpandImmediately(obj, value, value, value);
+                        return "2#4#" + obj + "# Масштаб объекта увеличен на Expand(" + value + "," + value + "," + value + ")";
+                    }
+                    else if (parts.Length == 7)
+                    {
+                        float x, y, z;
+                        try
+                        {
+                            x = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                            y = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                            z = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                        }
+                        catch
+                        {
+                            return "0# Не удается преобразовать в числовое значение";
+                        }
+                        ObjectArray.ExpandImmediately(obj, x, y, z);
+                        return "2#4#" + obj + "# Масштаб объекта увеличен на Expand(" + x + "," + y + "," + z + ")";
+                    }
+                    else
+                    {
+                        return "0# Неизвестное alter object " + obj + " expand действие -> Необходимо ввести корректное значение";
+                    }
+                case "rotate":
+                    if (parts.Length == 7)
+                    {
+                        float x, y, z;
+                        try
+                        {
+                            x = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                            y = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                            z = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                        }
+                        catch
+                        {
+                            return "0# Не удается преобразовать в числовое значение";
+                        }
+                        ObjectArray.RotateImmediately(obj, x, y, z);
+                        return "2#5#" + obj + "# Угол объекта увеличен на Rotate(" + x + "," + y + "," + z + ")";
+                    }
+                    else
+                    {
+                        return "0# Неизвестное alter object " + obj + " rotate действие -> Необходимо ввести корректное значение";
+                    }
+                case "move":
+                    if (parts.Length == 7)
+                    {
+                        float x, y, z;
+                        try
+                        {
+                            x = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                            y = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                            z = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                        }
+                        catch
+                        {
+                            return "0# Не удается преобразовать в числовое значение";
+                        }
+                        ObjectArray.MoveImmediately(obj, x, y, z);
+                        return "2#6#" + obj + "# Позиция объекта изменена на Move(" + x + "," + y + "," + z + ")";
+                    }
+                    else
+                    {
+                        return "0# Неизвестное alter object " + obj + " move действие -> Необходимо ввести корректное значение";
+                    }
+            }
+            return "0# Неизвестное alter object действие";
+        }
+
+        private static string AlterLightChoice(string[] parts)
+        {
+            if (parts.Length == 2) return "0# Незаконченное alter light действие";
+
+            switch (parts[2])
+            {
+                case "baselight":
+                    return AlterBaseLightChoice(parts);
+                case "directionallight":
+                    return AlterDirectionalLightChoice(parts);
+                case "pointlight":
+                    if (int.TryParse(parts[3], out int result))
+                    {
+                        if (result >= 0 && result < LightningManager.PointlightsCount)
+                            return AlterPointLightChoice(parts, result);
+                        else return "0# Индекс за пределами массива pointlights";
+                    }
+                    else return "0# Индекс pointlight должен быть числом";
+                case "spotlight":
+                    if (int.TryParse(parts[3], out int res))
+                    {
+                        if (res >= 0 && res < LightningManager.SpotlightsCount)
+                            return AlterSpotLightChoice(parts, res);
+                        else return "0# Индекс за пределами массива spotlights";
+                    }
+                    else return "0# Индекс spotlight должен быть числом";
+            }
+            return "0# Неизвестное alter light действие";
+        }
+
+        //ALTER -> BASE LIGHT
+        private static string AlterBaseLightChoice(string[] parts)
+        {
+            if (parts.Length == 3) return "0# Незаконченное alter light действие";
+
+            switch (parts[3])
+            {
+                case "color":
+                    float red;
+                    float green;
+                    float blue;
+                    try
+                    {
+                        red = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                        green = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                        blue = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                    }
+                    catch
+                    {
+                        return "0# Не удается преобразовать в числовое значение";
+                    }
+                    vector3f color = new vector3f(red, green, blue);
+                    LightningManager.lightConfig.SetBaseLightColor(color);
+                    return "1#1#1# Окружающий свет изменен на Color(" + red + ", " + green + ", " + blue + ")";
+                case "intensity":
+                    float intensity = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                    LightningManager.lightConfig.SetBaseLightIntensity(intensity);
+                    return "1#1#2# Яркость окружающего света изменена на " + intensity;
+            }
+            return "0# Неизвестное alter light действие";
+        }
+
+        //ALTER -> DIRECTIONAL LIGHT
+        private static string AlterDirectionalLightChoice(string[] parts)
+        {
+            if (parts.Length == 3) return "0# Незаконченное alter light действие";
+            switch (parts[3])
+            {
+                case "color":
+                    float red;
+                    float green;
+                    float blue;
+                    try
+                    {
+                        red = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                        green = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                        blue = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                    }
+                    catch
+                    {
+                        return "0# Не удается преобразовать в числовое значение";
+                    }
+                    vector3f color = new vector3f(red, green, blue);
+                    LightningManager.lightConfig.SetDirectionalLightColor(color);
+                    return "1#2#1# Напраленный свет изменен на Color(" + red + ", " + green + ", " + blue + ")";
+                case "intensity":
+                    float intensity = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                    LightningManager.lightConfig.SetDirectionalLightIntensity(intensity);
+                    return "1#2#2# Яркость направленного света изменена на " + intensity;
+                case "direction":
+                    float x;
+                    float y;
+                    float z;
+                    try
+                    {
+                        x = float.Parse(parts[4], CultureInfo.InvariantCulture);
+                        y = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                        z = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                    }
+                    catch
+                    {
+                        return "0# Не удается преобразовать в числовое значение";
+                    }
+                    vector3f dir = new vector3f(x, y, z);
+                    LightningManager.lightConfig.SetDirectionalLightDirection(dir);
+                    return "1#2#3# Направление света изменено на Direction(" + x + ", " + y + ", " + z + ")";
+            }
+            return "0# Неизвестное alter light действие";
+        }
+
+        //ALTER POINT LIGHT
+        private static string AlterPointLightChoice(string[] parts, int index)
+        {
+            if (parts.Length == 4) return "0# Незаконченное alter light действие";
+            switch (parts[4])
+            {
+                case "position":
+                    float x = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    float y = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                    float z = float.Parse(parts[7], CultureInfo.InvariantCulture);
+                    LightningManager.pointLights[index].SetPosition(x, y, z);
+                    return "1#4#1#" + index + "# Позиция точечного света " + index + " изменена на Position(" + x + ", " + y + ", " + z + ")";
+                case "move":
+                    float x1 = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    float y1 = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                    float z1 = float.Parse(parts[7], CultureInfo.InvariantCulture);
+                    LightningManager.pointLights[index].Move(x1, y1, z1);
+                    return "1#4#2#" + index + "# Позиция точечного света " + index + " смещена на +Position(" + x1 + ", " + y1 + ", " + z1 + ")";
+                case "color":
+                    float red = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    float green = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                    float blue = float.Parse(parts[7], CultureInfo.InvariantCulture);
+                    LightningManager.pointLights[index].SetColor(red, green, blue);
+                    return "1#4#3#" + index + "# Цвет точечного света " + index + " изменен на Color(" + red + ", " + green + ", " + blue + ")";
+                case "intensity":
+                    float intensity = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    LightningManager.pointLights[index].SetIntensity(intensity);
+                    return "1#4#4#" + index + "# Интенсивность точечного света " + index + " изменена на " + intensity;
+                case "constant":
+                    float constant = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    LightningManager.pointLights[index].Attenuation.Constant = constant;
+                    return "1#4#5#" + index + "# Постоянное затухание точечного света " + index + " изменена на " + constant;
+                case "linear":
+                    float linear = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    LightningManager.pointLights[index].Attenuation.Linear = linear;
+                    return "1#4#6#" + index + "# Линейное затухание точечного света " + index + " изменена на " + linear;
+                case "exp":
+                    float exp = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    LightningManager.pointLights[index].Attenuation.Exp = exp;
+                    return "1#4#7#" + index + "# Экспоненциальное затухание точечного света " + index + " изменена на " + exp;
+            }
+            return "0# Неизвестное alter light действие";
+        }
+
+        //ALTER SPOT LIGHT
+        private static string AlterSpotLightChoice(string[] parts, int index)
+        {
+            if (parts.Length == 4) return "0# Незаконченное alter light действие";
+            switch (parts[4])
+            {
+                case "position":
+                    float x = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    float y = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                    float z = float.Parse(parts[7], CultureInfo.InvariantCulture);
+                    LightningManager.spotlights[index].PointLight.SetPosition(x, y, z);
+                    return "1#5#1#" + index + "# Позиция прожекторного света " + index + " изменена на Position(" + x + ", " + y + ", " + z + ")";
+                case "move":
+                    float x1 = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    float y1 = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                    float z1 = float.Parse(parts[7], CultureInfo.InvariantCulture);
+                    LightningManager.spotlights[index].PointLight.Move(x1, y1, z1);
+                    return "1#5#2#" + index + "# Позиция прожекторного света " + index + " смещена на +Position(" + x1 + ", " + y1 + ", " + z1 + ")";
+                case "color":
+                    float red = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    float green = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                    float blue = float.Parse(parts[7], CultureInfo.InvariantCulture);
+                    LightningManager.spotlights[index].PointLight.SetColor(red, green, blue);
+                    return "1#5#3#" + index + "# Цвет прожекторного света " + index + " изменен на Color(" + red + ", " + green + ", " + blue + ")";
+                case "intensity":
+                    float intensity = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    LightningManager.spotlights[index].PointLight.SetIntensity(intensity);
+                    return "1#5#4#" + index + "# Интенсивность прожекторного света " + index + " изменена на " + intensity;
+                case "constant":
+                    float constant = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    LightningManager.spotlights[index].PointLight.Attenuation.Constant = constant;
+                    return "1#5#5#" + index + "# Постоянное затухание прожекторного света " + index + " изменена на " + constant;
+                case "linear":
+                    float linear = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    LightningManager.spotlights[index].PointLight.Attenuation.Linear = linear;
+                    return "1#5#6#" + index + "# Линейное затухание прожекторного света " + index + " изменена на " + linear;
+                case "exp":
+                    float exp = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    LightningManager.spotlights[index].PointLight.Attenuation.Exp = exp;
+                    return "1#5#7#" + index + "# Экспоненциальное затухание прожекторного света " + index + " изменена на " + exp;
+                case "direction":
+                    float x2 = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    float y2 = float.Parse(parts[6], CultureInfo.InvariantCulture);
+                    float z2 = float.Parse(parts[7], CultureInfo.InvariantCulture);
+                    vector3f dir = new vector3f(x2, y2, z2);
+                    dir.Normalize();
+                    LightningManager.spotlights[index].Direction = dir;
+                    return "1#5#8#" + index + "# Направление прожекторного света изменено на Direction(" + x2 + ", " + y2 + ", " + z2 + ")";
+                case "cutoff":
+                    float cutoff = float.Parse(parts[5], CultureInfo.InvariantCulture);
+                    LightningManager.spotlights[index].Cutoff1 = cutoff;
+                    return "1#5#9#" + index + "# Cutoff прожекторного света " + index + " изменен на " + cutoff;
+            }
+            return "0# Неизвестное alter light действие";
+        }
+```
+Для компрессии файла 3D-модели формата _obj_. Новый файл создается из старого файла, из которого удаляются неиспользуемые вершины, координаты текстур и нормали.
+```c#
+        //функция для создания нового скомпрессированного файла obj. UPD: Больше не используется.
+        private static string CompressObjFile(string oldFilePath, string newFilePath)
+        {
+            string? line;
+
+            string faceSector = "";
+            string verticesSector = "";
+
+            List<string> old_vertices = new List<string>();
+            List<string> old_text_cords = new List<string>();
+            List<string> old_normals = new List<string>();
+
+            using (TextReader reader = new StreamReader(oldFilePath))
+            {
+                bool exit = false;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    if (exit) break;
+
+                    line = line.Trim();
+                    line = line.Replace("  ", " ");
+
+                    string[] parts = line.Split(' ');
+                    switch (parts[0])
+                    {
+                        case "v":
+                            old_vertices.Add(line);
+                            break;
+                        case "vt":
+                            old_text_cords.Add(line);
+                            break;
+                        case "vn":
+                            old_normals.Add(line);
+                            break;
+                        case "f":
+                            //exit = true;
+                            break;
+                    }
+                }
+            }
+
+            Dictionary<string, int> vert = new Dictionary<string, int>();
+            Dictionary<string, int> text = new Dictionary<string, int>();
+            Dictionary<string, int> norm = new Dictionary<string, int>();
+
+            int i = 1;
+            foreach (string vert_line in old_vertices)
+            {
+                if (!vert.ContainsKey(vert_line))
+                {
+                    vert.Add(vert_line, i++);
+                }
+            }
+
+            i = 1;
+            foreach (string text_line in old_text_cords)
+            {
+                if (!text.ContainsKey(text_line))
+                {
+                    text.Add(text_line, i++);
+                }
+            }
+
+            i = 1;
+            foreach (string norm_line in old_normals)
+            {
+                if (!norm.ContainsKey(norm_line))
+                {
+                    norm.Add(norm_line, i++);
+                }
+            }
+
+            using (TextReader reader = new StreamReader(oldFilePath))
+            {
+                while ((line = reader.ReadLine()) != null)
+                {
+                    line = line.Trim();
+                    string[] parts = line.Split(' ');
+                    switch (parts[0])
+                    {
+                        case "v":
+                        case "vt":
+                        case "vn":
+                            break;
+                        case "f":
+                            line = line.Trim('f').Trim();
+                            string[] f_parts = line.Split(' ');
+                            string newline = "f";
+
+                            foreach (string f_part in f_parts)
+                            {
+                                string[] _f = f_part.Split('/');
+
+                                int v_ind = vert[old_vertices[int.Parse(_f[0]) - 1]];
+                                int t_ind = text[old_text_cords[int.Parse(_f[1]) - 1]];
+                                int n_ind = norm[old_normals[int.Parse(_f[2]) - 1]];
+
+                                newline += " " + v_ind + "/" + t_ind + "/" + n_ind;
+                            }
+                            faceSector += newline + "\n";
+                            break;
+
+                        case "g":       //сохранить в faceSector
+                        case "s":
+                        case "usemtl":
+                            faceSector += line + "\n";
+                            break;
+                        default:
+                            verticesSector += line + "\n";
+                            break;
+                    }
+                }
+            }
+
+            File.Delete(newFilePath);
+
+            using (StreamWriter sw = new StreamWriter(newFilePath))
+            {
+                sw.WriteLine(verticesSector);
+
+                foreach (string v_line in vert.Keys)
+                {
+                    sw.WriteLine(v_line);
+                }
+
+                foreach (string t_line in text.Keys)
+                {
+                    sw.WriteLine(t_line);
+                }
+
+                foreach (string n_line in norm.Keys)
+                {
+                    sw.WriteLine(n_line);
+                }
+
+                sw.WriteLine(faceSector);
+
+                sw.Close();
+            }
+
+            return "Файл размером " + (new FileInfo(oldFilePath).Length / 1024).ToString()
+                + "KB сжат в файл размером " + (new FileInfo(newFilePath).Length / 1024).ToString() + "KB";
+        }
+```
+### CompilerHelper
+Данный класс хранит всё дерево команд, описанное в _ConsoleCompiler_, в корневом узле `root`. Каждый узел имеет ключевое слово команды, его описание и множество последующих узлов (ключевых слов, следующих после данного). 
+```c#
+    public class CompilerHelper
+    {
+        private CommandNode root;
+        private const string command_list_file = "..\\..\\..\\Files\\CompilerFiles\\compiler_command_list.txt";
+        StreamReader sr;
+
+        public CompilerHelper()
+        {
+            root = new CommandNode();
+            root.name = "root";
+            sr = new StreamReader(command_list_file);
+            root.commandNodes = InitNodes();
+            sr.Close();
+        }
+
+        private class CommandNode
+        {
+            public string? name;
+            public string? description;
+            public List<CommandNode> commandNodes = new List<CommandNode>();
+        }
+```
+Все дерево команд с описаниями каждого ключевого слова хранится в файле _compiler_command_list.txt_.
+```c
+alter
+[D]
+Установить параметры 3D сцены
+{
+    light
+    [D]
+    Установить параметры различных типов света
+    {
+        baselight 
+        [D]
+        Установить параметры окружающего света
+        {
+            color <r g b> {END_OF_LINE}
+            intensity <value> {END_OF_LINE}
+        }
+        directionallight
+        [D]
+        Установить параметры направленного света
+        {
+            color <r g b> {END_OF_LINE}
+            intensity <value> {END_OF_LINE}
+            direction <dir.x dir.y dir.z> {END_OF_LINE}
+        }
+        pointlight 
+        [D]
+        Установить параметры точечного источника света
+        {
+            <index> color <r g b> {END_OF_LINE}
+            <index> intensity <value> {END_OF_LINE}
+            <index> position <x y z> {END_OF_LINE}
+            <index> move <x y z> {END_OF_LINE}
+            <index> constant <value> {END_OF_LINE}
+            <index> linear <value> {END_OF_LINE}
+            <index> exp <value> {END_OF_LINE}
+        }
+        spotlight
+        [D]
+        Установить параметры направленного источника света
+        {
+            <index> color <r g b> {END_OF_LINE}
+            <index> intensity <value> {END_OF_LINE}
+            <index> position <x y z> {END_OF_LINE}
+            <index> move <x y z> {END_OF_LINE}
+            <index> constant <value> {END_OF_LINE}
+            <index> linear <value> {END_OF_LINE}
+            <index> exp <value> {END_OF_LINE}
+            <index> direction <dir.x dir.y dir.z> {END_OF_LINE}
+            <index> cutoff {END_OF_LINE}
+        }
+    }
+    object
+    [D]
+    Установить параметры объекта
+    {
+        <object_name> scale <x y z> {END_OF_LINE}
+        <object_name> scale <value> {END_OF_LINE}
+        <object_name> angle <x y z> {END_OF_LINE}
+        <object_name> position <x y z> {END_OF_LINE}
+        <object_name> expand <x y z> {END_OF_LINE}
+        <object_name> expand <value> {END_OF_LINE}
+        <object_name> rotate <x y z> {END_OF_LINE}
+        <object_name> move <x y z> {END_OF_LINE}
+        material 
+        [D]
+        Установить параметры материала объекта
+        {
+            --Недоступно
+        }
+    }
+    camera
+    [D]
+    Установить параметры камеры 
+    {
+        --Недоступно
+    }
+}
+get
+[D]
+Получить информацию о параметрах 3D сцены
+{
+    light
+    [D]
+    Получить сведения об типе освещения
+    {
+        --Недоступно
+    }
+    object
+    [D]
+    Получить сведения об объекте
+    {
+        --Недоступно
+    }
+    camera
+    [D]
+    Получить сведения о камере
+    {
+        position
+        [D]
+        Получить вектор позиции камеры
+        {
+            {END_OF_LINE}
+        }
+        target
+        [D]
+        Получить вектор направления камеры
+        {
+            {END_OF_LINE}
+        }
+        up 
+        [D]
+        Получить вектор Up камеры
+        {
+            {END_OF_LINE}
+        }
+        persproj
+        [D]
+        Получить сведения о проекции перспективы камеры
+        {
+            fov
+            [D]
+            Получить величину поля зрения камеры
+            {
+                {END_OF_LINE}
+            }
+            width
+            [D]
+            Получить ширину камеры
+            {
+                {END_OF_LINE}
+            }
+            height
+            [D]
+            Получить высоту камеры
+            {
+                {END_OF_LINE}
+            }
+            znear
+            [D]
+            Получить близкую границу отсечения сцены
+            {
+                {END_OF_LINE}
+            }
+            zfar
+            [D]
+            Получить дальнюю границу отсечения сцены
+            {
+                {END_OF_LINE}
+            }
+        }
+    }
+    fps
+    [D]
+    Получить значение FPS
+    {
+        {END_OF_LINE}
+    }
+}
+load
+[D]
+Загрузить команды настройки 3D сцены из файла
+{
+    light
+    [D]
+    Загрузить команды настройки света из файла
+    {
+        {END_OF_LINE}
+    }
+    object
+    [D]
+    Загрузить команды настройки объектов из файла
+    {
+        {END_OF_LINE}
+    }
+    all
+    [D]
+    Загрузить все команды настройки 3D сцены из файла
+    {
+        {END_OF_LINE}
+    }
+}
+save
+[D]
+Сохранить команды настройки 3D сцены в файл
+{
+    light
+    [D]
+    Сохранить команды настройки света в файл
+    {
+        {END_OF_LINE}
+    }
+    object
+    [D]
+    Сохранить команды настройки объектов в файл
+    {
+        {END_OF_LINE}
+    }
+    all
+    [D]
+    Сохранить все команды настройки 3D сцены в файл
+    {
+        {END_OF_LINE}
+    }
+}
+compress
+[D]
+Сжать файл 3D-модели формата obj
+{
+    <old_file_name> <new_file_name> {END_OF_LINE}
+}
+```
+Функция `InitNodes` рекурсивно инициализирует каждый узел дерева, читая файл.
+```c#
+        private List<CommandNode> InitNodes()
+        {
+            List<CommandNode> child_nodes = new List<CommandNode>();
+            while (true)
+            {
+                string? line = sr.ReadLine();
+                if (line == null) return child_nodes;
+                line = line.Trim();
+
+                switch (line)
+                {
+                    case "{":
+                        if (child_nodes.Count > 0) child_nodes[child_nodes.Count - 1].commandNodes = InitNodes();
+                        break;
+                    case "}":
+                        return child_nodes;
+                    case "[D]":
+                        if (child_nodes.Count > 0)
+                        {
+                            line = sr.ReadLine();
+                            line = line.Trim();
+                            child_nodes[child_nodes.Count - 1].description = line;
+                        }
+                        break;
+                    default:
+                        CommandNode chn = new CommandNode();
+                        chn.name = line;
+                        child_nodes.Add(chn);
+                        break;
+                }
+            }
+        }
+```
+Функция `PrintCommands` принимает на вход команду типа _help ..._ и начинает поиск команд в поддереве соответствующего узла. Если команда типа _help_, то поиск производится в корневом узле.
+```c#
+        public string PrintCommands(string[] parts)
+        {
+            if (parts.Length == 1)
+            {
+                string output = "CompilerHelper > Последующие команды:";
+                int i = 0;
+                foreach (CommandNode node in root.commandNodes)
+                {
+                    i++;
+                    output += "\n" + i + ") " + node.name;
+                }
+                return output.Trim(' ').Trim(',');
+            }
+            return FindCommands(parts, 1, root);
+        }
+```
+Функция `FindCommands` рекурсивно ищет ключевые слова (если они есть), следующие после данного слова. То есть проходится по всем веткам данного узла. В конечном итоге выводит последующие ключевые слова и описание данной подкоманды.
+```c#
+        private string FindCommands(string[] parts, int index, CommandNode parrent_node)
+        {
+            foreach(CommandNode child_node in parrent_node.commandNodes)
+            {
+                if (child_node.name == parts[index])
+                {
+                    if (parts.Length == index + 1)
+                    {
+                        if (child_node.commandNodes.Count == 0)
+                        {
+                            return "CompilerHelper > " + parts[index] + " является настраиваемым параметром." + (child_node.description != null ? "\nCompilerHelper > " + child_node.description : null);
+                        }
+                        string output = "CompilerHelper > Последующие команды:";
+                        int i = 0;
+                        foreach (CommandNode node in child_node.commandNodes)
+                        {
+                            i++;
+                            output += "\n       " + i + ") " + node.name ;
+                        }
+                        return output.Trim(' ').Trim(',') + (child_node.description != null ? "\nCompilerHelper:Description > " + child_node.description : null);
+                    }
+                    else
+                    {
+                        return FindCommands(parts, index + 1, child_node);
+                    }
+                }
+            }
+            return "CompilerHelper > " + "Команды " + parts[index] + " не обнаружено.";
+        }
+```
+## Реультат  
+### ConsoleCompiler
+![gif](https://github.com/galeevlxix/game_engine/blob/diplom%2B/Files/Screenshots/bandicam2024-07-1823-07-44-491-ezgif.com-video-to-gif-converter.gif)
+### CompilerHelper
+![gif](https://github.com/galeevlxix/game_engine/blob/diplom%2B/Files/Screenshots/bandicam2024-07-1823-08-22-069-ezgif.com-video-to-gif-converter.gif)

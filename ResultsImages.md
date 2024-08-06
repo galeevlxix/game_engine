@@ -13,7 +13,16 @@
 [12. Скайбокс и прицел](#s13)  
 [13. Загрузка моделей через Assimp](#s14)  
 [14. Информационная панель](#s15)  
-[15. Свет: окружающее освещение, рассеянное освещение, отраженный свет](#s16)
+[15. Свет: окружающее освещение, рассеянное освещение, отраженный свет](#s16)  
+[16. Свет: Point Light](#s17)  
+[17. Свет: Spot Light](#s18)  
+[18. Карты нормали (Normal Map)](#s19)  
+[19. Карта отражения (Specular Map)](#s20)  
+[20. Тени (Shadow Mapping)](#s21)  
+[21. PCF](#s22)  
+[22. Shadow Mapping для нескольких источников света](#s23)  
+[23. 3D выбор](#s24)  
+[24. Компилятор](#s25)  
 
 <a name="s1"></a>
 # Первые шаги и треугольник 
@@ -69,9 +78,39 @@
 <a name="s15"></a>
 # Информационная панель
 ### `font.png`:
-![font](https://github.com/galeevlxix/game_engine/blob/WorkingWithTheModel/screens/font.png)
+![font](https://github.com/galeevlxix/game_engine/blob/WorkingWithTheModel/screens/font.png)  
 ![ip](https://github.com/galeevlxix/game_engine/blob/WorkingWithTheModel/screens/info_panel.gif)
 <a name="s16"></a>
 # Окружающее освещение, рассеянное освещение, отраженный свет
-![difli](https://github.com/galeevlxix/game_engine/blob/Light/screens/diflights.jpg)
+![difli](https://github.com/galeevlxix/game_engine/blob/Light/screens/diflights.jpg)  
 ![spec](https://github.com/galeevlxix/game_engine/blob/Light/screens/specularlight.jpg)
+<a name="s17"></a>
+# Свет: Point Light
+<a name="s18"></a>
+# Свет: Spot Light 
+![image](https://github.com/user-attachments/assets/8b51e7b5-63cf-48ca-a7aa-e6aeb57b8b81)  
+![gif](https://github.com/galeevlxix/game_engine/blob/diplom%2B/Files/Screenshots/pointspotlight-ezgif.com-video-to-gif-converter.gif)  
+<a name="s19"></a>
+# Карты нормали (Normal Map)  
+![image](https://github.com/user-attachments/assets/3864426e-7b7f-4808-bf85-217b3700b3b0)  
+<a name="s20"></a>
+# Карта отражения (Specular Map)  
+![image](https://github.com/user-attachments/assets/e6c62442-7822-439f-aa81-09d05a58e684)
+<a name="s21"></a>
+# Тени (Shadow Mapping)  
+![image](https://github.com/user-attachments/assets/6b509d8c-db81-48f0-b02a-dcc9ebf5f88f)  
+<a name="s22"></a>
+# PCF  
+![image](https://github.com/user-attachments/assets/88a53195-6df2-4193-bfb8-3f171115c3e5)
+<a name="s23"></a>
+# Shadow Mapping для нескольких источников света  
+![image](https://github.com/user-attachments/assets/906e0b7d-87c4-4f43-9a9b-c089ce32595e)  
+<a name="s24"></a>
+# 3D выбор  
+![gif](https://github.com/galeevlxix/game_engine/blob/diplom%2B/Files/Screenshots/3D-ezgif.com-video-to-gif-converter.gif)
+<a name="s25"></a> 
+# Компилятор 
+### ConsoleCompiler
+![gif](https://github.com/galeevlxix/game_engine/blob/diplom%2B/Files/Screenshots/bandicam2024-07-1823-07-44-491-ezgif.com-video-to-gif-converter.gif)
+### CompilerHelper
+![gif](https://github.com/galeevlxix/game_engine/blob/diplom%2B/Files/Screenshots/bandicam2024-07-1823-08-22-069-ezgif.com-video-to-gif-converter.gif)
