@@ -11,8 +11,6 @@ namespace game_2.Brain.NewAssimpFolder
         private string _modelFilePath;
         private string _modelDirectoryPath;
 
-        
-
         public AScene(string modelFilePath)
         {
             _modelFilePath = modelFilePath;

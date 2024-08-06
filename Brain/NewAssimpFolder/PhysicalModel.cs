@@ -1,5 +1,6 @@
 ﻿using Assimp;
 using Assimp.Configs;
+using game_2.MathFolder;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,6 +35,20 @@ namespace game_2.Brain.NewAssimpFolder
             speedZ += accelZ * deltaTime;
 
             speedY -= G * deltaTime;
+
+            //отскок
+            if (_pipeline.PosY - speedY * deltaTime <= -4.51f && speedY < 0)
+            {
+                if (math3d.abs(speedY) < 1f)
+                {
+                    speedY = 0;
+                }
+                else
+                {
+                    speedY = -speedY * 0.8f;
+                } 
+            }
+
         }
 
         
