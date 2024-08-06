@@ -48,7 +48,7 @@ namespace game_2.Brain
             Console.WriteLine("Загрузка камеры...");
 
             Pos = vector3f.Zero;
-            Target = new vector3f (0, 0 , -1);
+            Target = new vector3f (-1, 0 , 0);
             Target.Normalize();
             Up = vector3f.Up;
 
@@ -201,8 +201,7 @@ namespace game_2.Brain
                 if ((speedX - velocity * deltaTime) * (speedX - velocity * deltaTime) + speedY * speedY + speedZ * speedZ <= max_speed * max_speed)
                     speedX -= velocity * deltaTime;
             }
-            //убрать
-            /*
+            
             if (key.IsKeyDown(Keys.Space))
             {
                 if (speedX * speedX + (speedY + velocity * deltaTime) * (speedY + velocity * deltaTime) + speedZ * speedZ <= max_speed * max_speed)
@@ -213,7 +212,7 @@ namespace game_2.Brain
                 if (speedX * speedX + (speedY - velocity * deltaTime) * (speedY - velocity * deltaTime) + speedZ * speedZ <= max_speed * max_speed)
                     speedY -= velocity * deltaTime;
             }
-            */
+            
         }
 
         public static void OnMouse(float DeltaX, float DeltaY)
@@ -222,18 +221,22 @@ namespace game_2.Brain
             angularY += DeltaY * sensitivity;
         }
 
+        private static float cameraSpeed = 0;
+        private static vector3f center = new vector3f(20, -6, 0);
+
         public static void onPositionRender(float deltaTime)
         {
             BrakingPosition(deltaTime);
 
-            Pos = SmartMoving(Pos, Target * speedZ * deltaTime);
+            Pos = StupidMoving(Pos, Target * speedZ * deltaTime);
 
             Left = vector3f.Cross(Target, Up);
             Left.Normalize();
-            Pos = SmartMoving(Pos, Left * speedX * deltaTime);
+            Pos = StupidMoving(Pos, Left * speedX * deltaTime);
 
-            Pos = SmartMoving(Pos, vector3f.Up * speedY * deltaTime);
-
+            Pos = StupidMoving(Pos, vector3f.Up * speedY * deltaTime);
+            
+            /*
             if (isCrawl && player_height >= min_point.y)
             {
                 MakeCrawl(deltaTime);
@@ -242,12 +245,24 @@ namespace game_2.Brain
             {
                 MakeGetUp(deltaTime);
             }
+            */
+
+            /*
+            cameraSpeed += deltaTime / 1.2f;
+            cameraSpeed = cameraSpeed >= 2 * math3d.PI ? 0 : cameraSpeed;
+
+            Pos.x = math3d.sin(cameraSpeed) * 40;
+            Pos.y = 15;
+            Pos.z = math3d.cos(cameraSpeed) * 30;
+            Pos += center;
+            */
 
             CameraTranslation.InitTranslationTransform(-Pos);
         }
 
         public static void onAngleRender(float deltaTime)
         {
+            
             BrakingAngle(deltaTime);
 
             angle_h += angularX * deltaTime;
@@ -255,8 +270,16 @@ namespace game_2.Brain
             if (angle_v + angularY * deltaTime < 90 && 
                 angle_v + angularY * deltaTime > -90)
                 angle_v += angularY * deltaTime;
-
+            
             Update();
+            
+            /*
+            Target = Pos - center;
+            Target.Normalize();
+            vector3f Haxis = vector3f.Cross(Target, vector3f.Up);
+            Up = -vector3f.Cross(Target, Haxis);
+            Up.Normalize();
+            */
 
             CameraRotation.InitCameraTransform(Target, Up);
         }
@@ -269,17 +292,23 @@ namespace game_2.Brain
         private static vector3f SmartMoving(vector3f left, vector3f right)
         {
             vector3f res = left;
+            vector3f sum = left + right;
 
             res.y = player_height;
             //res.y = left.y + right.y;
 
-            if (left.x + right.x < max_point.x && left.x + right.x > min_point.x)
-            res.x = left.x + right.x;
+            if (sum.x < max_point.x && sum.x > min_point.x)
+                res.x = sum.x;
 
-            if (left.z + right.z < max_point.z && left.z + right.z > min_point.z)
-                res.z = left.z + right.z;
+            if (left.z + right.z < max_point.z && sum.z > min_point.z)
+                res.z = sum.z;
 
             return res;
+        }
+
+        private static vector3f StupidMoving(vector3f left, vector3f right)
+        {
+            return left + right;
         }
 
         public static float player_height = -4;

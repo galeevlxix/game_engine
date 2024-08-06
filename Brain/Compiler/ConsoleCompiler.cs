@@ -756,8 +756,6 @@ namespace game_2.Brain.Compiler
 
             return "Файл размером " + (new FileInfo(oldFilePath).Length / 1024).ToString()
                 + "KB сжат в файл размером " + (new FileInfo(newFilePath).Length / 1024).ToString() + "KB";
-
-
         }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using game_2.Brain.InfoPanelFolder;
+using game_2.Brain.Selecting;
+using game_2.Brain.SkyBoxFolder;
 using game_2.MathFolder;
 
 namespace game_2.Brain
@@ -9,7 +11,7 @@ namespace game_2.Brain
         private static float width = 1920;
         private static float height = 1080;
         private static float zNear = 0.1f;
-        private static float zFar = 370;
+        private static float zFar = 50;
         public static matrix4f PersProjMatrix = new matrix4f();
 
         public static float GetFOV
@@ -61,12 +63,15 @@ namespace game_2.Brain
             zFar = _zFar;
             PersProjMatrix.InitPersProjTransform(FOV, width, height, zNear, zFar);
             InitSymbolPersProjMatrix();
+            InitSelectionPersProjMatrix();
+            InitSkyBoxPersProjMat();
         }
 
-        public static void InitDefault()
+        public static void Init()
         {
             PersProjMatrix.InitPersProjTransform(FOV, width, height, zNear, zFar);
             InitSymbolPersProjMatrix();
+            InitSelectionPersProjMatrix();
         }
 
         public static void ChangeFOV(float _fov)
@@ -89,5 +94,20 @@ namespace game_2.Brain
                 height,
                 ScreenStaticPersProjMat.zNear, 
                 ScreenStaticPersProjMat.zFar);
+
+        private static void InitSelectionPersProjMatrix() =>
+            SelectingPersProjMat.PersProjMatrix.InitPersProjTransform(
+                SelectingPersProjMat.FOV,
+                SelectingPersProjMat.width,
+                SelectingPersProjMat.height,
+                zNear, zFar);
+
+        private static void InitSkyBoxPersProjMat() =>
+            SkyBoxPersProjMat.PersProjMatrix.InitPersProjTransform(
+                FOV,
+                width,
+                height,
+                zNear,
+                SkyBoxPersProjMat.zFar);
     }
 }

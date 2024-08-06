@@ -21,13 +21,6 @@
             intensity <value> {END_OF_LINE}
             direction <dir.x dir.y dir.z> {END_OF_LINE}
         }
-        specularlight
-        [D]
-        Установить параметры отраженного света
-        {
-            power <value> {END_OF_LINE}
-            intensity <value> {END_OF_LINE}
-        }
         pointlight 
         [D]
         Установить параметры точечного источника света
@@ -163,6 +156,8 @@ get
     }
 }
 load
+[D]
+Загрузить команды настройки 3D сцены из файла
 {
     light
     [D]
@@ -176,8 +171,16 @@ load
     {
         {END_OF_LINE}
     }
+    all
+    [D]
+    Загрузить все команды настройки 3D сцены из файла
+    {
+        {END_OF_LINE}
+    }
 }
 save
+[D]
+Сохранить команды настройки 3D сцены в файл
 {
     light
     [D]
@@ -187,8 +190,20 @@ save
     }
     object
     [D]
-    Загрузить команды настройки объектов из файла
+    Сохранить команды настройки объектов в файл
     {
         {END_OF_LINE}
     }
+    all
+    [D]
+    Сохранить все команды настройки 3D сцены в файл
+    {
+        {END_OF_LINE}
+    }
+}
+compress
+[D]
+Сжать файл 3D-модели формата obj
+{
+    <old_file_name> <new_file_name> {END_OF_LINE}
 }

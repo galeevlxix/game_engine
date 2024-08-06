@@ -1,4 +1,5 @@
 ﻿using game_2.Brain.Lights.LightStructures;
+using game_2.Brain.Selecting;
 using game_2.MathFolder;
 using OpenTK.Mathematics;
 
@@ -222,6 +223,22 @@ namespace game_2.Brain
             translationTrans.InitTranslationTransform(PositionVector.x, PositionVector.y, PositionVector.z);
 
             matrix4f pers = PersProjMat.PersProjMatrix;
+            matrix4f c_pos = Camera.CameraTranslation;
+            matrix4f c_rot = Camera.CameraRotation;
+
+            return (scaleTrans * rotateTrans * translationTrans * c_pos * c_rot * pers).ToOpenTK();
+        }
+
+        public Matrix4 getWVP_SelectingShader()
+        {
+            matrix4f scaleTrans = new matrix4f();
+            matrix4f rotateTrans = new matrix4f();
+            matrix4f translationTrans = new matrix4f();
+            scaleTrans.InitScaleTransform(ScaleVector.x, ScaleVector.y, ScaleVector.z);
+            rotateTrans.Rotate(RotateVector.x, RotateVector.y, RotateVector.z);
+            translationTrans.InitTranslationTransform(PositionVector.x, PositionVector.y, PositionVector.z);
+
+            matrix4f pers = SelectingPersProjMat.PersProjMatrix;
             matrix4f c_pos = Camera.CameraTranslation;
             matrix4f c_rot = Camera.CameraRotation;
 

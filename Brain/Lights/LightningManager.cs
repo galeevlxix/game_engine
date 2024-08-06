@@ -14,6 +14,7 @@ namespace game_2.Brain.Lights
 
         public static Spotlight[] spotlights = new Spotlight[12];
 
+        private const float baselightIntensity = 0.2f;
         private const float spotlightsMaxIntensity = 4;
         private const float spotlightsMinIntensity = 0.2f;
         private const float spotlightsChangeSpeed = 2.5f;
@@ -69,7 +70,7 @@ namespace game_2.Brain.Lights
         private static void ConfigureBaseLight()
         {
             baseLight.Color = new vector3f(1, 1, 1);
-            baseLight.Intensity = 0.2f;
+            baseLight.Intensity = baselightIntensity;
 
             lightConfig.SetBaseLight(baseLight);
         }
@@ -116,13 +117,13 @@ namespace game_2.Brain.Lights
                 spotlights[i].PointLight.Attenuation.Constant = 1;
                 spotlights[i].PointLight.Attenuation.Linear = 0.09f;
                 spotlights[i].PointLight.Attenuation.Exp = 0.032f;
-                spotlights[i].Cutoff1 = 0.80f;
+                spotlights[i].Cutoff1 = 0.82f;
             }
             
-            spotlights[0].PointLight.SetPosition(27.5f, 4.6f, 0);
+            spotlights[0].PointLight.SetPosition(27.5f, 4.5f, 0);
             spotlights[0].Direction = new vector3f(1, -0.5f, 0);
             
-            spotlights[1].PointLight.SetPosition(12.5f, 4.6f, 0f);
+            spotlights[1].PointLight.SetPosition(12.5f, 4.5f, 0f);
             spotlights[1].Direction = new vector3f(-1, -0.5f, 0);
 
             spotlights[2].PointLight.SetPosition(27.5f, 4.5f, 1);

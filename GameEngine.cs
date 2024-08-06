@@ -8,7 +8,6 @@ using game_2.Brain.SkyBoxFolder;
 using game_2.Brain.AimFolder;
 using game_2.Brain.Lights;
 using game_2.Brain.Compiler;
-using game_2.Brain.PictureOnScreen;
 
 namespace game_2
 {
@@ -61,7 +60,7 @@ namespace game_2
             Camera.SetCameraPosition(21, -4, 0);
             CursorGrabbed = true;
 
-            PersProjMat.InitDefault();
+            PersProjMat.Init(60, WindowWidth, WindowHeight, 0.01f, 100);
 
             CentralizedShaders.Load();
             
@@ -111,6 +110,7 @@ namespace game_2
             GL.CullFace(CullFaceMode.Back);
 
             skybox.Draw();
+            
             LightningManager.Render(deltaTime);
 
             ConsoleCompiler.Execute();
@@ -156,7 +156,6 @@ namespace game_2
             {
                 if (!isMouseDown)
                 {
-                    mouse_shooter = 0;
                     isMouseDown = true;
                 }
             }
@@ -178,6 +177,7 @@ namespace game_2
                 if (isMouseDown)
                 {
                     isMouseDown = false;
+                    mouse_shooter = 0;
                 }
             }
             if (e.Button == MouseButton.Button2)
@@ -218,8 +218,6 @@ namespace game_2
             WindowHeight = e.Height;
 
             if (isLoaded) PersProjMat.ChangeWindowSize(WindowWidth, WindowHeight);
-            ObjectArray.WindowWidth = WindowWidth;
-            ObjectArray.WindowHeight = WindowHeight;
             ObjectArray.Resize(WindowWidth, WindowHeight);
         }
 

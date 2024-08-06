@@ -1,6 +1,6 @@
 
 newmtl None
 Ns 16
-map_Kd Laocoon-diffuse_low.jpeg
-map_Kn Laocoon-normals_low.jpg
-map_Ks ..\\VR_Gallery\\textures\\MetalSpecularMap.png
+map_Kd Laocoon-diffuse.jpeg
+map_Kn Laocoon-normals.jpeg
+map_Ks Laocoon-gloss.jpeg

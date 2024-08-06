@@ -6,9 +6,6 @@ using OpenTK.Mathematics;
 using OpenTK.Graphics.OpenGL;
 using game_2.Brain.Selecting;
 using game_2.Brain.InfoPanelFolder;
-using static System.Net.Mime.MediaTypeNames;
-using System.Runtime.CompilerServices;
-using System.Diagnostics;
 using game_2.Brain.PictureOnScreen;
 
 namespace game_2.Brain
@@ -18,6 +15,7 @@ namespace game_2.Brain
         private static Dictionary<string, AObject> obj_list;
 
         private static string ModelFolderPath = "..\\..\\..\\Files\\Models\\";
+        private static string PicturesFolderPath = "..\\..\\..\\Files\\Textures\\Sculptures\\";
 
         private static Shader? shadowShader;
         private static Shader? normalShader;
@@ -27,7 +25,7 @@ namespace game_2.Brain
 
         public static int WindowWidth, WindowHeight;
 
-        private const float ObservedObjectBaseLightIntensity = 0.3f;
+        private const float ObservedObjectBaseLightIntensity = 0.4f;
 
         private static int observed_object_index = -1;
         private static int picked_object_index = -1;
@@ -43,9 +41,13 @@ namespace game_2.Brain
 
         private static InfoPanel info;
 
-        private static string[] descriptions;
+        private static List<string> descriptions = new List<string>();
 
-        private static PictureObject[] pictures;
+        private static List<PictureObject> pictures = new List<PictureObject>();
+
+        static bool shadows_exist = false;
+
+        private static float AngularX = 0;
 
         public static void Init(int Width, int Height)
         {
@@ -68,28 +70,36 @@ namespace game_2.Brain
 
             info = new InfoPanel(InfoPanel.FontType.FullSet);
             GetDescriptions();
-            GetPictures();
 
             SetProperties();
         }
 
+        public static void OnRender(float deltaTime)
+        {
+            foreach (AObject obj in obj_list.Values)
+            {
+                obj.onRender(deltaTime);
+            }
+        }
+
+        #region Init Objects
         private static void AddObjects()
         {
-            Add("museum", "Museums\\VR_Gallery\\VR_Gallery_comp.obj");
-            Add("table1", "Museums\\museum_table\\OPM0032_fin.obj");
+            //Add("museum", "Museums\\VR_Gallery\\VR_Gallery_comp.obj");
 
+            Add("table1", "Museums\\museum_table\\OPM0032_fin.obj");
             Add("table2", "Museums\\museum_table\\OPM0032_fin.obj");
             Add("table3", "Museums\\museum_table\\OPM0032_fin.obj");
             Add("table4", "Museums\\museum_table\\OPM0032_fin.obj");
             Add("table5", "Museums\\museum_table\\OPM0032_fin.obj");
             Add("table6", "Museums\\museum_table\\OPM0032_fin.obj");
-
+            
             Add("bull", "Museums\\bull\\bull5.obj");
-            Add("hans", "Museums\\st1\\HansChristianAndersen-80k_rot.obj");
+            /*Add("hans", "Museums\\st1\\HansChristianAndersen-80k_rot.obj");
             Add("head", "Museums\\st2\\MCh_S_12_Rzezba_Popiersie_Rozy_Loewenfeld_fin.obj");
             Add("goat", "Museums\\st3\\goat_rot.obj");
             Add("thinker", "Museums\\st4\\Rodin_Thinker_fin.obj");
-            Add("laocoon", "Museums\\st5\\Laocoon-and-his-sons_rot.obj");
+            Add("laocoon", "Museums\\st5\\Laocoon-and-his-sons_rot.obj");*/
         }
 
         private static void SetProperties()
@@ -155,6 +165,10 @@ namespace game_2.Brain
                 SetScale("bull", SculptureScales[SculptureScales.Count - 1]);
 
                 MakeSculpture("bull");
+                MakePhysical("bull");
+                obj_list["bull"].physic.speedY = 10;
+
+                pictures.Add(new PictureObject(PicturesFolderPath + "bull.jpeg"));
             }
 
             if (Exists("hans"))
@@ -169,6 +183,8 @@ namespace game_2.Brain
                 SetScale("hans", SculptureScales[SculptureScales.Count - 1]);
 
                 MakeSculpture("hans");
+
+                pictures.Add(new PictureObject(PicturesFolderPath + "hans.jpeg"));
             }
 
             if (Exists("head"))
@@ -183,6 +199,8 @@ namespace game_2.Brain
                 SetScale("head", SculptureScales[SculptureScales.Count - 1]);
 
                 MakeSculpture("head");
+
+                pictures.Add(new PictureObject(PicturesFolderPath + "head.jpeg"));
             }
 
             if (Exists("goat"))
@@ -197,6 +215,8 @@ namespace game_2.Brain
                 SetScale("goat", SculptureScales[SculptureScales.Count - 1]);
 
                 MakeSculpture("goat");
+
+                pictures.Add(new PictureObject(PicturesFolderPath + "goat.jpeg"));
             }
 
             if (Exists("thinker"))
@@ -211,6 +231,8 @@ namespace game_2.Brain
                 SetScale("thinker", SculptureScales[SculptureScales.Count - 1]);
 
                 MakeSculpture("thinker");
+
+                pictures.Add(new PictureObject(PicturesFolderPath + "thinker.jpeg"));
             }
 
             if (Exists("laocoon"))
@@ -225,22 +247,20 @@ namespace game_2.Brain
                 SetScale("laocoon", SculptureScales[SculptureScales.Count - 1]);
 
                 MakeSculpture("laocoon");
+
+                pictures.Add(new PictureObject(PicturesFolderPath + "laokoon.jpeg"));
             }
         }
 
-        public static void OnRender(float deltaTime)
-        {
-            
-        }
+        #endregion
 
-        public static SelectingMapFBO.PixelInfo GetObservedPixel()
+        #region Interact with sculptures
+        private static SelectingMapFBO.PixelInfo GetObservedPixel()
         {
             selectingShader.Use();
-
             selectMap.Enable();
             GL.Viewport(0, 0, WindowWidth, WindowHeight);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
             int i = 0;
             foreach (AObject obj in obj_list.Values)
             {
@@ -251,9 +271,7 @@ namespace game_2.Brain
                     obj.Draw(selectingShader);
                 }
             }
-
             selectMap.Disable();
-
             return selectMap.ReadPixel(WindowWidth / 2, WindowHeight / 2);
         }
 
@@ -261,41 +279,46 @@ namespace game_2.Brain
         {
             if (pick_mode) return;
             SelectingMapFBO.PixelInfo pixel = GetObservedPixel();
-
-            if (pixel.PrimID != 0 &&
-                pixel.PrimID != 1042066440 &&
-                pixel.ObjectID != 1037100384)
-            {
+            if (pixel.PrimID != 0 && pixel.PrimID != 1042066440 && pixel.ObjectID != 1037100384)
                 observed_object_index = pixel.ObjectID;
-            }
-            else
+            else 
                 observed_object_index = -1;
         }
 
         public static void GetPickedObject(short mouse_shooter)
         {
-            if (mouse_shooter == 1 && observed_object_index != -1 && !pick_mode)
+            if (mouse_shooter == 1)
             {
-                picked_object_index = observed_object_index;
-                observed_object_index = -1;
-                pick_mode = true;
-                ScaleOfPickedObject = 0.01f;
-                AngularX = 0;
-                vector3f rotatedTarget = Camera.Target;
-                rotatedTarget.Rotate(-25, vector3f.Up);
-                pickedObjectPosition = Camera.Pos - rotatedTarget / 2;
-                pickedObjectPosition.y = Camera.player_height;
+                // начать захват
+                if (observed_object_index != -1 && !pick_mode)
+                {
+                    PickObject();
+                    SetStateToPickedObject();
+                }
+                // закончить захват
+                else if (pick_mode) pick_mode = false;
             }
-            else if (mouse_shooter == 1 && pick_mode)
-            {
-                pick_mode = false;
-            }
-            else if (mouse_shooter == 1)
-                picked_object_index = -1;
         }
 
-        static bool shadows_exist = false;
+        private static void PickObject() // захват наблюдаемого объекта
+        {
+            pick_mode = true;
+            picked_object_index = observed_object_index;
+            observed_object_index = -1;
+        }
 
+        private static void SetStateToPickedObject() // задать масштаб, угол и позицию, определенные для захваченного объекта
+        {
+            ScaleOfPickedObject = 0.01f;
+            AngularX = 0;
+            vector3f rotatedTarget = Camera.Target;
+            rotatedTarget.Rotate(-25, vector3f.Up);
+            pickedObjectPosition = Camera.Pos - rotatedTarget / 2;
+            pickedObjectPosition.y = Camera.Pos.y;
+        }
+        #endregion
+
+        #region Draw
         public static void DrawShadows()
         {
             shadowShader.Use();
@@ -319,17 +342,15 @@ namespace game_2.Brain
 
                 foreach (string obj_name in obj_list.Keys)
                 {
-                    Matrix4 WVPFromLight = obj_list[obj_name]._pipeline.getWorld() * viewMatrixFromLight * projMatrixFromLight;
+                    Matrix4 WVPFromLight = obj_list[obj_name].physic._pipeline.getWorld() * viewMatrixFromLight * projMatrixFromLight;
                     obj_list[obj_name].Draw(shadowShader, viewMatrixFromLight, projMatrixFromLight);
                     spotlight.wvpMatrixFromLight[obj_name] = WVPFromLight;
                 }
-
                 GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
-
                 shadows_exist = true;
             }
         }
-
+        
         public static void DrawScene()
         {
             GL.Viewport(0, 0, WindowWidth, WindowHeight);
@@ -352,16 +373,16 @@ namespace game_2.Brain
                     if (shadows_exist)
                         normalShader.setValue("gSpotLights[" + i + "].LightWVP", LightningManager.spotlights[i].wvpMatrixFromLight[obj_name]);
                 }
-
                 // отрисовка объектов:
                 // включение режима взаимодействия: установить специальные свойства и свет
                 if (obj_list[obj_name].isSculpture && sculpt_object_index == picked_object_index && pick_mode)
                 {
+                    #region Set state to picked sculpture
                     SetPosition(obj_name, pickedObjectPosition);
                     SetScale(obj_name, ScaleOfPickedObject);
-
                     SetAngle(obj_name, SculptureAngles[sculpt_object_index].x, SculptureAngles[sculpt_object_index].y + AngularX, SculptureAngles[sculpt_object_index].z);
-
+                    #endregion
+                    #region Set light to picked sculpture
                     LightningManager.lightConfig.SetDirectionalLightIntensity(ObservedObjectBaseLightIntensity * 2);
                     vector3f dir = -Camera.Target;
                     dir.y -= 0.5f;
@@ -374,26 +395,29 @@ namespace game_2.Brain
                     LightningManager.lightConfig.SetDirectionalLightIntensity(LightningManager.directionalLight.BaseLight.Intensity);
                     LightningManager.lightConfig.SetDirectionalLightDirection(LightningManager.directionalLight.Direction);
                     LightningManager.lightConfig.SetBaseLightIntensity(LightningManager.baseLight.Intensity);
-
+                    #endregion
                     sculpt_object_index++;
                     continue;
                 }
                 // выход из режима взаимодействия: установить начальные свойства и разорвать связь с выбранным объектом
                 else if (obj_list[obj_name].isSculpture && sculpt_object_index == picked_object_index && !pick_mode)
                 {
+                    #region Set initial state to unpicked sculpture
                     SetPosition(obj_name, SculpturePositions[sculpt_object_index]);
                     SetScale(obj_name, SculptureScales[sculpt_object_index]);
                     SetAngle(obj_name, SculptureAngles[sculpt_object_index]);
+                    #endregion
                     picked_object_index = -1;
                     sculpt_object_index++;
                 }
                 // упал взгляд на объект скульптуры
                 else if (obj_list[obj_name].isSculpture && sculpt_object_index == observed_object_index && !pick_mode)
                 {
+                    #region Set light to observed sculpture
                     LightningManager.lightConfig.SetBaseLightIntensity(LightningManager.baseLight.Intensity + ObservedObjectBaseLightIntensity);
                     obj_list[obj_name].Draw(normalShader);
                     LightningManager.lightConfig.SetBaseLightIntensity(LightningManager.baseLight.Intensity);
-
+                    #endregion
                     sculpt_object_index++;
                     continue;
                 }
@@ -401,7 +425,6 @@ namespace game_2.Brain
                 {
                     sculpt_object_index++;
                 }
-
                 obj_list[obj_name].Draw(normalShader);
             }
         }
@@ -413,20 +436,64 @@ namespace game_2.Brain
                 info.PutLineAndDraw(descriptions[picked_object_index]);
                 pictures[picked_object_index].Draw();
             }
+            else
+            {
+                info.PutLineAndDraw(FPSMeter.Int_FPS.ToString() + " fps");
+            }
         }
-
-        private static float AngularX = 0;
+        #endregion
 
         public static void RotatePickedObject(float dX)
         {
-            if (dX != 0)
-            {
+            if (dX != 0) 
                 AngularX += dX;
+        }
+
+        private static void GetDescriptions()
+        {
+            for (int i = 0; i < obj_list.Count; i++)
+            {
+                descriptions.Add(string.Empty);
+            }
+
+            using (StreamReader reader = new StreamReader(ModelFolderPath + "Museums\\ModelsDescription.txt"))
+            {
+                string? line;
+                int index = 0;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    line = line.Trim().Replace("  ", " ");
+                    if (line == "#")
+                    {
+                        index++;
+                        if (index == descriptions.Count) break;
+                    }
+                    else descriptions[index] += line + "\n";
+                }
             }
         }
 
-        // OBJECT DICTIONARY WORK:
+        private static void InitLightMatrices()
+        {
+            foreach (Spotlight spotlight in LightningManager.spotlights)
+            {
+                spotlight.wvpMatrixFromLight = new Dictionary<string, Matrix4>();
+                foreach (string obj_name in obj_list.Keys)
+                {
+                    spotlight.wvpMatrixFromLight.Add(obj_name, Matrix4.Identity);
+                }
+            }
+        }
 
+        public static void Resize(int width, int height)
+        {
+            WindowWidth = width;
+            WindowHeight = height;
+
+            selectMap.Init(width, height);
+        }
+
+        #region Object Dictionary Work
         public static void Add(string name, string filepath)
         {
             obj_list.Add(name, new AObject(ModelFolderPath + filepath));
@@ -467,6 +534,19 @@ namespace game_2.Brain
             return obj_list.ContainsKey(name);
         }
 
+        private static void MakeSculpture(string name)
+        {
+            obj_list[name].isSculpture = true;
+        }
+
+        private static void MakePhysical(string name)
+        {
+            obj_list[name].isPhysical = true;
+        }
+
+        #endregion
+
+        #region Set State
         // УСТАНОВИТЬ
         public static void SetAngle(string name, float x, float y, float z)
         {
@@ -539,66 +619,6 @@ namespace game_2.Brain
         {
             obj_list[name].Expand(speedVal, time);
         }
-
-        private static void MakeSculpture(string name)
-        {
-            obj_list[name].isSculpture = true;
-        }
-
-        public static void Resize(int width, int height)
-        {
-            WindowWidth = width;
-            WindowHeight = height;
-
-            selectMap.Init(width, height);
-        }
-
-        private static void GetDescriptions()
-        {
-            descriptions = new string[] 
-            {
-                string.Empty, string.Empty, string.Empty,
-                string.Empty, string.Empty, string.Empty
-            };
-
-            using (StreamReader reader = new StreamReader(ModelFolderPath + "Museums\\ModelsDescription.txt"))
-            {
-                string? line;
-                int index = 0;
-                while ((line = reader.ReadLine()) != null)
-                {
-                    line = line.Trim().Replace("  ", " ");
-                    if (line == "#") index++;
-                    else descriptions[index] += line + "\n";
-                }
-            }
-        }
-
-        private static void GetPictures()
-        {
-            string PicturesFolderPath = "..\\..\\..\\Files\\Textures\\Sculptures\\";
-            pictures = new PictureObject[]
-                {
-                    new PictureObject(PicturesFolderPath + "bull.jpeg"),
-                    new PictureObject(PicturesFolderPath + "hans.jpeg"),
-                    new PictureObject(PicturesFolderPath + "head.jpeg"),
-                    new PictureObject(PicturesFolderPath + "goat.jpeg"),
-                    new PictureObject(PicturesFolderPath + "thinker.jpeg"),
-                    new PictureObject(PicturesFolderPath + "laokoon.jpeg"),
-                };
-        }
-
-        private static void InitLightMatrices()
-        {
-            foreach (Spotlight spotlight in LightningManager.spotlights)
-            {
-                spotlight.wvpMatrixFromLight = new Dictionary<string, Matrix4>();
-
-                foreach (string obj_name in obj_list.Keys)
-                {
-                    spotlight.wvpMatrixFromLight.Add(obj_name, Matrix4.Identity);
-                }
-            }
-        }
+        #endregion
     }
 }

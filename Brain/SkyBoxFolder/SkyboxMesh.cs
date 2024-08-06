@@ -49,7 +49,7 @@ namespace game_2.Brain.SkyBoxFolder
 
         public override void Draw(Matrix4 matrix)
         {
-            CentralizedShaders.SetValue(ShaderName.SkyBoxShader, matrix, Camera.CameraRotation.ToOpenTK(), PersProjMat.PersProjMatrix.ToOpenTK());
+            CentralizedShaders.SetValue(ShaderName.SkyBoxShader, matrix, Camera.CameraRotation.ToOpenTK(), SkyBoxPersProjMat.PersProjMatrix.ToOpenTK());
             GL.BindVertexArray(VAO);
             UseTextures();
             GL.DrawElements(BeginMode.Triangles, indicesCount, DrawElementsType.UnsignedInt, 0);

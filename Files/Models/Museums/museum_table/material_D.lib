@@ -5,4 +5,4 @@
 newmtl OPM0032
 Ns 32
 map_Kd OPM0032_textures\\OPM0032_4K_BaseColor_low.png
-map_Kn OPM0032_textures\\OPM0032_4K_Normal_low.png
+map_Kn OPM0032_textures\OPM0032_4K_Normal_low.png
