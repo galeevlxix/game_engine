@@ -31,19 +31,16 @@ namespace game_2.Brain
         private static int picked_object_index = -1;
         public static bool pick_mode = false;
 
-        private static List<vector3f> SculpturePositions = new List<vector3f>();
-        private static List<vector3f> SculptureAngles = new List<vector3f>();
-        private static List<float> SculptureScales = new List<float>();
+
+        /*public static List<vector3f> SculpturePositions = new List<vector3f>();
+        public static List<vector3f> SculptureAngles = new List<vector3f>();
+        public static List<float> SculptureScales = new List<float>();*/
 
         public static float ScaleOfPickedObject = 0.01f;
 
         private static vector3f pickedObjectPosition = new vector3f();
 
         private static InfoPanel info;
-
-        private static List<string> descriptions = new List<string>();
-
-        private static List<PictureObject> pictures = new List<PictureObject>();
 
         static bool shadows_exist = false;
 
@@ -59,7 +56,9 @@ namespace game_2.Brain
 
             obj_list = new Dictionary<string, AObject>();
 
-            AddObjects();
+            ObjectCreator.Create();
+
+            var a = obj_list["bull"].GetType();
 
             WindowWidth = Width;
             WindowHeight = Height;
@@ -69,9 +68,6 @@ namespace game_2.Brain
             InitLightMatrices();
 
             info = new InfoPanel(InfoPanel.FontType.FullSet);
-            GetDescriptions();
-
-            SetProperties();
         }
 
         public static void OnRender(float deltaTime)
@@ -82,177 +78,6 @@ namespace game_2.Brain
             }
         }
 
-        #region Init Objects
-        private static void AddObjects()
-        {
-            //Add("museum", "Museums\\VR_Gallery\\VR_Gallery_comp.obj");
-
-            Add("table1", "Museums\\museum_table\\OPM0032_fin.obj");
-            Add("table2", "Museums\\museum_table\\OPM0032_fin.obj");
-            Add("table3", "Museums\\museum_table\\OPM0032_fin.obj");
-            Add("table4", "Museums\\museum_table\\OPM0032_fin.obj");
-            Add("table5", "Museums\\museum_table\\OPM0032_fin.obj");
-            Add("table6", "Museums\\museum_table\\OPM0032_fin.obj");
-            
-            Add("bull", "Museums\\bull\\bull5.obj");
-            /*Add("hans", "Museums\\st1\\HansChristianAndersen-80k_rot.obj");
-            Add("head", "Museums\\st2\\MCh_S_12_Rzezba_Popiersie_Rozy_Loewenfeld_fin.obj");
-            Add("goat", "Museums\\st3\\goat_rot.obj");
-            Add("thinker", "Museums\\st4\\Rodin_Thinker_fin.obj");
-            Add("laocoon", "Museums\\st5\\Laocoon-and-his-sons_rot.obj");*/
-        }
-
-        private static void SetProperties()
-        {
-            if (Exists("museum"))
-            {
-                SetAngle("museum", 0, 0, 0);
-                SetPosition("museum", 20, 0, 0);
-                SetScale("museum", 0.01f);
-            }
-
-            if (Exists("table1"))
-            {
-                SetAngle("table1", 0, -90, 0);
-                SetPosition("table1", 43, -7.15f, 0);
-                SetScale("table1", 0.21f);
-            }
-
-            if (Exists("table2"))
-            {
-                SetAngle("table2", 0, 0, 0);
-                SetPosition("table2", 27.5f, -7.15f, -5.5f);
-                SetScale("table2", 0.21f);
-            }
-
-            if (Exists("table3"))
-            {
-                SetAngle("table3", 0, 180, 0);
-                SetPosition("table3", 27.5f, -7.15f, 5.5f);
-                SetScale("table3", 0.21f);
-            }
-
-            if (Exists("table4"))
-            {
-                SetAngle("table4", 0, 180, 0);
-                SetPosition("table4", 12.5f, -7.15f, 5.5f);
-                SetScale("table4", 0.21f);
-            }
-
-            if (Exists("table5"))
-            {
-                SetAngle("table5", 0, 0, 0);
-                SetPosition("table5", 12.5f, -7.15f, -5.5f);
-                SetScale("table5", 0.21f);
-            }
-
-            if (Exists("table6"))
-            {
-                SetAngle("table6", 0, 90, 0);
-                SetPosition("table6", -3, -7.15f, 0);
-                SetScale("table6", 0.21f);
-            }
-
-            if (Exists("bull"))
-            {
-                SculptureAngles.Add(new vector3f(0, 180, 0));
-                SetAngle("bull", SculptureAngles[SculptureAngles.Count - 1]);
-
-                SculpturePositions.Add(new vector3f(42.85f, -4.51f, 0f));
-                SetPosition("bull", SculpturePositions[SculpturePositions.Count - 1]);
-
-                SculptureScales.Add(0.1f);
-                SetScale("bull", SculptureScales[SculptureScales.Count - 1]);
-
-                MakeSculpture("bull");
-                MakePhysical("bull");
-                obj_list["bull"].physic.speedY = 10;
-
-                pictures.Add(new PictureObject(PicturesFolderPath + "bull.jpeg"));
-            }
-
-            if (Exists("hans"))
-            {
-                SculptureAngles.Add(new vector3f(0, -11, 0));
-                SetAngle("hans", SculptureAngles[SculptureAngles.Count - 1]);
-
-                SculpturePositions.Add(new vector3f(12.3f, -3.9f, -5.5f));
-                SetPosition("hans", SculpturePositions[SculpturePositions.Count - 1]);
-
-                SculptureScales.Add(0.13f);
-                SetScale("hans", SculptureScales[SculptureScales.Count - 1]);
-
-                MakeSculpture("hans");
-
-                pictures.Add(new PictureObject(PicturesFolderPath + "hans.jpeg"));
-            }
-
-            if (Exists("head"))
-            {
-                SculptureAngles.Add(new vector3f(0, 180, 0));
-                SetAngle("head", SculptureAngles[SculptureAngles.Count - 1]);
-
-                SculpturePositions.Add(new vector3f(12.3f, -3.8f, 5.5f));
-                SetPosition("head", SculpturePositions[SculpturePositions.Count - 1]);
-
-                SculptureScales.Add(0.13f);
-                SetScale("head", SculptureScales[SculptureScales.Count - 1]);
-
-                MakeSculpture("head");
-
-                pictures.Add(new PictureObject(PicturesFolderPath + "head.jpeg"));
-            }
-
-            if (Exists("goat"))
-            {
-                SculptureAngles.Add(new vector3f(0, 180, 0));
-                SetAngle("goat", SculptureAngles[SculptureAngles.Count - 1]);
-
-                SculpturePositions.Add(new vector3f(27.4f, -3.7f, 5.3f));
-                SetPosition("goat", SculpturePositions[SculpturePositions.Count - 1]);
-
-                SculptureScales.Add(0.08f);
-                SetScale("goat", SculptureScales[SculptureScales.Count - 1]);
-
-                MakeSculpture("goat");
-
-                pictures.Add(new PictureObject(PicturesFolderPath + "goat.jpeg"));
-            }
-
-            if (Exists("thinker"))
-            {
-                SculptureAngles.Add(new vector3f(0, 60, 0));
-                SetAngle("thinker", SculptureAngles[SculptureAngles.Count - 1]);
-
-                SculpturePositions.Add(new vector3f(27.5f, -5.15f + 0.6f, -5.5f));
-                SetPosition("thinker", SculpturePositions[SculpturePositions.Count - 1]);
-
-                SculptureScales.Add(0.1f);
-                SetScale("thinker", SculptureScales[SculptureScales.Count - 1]);
-
-                MakeSculpture("thinker");
-
-                pictures.Add(new PictureObject(PicturesFolderPath + "thinker.jpeg"));
-            }
-
-            if (Exists("laocoon"))
-            {
-                SculptureAngles.Add(new vector3f(0, 0, 0));
-                SetAngle("laocoon", SculptureAngles[SculptureAngles.Count - 1]);
-
-                SculpturePositions.Add(new vector3f(-3, -3.15f + 0.07f, 0));
-                SetPosition("laocoon", SculpturePositions[SculpturePositions.Count - 1]);
-
-                SculptureScales.Add(0.08f);
-                SetScale("laocoon", SculptureScales[SculptureScales.Count - 1]);
-
-                MakeSculpture("laocoon");
-
-                pictures.Add(new PictureObject(PicturesFolderPath + "laokoon.jpeg"));
-            }
-        }
-
-        #endregion
 
         #region Interact with sculptures
         private static SelectingMapFBO.PixelInfo GetObservedPixel()
@@ -377,12 +202,12 @@ namespace game_2.Brain
                 // включение режима взаимодействия: установить специальные свойства и свет
                 if (obj_list[obj_name].isSculpture && sculpt_object_index == picked_object_index && pick_mode)
                 {
-                    #region Set state to picked sculpture
+                    
                     SetPosition(obj_name, pickedObjectPosition);
                     SetScale(obj_name, ScaleOfPickedObject);
                     SetAngle(obj_name, SculptureAngles[sculpt_object_index].x, SculptureAngles[sculpt_object_index].y + AngularX, SculptureAngles[sculpt_object_index].z);
-                    #endregion
-                    #region Set light to picked sculpture
+                    
+                    
                     LightningManager.lightConfig.SetDirectionalLightIntensity(ObservedObjectBaseLightIntensity * 2);
                     vector3f dir = -Camera.Target;
                     dir.y -= 0.5f;
@@ -395,7 +220,7 @@ namespace game_2.Brain
                     LightningManager.lightConfig.SetDirectionalLightIntensity(LightningManager.directionalLight.BaseLight.Intensity);
                     LightningManager.lightConfig.SetDirectionalLightDirection(LightningManager.directionalLight.Direction);
                     LightningManager.lightConfig.SetBaseLightIntensity(LightningManager.baseLight.Intensity);
-                    #endregion
+                    
                     sculpt_object_index++;
                     continue;
                 }
@@ -433,8 +258,14 @@ namespace game_2.Brain
         {
             if (picked_object_index != -1)
             {
-                info.PutLineAndDraw(descriptions[picked_object_index]);
-                pictures[picked_object_index].Draw();
+                foreach (AObject obj in obj_list.Values)
+                {
+                    if (obj.isSculpture && picked_object_index == obj.sculptureNumber)
+                    {
+                        info.PutLineAndDraw(obj.description);
+                        obj.pictureObject.Draw();
+                    }
+                }
             }
             else
             {
@@ -447,30 +278,6 @@ namespace game_2.Brain
         {
             if (dX != 0) 
                 AngularX += dX;
-        }
-
-        private static void GetDescriptions()
-        {
-            for (int i = 0; i < obj_list.Count; i++)
-            {
-                descriptions.Add(string.Empty);
-            }
-
-            using (StreamReader reader = new StreamReader(ModelFolderPath + "Museums\\ModelsDescription.txt"))
-            {
-                string? line;
-                int index = 0;
-                while ((line = reader.ReadLine()) != null)
-                {
-                    line = line.Trim().Replace("  ", " ");
-                    if (line == "#")
-                    {
-                        index++;
-                        if (index == descriptions.Count) break;
-                    }
-                    else descriptions[index] += line + "\n";
-                }
-            }
         }
 
         private static void InitLightMatrices()
@@ -496,7 +303,7 @@ namespace game_2.Brain
         #region Object Dictionary Work
         public static void Add(string name, string filepath)
         {
-            obj_list.Add(name, new AObject(ModelFolderPath + filepath));
+            obj_list.Add(name, new AObject(filepath));
             Console.WriteLine("     Загружена модель " + name);
         }
 
@@ -534,14 +341,39 @@ namespace game_2.Brain
             return obj_list.ContainsKey(name);
         }
 
-        private static void MakeSculpture(string name)
+        public static void MakeSculpture(string name)
         {
             obj_list[name].isSculpture = true;
         }
 
-        private static void MakePhysical(string name)
+        public static void MakePhysical(string name)
         {
             obj_list[name].isPhysical = true;
+        }
+
+        public static void AddSculptureNumber(string name, int number)
+        {
+            obj_list[name].sculptureNumber = number;
+        }
+
+        public static void AddPicture(string name, string path)
+        {
+            obj_list[name].pictureObject = new PictureObject(path);
+        }
+
+        public static void AddDescription(string name, string description)
+        {
+            obj_list[name].description += description + "\n";
+        }
+
+        public static bool IsSculpture(string name)
+        {
+            return obj_list[name].isSculpture;
+        }
+
+        public static bool IsPhysical(string name)
+        {
+            return obj_list[name].isPhysical;
         }
 
         #endregion

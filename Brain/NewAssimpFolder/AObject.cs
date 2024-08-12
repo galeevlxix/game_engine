@@ -1,16 +1,18 @@
-﻿using OpenTK.Mathematics;
+﻿using game_2.Brain.PictureOnScreen;
+using OpenTK.Mathematics;
 namespace game_2.Brain.NewAssimpFolder
 {
     public class AObject
     {
-        public AScene scene;
+        protected AScene scene;
         public PhysicalModel physic;
 
-        public bool isSculpture = false;
+        public bool isSculpture;
         public bool isPhysical = false;
 
         public AObject(string ModelFilePath) 
         {
+            isSculpture = false;
             scene = new AScene(ModelFilePath);
             physic = new PhysicalModel();
         }

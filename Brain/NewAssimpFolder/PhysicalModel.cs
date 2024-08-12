@@ -1,11 +1,4 @@
-﻿using Assimp;
-using Assimp.Configs;
-using game_2.MathFolder;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using game_2.MathFolder;
 
 namespace game_2.Brain.NewAssimpFolder
 {
@@ -36,14 +29,16 @@ namespace game_2.Brain.NewAssimpFolder
 
             speedY -= G * deltaTime;
 
-            //отскок
+            //отскок по Y
             if (_pipeline.PosY - speedY * deltaTime <= -4.51f && speedY < 0)
             {
-                if (math3d.abs(speedY) < 1f)
+                if (math3d.abs(speedY * 0.8f) < 1f)    
+                // если скорость слишком мала, отскока не будет, объект останавливается
                 {
                     speedY = 0;
                 }
-                else
+                else 
+                //объект теряет скорость при отскоке
                 {
                     speedY = -speedY * 0.8f;
                 } 

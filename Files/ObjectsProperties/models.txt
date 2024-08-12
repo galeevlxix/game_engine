@@ -1,0 +1,144 @@
+﻿mf ..\..\..\Files\Models\
+pf ..\..\..\Files\Textures\Sculptures\
+
+object museum
+path Museums\VR_Gallery\VR_Gallery_comp.obj
+angle 0 0 0
+position 20 0 0
+scale 0.01
+
+object table1 
+path Museums\museum_table\OPM0032_fin.obj
+angle 0 -90 0
+position 43 -7.15 0
+scale 0.21
+
+object table2 
+path Museums\museum_table\OPM0032_fin.obj
+angle 0 0 0
+position 27.5 -7.15 -5.5
+scale 0.21
+
+object table3 
+path Museums\museum_table\OPM0032_fin.obj
+angle 0 180 0
+position 27.5 -7.15 5.5
+scale 0.21
+
+object table4 
+path Museums\museum_table\OPM0032_fin.obj
+angle 0 180 0
+position 12.5 -7.15 5.5
+scale 0.21
+
+object table5 
+path Museums\museum_table\OPM0032_fin.obj
+angle 0 0 0
+position 12.5 -7.15 -5.5
+scale 0.21
+
+object table6 
+path Museums\museum_table\OPM0032_fin.obj
+angle 0 90 0
+position -3 -7.15 0
+scale 0.21
+
+object bull 
+path Museums\bull\bull5.obj
+isSculpture
+angle 0 180 0
+position 42.85 -4.51 0
+scale 0.1
+picture bull.jpeg
+description 
+Атакующий бык (также известен как Бык с
+Уолл-стрит) - 3200-килограммовая бронзовая
+статуя, созданная скульптором Артуро Ди
+Модика. Расположена в двух кварталах южнее
+Нью-Йоркской фондовой биржи. Статуя изображает
+разъярённого быка, символизирующего агрессивный
+финансовый оптимизм и процветание. "Быками" на 
+биржевом сленге называют трейдеров, ориентированных 
+на подъём экономики и рост цен акций.
+#description
+
+/*
+object hans 
+path Museums\st1\HansChristianAndersen-80k_rot.obj
+isSculpture
+angle 0 -11 0
+position 12.3 -3.9 -5.5
+scale 0.13
+picture hans.jpeg
+description 
+Скульптура Ганс Христиан Андерсена, созданная
+Хенри Луковым-Нильсеном в 1961 г., находится
+на Ратушной площади в Копенгагене и обращена
+лицом к парку Тиволи. На сказках писателя,
+таких как "Дюймовочка", "Новое платье короля",
+"Гадкий утенок", "Снежная королева", "Стойкий
+оловянный солдатик" и "Принцесса на горошине",
+выросло не одно поколение детей.
+#description
+
+object head 
+path Museums\st2\MCh_S_12_Rzezba_Popiersie_Rozy_Loewenfeld_fin.obj
+isSculpture
+angle 0 180 0
+position 12.3 -3.8 5.5
+scale 0.13
+picture head.jpeg
+description 
+На скульптуре "Бюст Розы Левенфельд",
+находящейся в музее им. Ирины и Мечи слава
+Мазараки в городе Хшанув (Польша) изображена
+голова молодой женщины с повернутой вправо и
+слегка наклоненной головой.
+#description
+
+object goat 
+path Museums\st3\goat_rot.obj
+isSculpture
+angle 0 180 0
+position 27.4 -3.7 5.3
+scale 0.08
+picture goat.jpeg
+description 
+Бронзовая скульптура Владимира Костоваля
+"Козерог" изображает горного козла и находится
+в Берлинском зоопарке с 1959 года.
+#description
+
+object thinker 
+path Museums\st4\Rodin_Thinker_fin.obj
+isSculpture
+angle 0 60 0
+position 27.5 -4.55 -5.5
+scale 0.1
+picture thinker.jpeg
+description 
+Бронзовая скульптура "Мыслитель" из города
+Копенгаген (Дания) является копией одной из
+самых известных скульптурных работ Огюста
+Родена, находящейся в музее Родена в Париже.
+Поза склонившегося мужчины выражает глубокую
+задумчивость и созерцание, и статуя часто
+используется как образ, олицетворяющий философию.
+#description
+
+object laocoon 
+path Museums\st5\Laocoon-and-his-sons_rot.obj
+isSculpture
+angle 0 0 0
+position -3 -3.22f 0
+scale 0.08
+picture laokoon.jpeg
+description 
+Скульптура "Лаокоон и его сыновья" ваятелей
+родосской школы Агесандра, Полидора и Афинодора
+изображает смертельную борьбу жреца Лаокоона
+и его сыновей со змеями. Экспонируется в 
+Октогональном дворе ватиканского музея 
+Пио-Клементино.
+#description
+*/
